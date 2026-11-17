@@ -1,30 +1,32 @@
 import { Link } from '@inertiajs/react'
 import clsx from 'clsx'
-import { Check } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Tape } from '@/components/site/Standouts'
 import { content, tf } from '@/lib/content'
 import { AddressDoor } from './AddressDoor'
-import terrain from './terrain.webp'
+import garden from './garden.webp'
 
-// An example parcel, drawn over terrain.webp (a Walloon meadow between a
-// lane and a hedge, 1200 × 900): the outline a visitor's own parcel gets.
-const PARCEL = '165,350 1000,318 1010,598 622,660 420,720 120,795 45,675 30,480 82,352'
+// The example parcel, drawn over garden.webp (1200 × 900): a Walloon meadow
+// seen from the air (SPW orthophoto), planted with the time-lapse's watercolour
+// stamps in its three layers (trees, shrubs at their edge, herbaceous plants
+// at their feet) and a pond in the wet corner, as it could look at year 15.
+// Made by compositing the timelapse atlases; the outline is drawn live.
+const PARCEL = '225,136 1364,93 1377,475 848,559 573,641 164,743 61,580 41,314 112,139'
 
 /**
- * The first screen: « Où est ton terrain ? ». The address is the way in;
- * beside it, a real place seen from the air, its parcel pencilled in and a
- * few notes, as the first page of the visitor's notebook will look.
+ * The first screen says what Terranova is for: designing one's forest garden
+ * and following it, season after season. The address stays the way in;
+ * beside it, a real place seen from the air with a forest garden in its
+ * layers, and the notebook it starts.
  */
 export function Hero() {
-  const appears = content<string[]>('site.home.hero.appears')
   return (
     <section id="adresse" className="relative scroll-mt-4 overflow-hidden bg-loam-50" aria-labelledby="hero-title">
       <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-10 sm:py-16 lg:grid-cols-[1fr_1.15fr] lg:gap-14 lg:py-14">
         <div className="min-w-0">
           <p className="font-hand text-2xl text-leaf-600">{tf('site.home.hero.kicker')}</p>
           <h1 id="hero-title" className="mt-1 text-balance font-serif text-5xl font-medium leading-[1.05] text-prune-900 sm:text-6xl">
-            {tf('site.home.hero.title')}
+            <KeepHyphenated text={tf('site.home.hero.title')} />
           </h1>
           <p className="mt-5 max-w-xl text-pretty text-lg leading-relaxed text-loam-600">{tf('site.home.hero.body')}</p>
 
@@ -32,15 +34,8 @@ export function Hero() {
           <p className="mt-3 font-hand text-[1.35rem] leading-tight text-leaf-600">{tf('site.home.hero.free')}</p>
 
           <div className="mt-8 max-w-xl border-t border-dashed border-loam-300 pt-5">
-            <p className="text-sm font-medium text-loam-700">{tf('site.home.hero.appears_title')}</p>
-            <ul className="mt-2 grid gap-1.5">
-              {appears.map((line) => (
-                <li key={line} className="flex items-start gap-2 text-loam-600">
-                  <Check className="mt-1 h-4 w-4 shrink-0 text-leaf-600" aria-hidden="true" />
-                  <span>{line}</span>
-                </li>
-              ))}
-            </ul>
+            <h2 className="font-sans text-sm font-medium text-loam-700">{tf('site.home.hero.what.title')}</h2>
+            <p className="mt-2 text-pretty leading-relaxed text-loam-600">{tf('site.home.hero.what.body')}</p>
             <p className="mt-5 flex flex-wrap gap-x-5 gap-y-1 text-sm">
               <Link href="/session/new" className="font-medium text-prune-600 underline-offset-4 hover:text-prune-800 hover:underline">{tf('site.home.hero.account')}</Link>
               <Link href="/tarifs" className="font-medium text-prune-600 underline-offset-4 hover:text-prune-800 hover:underline">{tf('site.home.hero.pricing')}</Link>
@@ -69,9 +64,8 @@ function ExamplePlace() {
         <Tape className="-top-3 left-10 -rotate-6" />
         <Tape className="-top-3 right-10 rotate-[5deg]" />
         <div className="relative overflow-hidden bg-loam-200">
-          <img src={terrain} alt={tf('site.home.hero.photo.alt')} width={1200} height={900} fetchPriority="high" decoding="async" className="block aspect-[4/3] w-full object-cover" />
+          <img src={garden} alt={tf('site.home.hero.photo.alt')} width={1200} height={900} fetchPriority="high" decoding="async" className="block aspect-[4/3] w-full object-cover" />
           <svg viewBox="0 0 1200 900" className="absolute inset-0 h-full w-full" aria-hidden="true">
-            <polygon points={PARCEL} className="fill-humus-200/15" />
             <polygon
               points={PARCEL}
               pathLength={1}
@@ -81,12 +75,12 @@ function ExamplePlace() {
               strokeWidth={5}
               strokeLinejoin="round"
             />
-            <circle cx="150" cy="660" r="62" className="fill-none stroke-humus-200" strokeWidth={4} strokeDasharray="14 12" />
           </svg>
-          <Note className="left-[38%] top-[40%] -rotate-2 sm:top-[52%] text-[1.5rem] sm:text-[1.9rem]">{tf('site.home.hero.photo.parcel')}</Note>
-          <Note className="right-[4%] top-[17%] hidden rotate-1 sm:block">{tf('site.home.hero.photo.path')}</Note>
-          <Note className="left-[3%] top-[5%] hidden -rotate-2 sm:block">{tf('site.home.hero.photo.hedge')}</Note>
-          <Note className="left-[19%] top-[62%] max-w-[13rem] rotate-1 sm:left-[22%] sm:top-[71%]">{tf('site.home.hero.photo.check')}</Note>
+          <Note className="left-[13%] top-[3%] hidden -rotate-2 sm:block">{tf('site.home.hero.photo.trees')}</Note>
+          <Note className="right-[3%] top-[6%] hidden rotate-1 sm:block">{tf('site.home.hero.photo.shrubs')}</Note>
+          <Note className="left-[40%] top-[73%] hidden -rotate-1 sm:block">{tf('site.home.hero.photo.herbs')}</Note>
+          <Note className="left-[3%] top-[88%] hidden rotate-1 sm:block">{tf('site.home.hero.photo.pond')}</Note>
+          <Note className="bottom-[4%] right-[3%] -rotate-2 text-[1.3rem] sm:text-[1.6rem]">{tf('site.home.hero.photo.garden')}</Note>
         </div>
         <figcaption className="mt-2 px-1 text-sm text-loam-500">{tf('site.home.hero.photo.credit')}</figcaption>
       </div>
@@ -103,6 +97,17 @@ function ExamplePlace() {
         </ul>
       </div>
     </figure>
+  )
+}
+
+/** A title whose hyphenated words never split at their hyphen (« jardin-forêt », « suis-le »). */
+export function KeepHyphenated({ text }: { text: string }) {
+  return (
+    <>
+      {text.split(/(\S+-\S+)/).map((part, i) =>
+        i % 2 === 1 ? <span key={i} className="whitespace-nowrap">{part}</span> : part,
+      )}
+    </>
   )
 }
 
