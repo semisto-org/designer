@@ -51,8 +51,85 @@ fr:
       gallery: "Carnets ouverts"
       rights: "© Semisto"
     home:
+      # The front door: the visitor types their address and sees their own
+      # place at once, without an account (TrialsController, origin `home`).
+      hero:
+        kicker: "ton carnet de terrain"
+        title: "Où est ton terrain ?"
+        body: "Tape son adresse. Terranova trouve ta parcelle sur la photo aérienne, te dit ce que sa pente et son eau racontent, et t'aide à y dessiner ton jardin-forêt."
+        label: "L'adresse de ton terrain"
+        placeholder: "Rue, numéro, commune"
+        submit: "Voir mon terrain"
+        starting: "Je cherche ton terrain…"
+        free: "sans compte, et ta première carte reste gratuite, pour de bon"
+        appears_title: "Ce qui apparaît tout de suite"
+        appears:
+          - "ta parcelle, sur la photo aérienne la plus récente"
+          - "sa pente, et le coin où file l'eau de pluie"
+          - "ce que ta région sait déjà : sols, relief, plan de secteur"
+        account: "Ou crée ton compte d'abord"
+        pricing: "Voir les forfaits"
+        photo:
+          alt: "Une prairie wallonne vue d'avion, entre un chemin et une haie, avec le contour de la parcelle tracé au crayon et des notes manuscrites."
+          credit: "terrain d'exemple · © SPW – Géoportail de la Wallonie"
+          parcel: "ta parcelle"
+          path: "le chemin : l'accès pour la brouette"
+          hedge: "la haie : on la garde"
+          check: "à aller voir : où l'eau reste-t-elle en hiver ?"
+        page:
+          kicker: "première page de ton carnet"
+          lines:
+            - "ta pente, et où l'eau s'arrête"
+            - "le coin où une mare retiendrait la pluie"
+            - "combien d'arbres fruitiers y trouvent leur place"
+      # A first year with Terranova, from the desk to the land and back.
+      year:
+        kicker: "ta première année avec Terranova"
+        title: "De ton bureau à ton terrain, et retour"
+        intro: "Terranova ne te garde pas devant l'écran. Il t'apprend à lire ton terrain, puis t'envoie dehors vérifier ce que la carte ne sait pas."
+        moments:
+          - when: "ce soir"
+            where: "à ton bureau"
+            icon: "lamp"
+            title: "Lire ton terrain"
+            items:
+              - "ta parcelle, prise d'un clic sur le cadastre"
+              - "le relief, la pente et le chemin de l'eau"
+              - "les photos aériennes d'autrefois : en Wallonie, depuis 1971"
+              - "le soleil et l'ombre, de juin à décembre"
+          - when: "ce week-end"
+            where: "dehors, téléphone en poche"
+            icon: "boots"
+            title: "Aller voir sur place"
+            items:
+              - "noter ce que tu vois là où tu le vois : une flaque, le givre qui reste, un passage de chevreuil"
+              - "photographier les herbes folles : elles racontent ton sol"
+              - "ton carnet des saisons se remplit à chaque visite"
+          - when: "cet hiver"
+            where: "au chaud, avec ton IA si tu veux"
+            icon: "pencil"
+            title: "Dessiner ton jardin-forêt"
+            items:
+              - "l'eau d'abord : une mare, une baissière sur la courbe de niveau"
+              - "puis les haies, les chemins et les zones"
+              - "ta palette de plantes, dans le catalogue de Semisto"
+              - "ton IA propose en brouillons, tu gardes ou tu refuses"
+          - when: "au printemps"
+            where: "sur ton terrain"
+            icon: "sprout"
+            title: "Planter, puis le voir grandir"
+            items:
+              - "chaque plant noté sur place, depuis ton téléphone"
+              - "tes arbres à 1, 5, 15 et 30 ans, et l'ombre qu'ils feront"
+              - "tes récoltes, année après année"
+        cta: "Commencer par mon adresse"
+        more: "Toutes les fonctionnalités"
+      # The last word: the same front door, for whoever scrolled down to read.
+      invite:
+        kicker: "et chez toi ?"
+        title: "Ton terrain est déjà sur la carte."
+        body: "Il ne manque que son adresse. Tu le vois tout de suite, sans compte, puis tu décides si tu le gardes."
       story:
-        cta: "Ouvrir mon carnet"
         months: ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"]
         stamp:
           bare: "terrain nu"
@@ -67,8 +144,9 @@ fr:
           hedge: "haie champêtre"
           shade: "l'ombre atteint le potager"
           yours: "ton terrain"
-        # One entry per chapter of CHAPTERS in app/frontend/components/site/timelapse/model.ts.
-        # The first one is the opening: its kicker is the scroll cue.
+        # One entry per chapter of CHAPTERS in app/frontend/components/site/timelapse/model.ts
+        # (the painted thirty years, no longer on the home page; the map's tour still
+        # reads months, stamp and canvas).
         chapters:
           - kicker: "fais défiler : trente ans vont passer"
             title: "Dessine aujourd'hui le jardin-forêt de 2056."
@@ -101,16 +179,6 @@ fr:
           - kicker: "et tout autour"
             title: "Ton jardin-forêt, et tous les autres."
             body: "Chaque carte dessinée dans Terranova est un jardin-forêt de plus en Europe. En route vers l'ère des forêts comestibles."
-        where:
-          title: "Où est ton terrain ?"
-          label: "L'adresse de ton terrain"
-          placeholder: "Rue, numéro, commune"
-          hint: "Tape ton adresse : ton terrain apparaît tout de suite, avec ce que sa pente et son eau racontent. Sans compte."
-          starting: "Je cherche ton terrain…"
-        final_cta: "Ou crée ton compte d'abord"
-        final_secondary: "Voir les forfaits"
-        free: "ta première carte est gratuite, pour de bon"
-        example: "Terrain d'exemple. Le tien, Terranova le dessine sur un vrai fond de carte."
       practical:
         kicker: "en pratique"
         title: "Ce qu'il faut savoir avant d'ouvrir ton carnet"
@@ -661,7 +729,7 @@ fr:
         cta: "Ouvrir une discussion"
         url: "https://github.com/semisto-org/designer/issues"
     legal:
-      updated_on: "11 novembre 2026"
+      updated_on: "16 novembre 2026"
       privacy:
         title: "Politique de confidentialité"
         lead: "Ce que Semisto Terranova collecte, pourquoi, qui l'héberge, combien de temps nous le gardons, et comment exercer vos droits."
@@ -681,9 +749,10 @@ fr:
               - "Les personnes que vous invitez : l'adresse e-mail des personnes à qui vous partagez une carte, que vous invitez dans une équipe ou à qui vous confiez une tâche."
               - "Vos paiements : la formule achetée, le montant, la TVA, la date, le code promotionnel éventuel et l'adresse de facturation. Le paiement lui-même est traité par Stripe : nous ne voyons ni ne conservons votre numéro de carte. Si vous demandez à payer sur facture, nous recevons aussi le nom et l'adresse de l'organisation, son numéro d'entreprise, l'adresse e-mail de facturation et le numéro de bon de commande."
               - "Vos demandes : ce que vous nous écrivez (assistance, suppression de compte, commande de plants, mission drone, demande de réalisation ou de cogestion) et nos réponses."
-              - "Vos retours : le message que vous envoyez avec « Un retour ? », la page et, le cas échéant, la carte où vous étiez, et, si vous le cochez, votre accord pour que nous vous appelions."
+              - "Vos retours : le message que vous envoyez avec « Un retour ? », la page et, le cas échéant, la carte où vous étiez, une description technique de votre navigateur (son nom et sa version, la taille de l'écran et de la fenêtre, la langue et le fuseau horaire), la version de Terranova, et, si vous le choisissez, la capture d'écran que vous recadrez et annotez et votre accord pour que nous vous appelions ; puis le statut que nous leur donnons et notre réponse."
               - "Pendant la bêta, et seulement si vous l'acceptez : l'enregistrement de vos premières séances par Sentry (les écrans, les clics et la carte affichée), lié au seul numéro de votre compte, jamais à votre nom ni à votre adresse e-mail. Ce que vous tapez, vos textes, vos photos et vidéos, et les noms et adresses des autres personnes restent masqués. La question vous est posée une fois, et vous pouvez changer d'avis dans « Mon compte »."
               - "Des données techniques : l'adresse IP et le navigateur utilisés pour chaque connexion à votre compte, et les journaux du serveur, utiles à la sécurité et au dépannage."
+              - "La date de votre dernière activité sur Semisto Terranova (site, application mobile ou assistant IA connecté), à quelques minutes près : les membres de vos équipes la voient sur la page de l'équipe, pour savoir qui suit les projets ; elle est effacée avec votre compte."
               - "Un essai « Et chez toi ? », sans compte : l'adresse que vous tapez, les parcelles choisies et ce que Terranova lit du terrain (pente, orientation). Si vous créez ensuite un compte, l'essai devient votre première carte ; sinon il est effacé après 48 heures."
               - "Si vous créez un compte après avoir regardé une carte publiée, nous notons de quelle carte vous venez. Son auteur n'en voit qu'un nombre (« 2 ont commencé le leur »), jamais votre nom ; il voit de même le nombre de visites de sa carte, sans rien qui identifie les visiteurs."
               - "Dans l'application mobile, si vous l'autorisez : la position de votre téléphone, pour vous situer sur le plan, placer une photo ou enregistrer une trace le long d'une haie ou d'une limite (y compris écran éteint, pendant l'enregistrement d'une trace que vous avez lancé), et l'appareil photo et le micro, pour les photos et vidéos que vous prenez."

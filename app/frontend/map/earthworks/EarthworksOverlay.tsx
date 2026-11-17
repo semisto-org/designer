@@ -20,7 +20,7 @@ function headImage(): { width: number; height: number; data: Uint8ClampedArray }
   const size = 28
   const canvas = document.createElement('canvas')
   canvas.width = canvas.height = size
-  const ctx = canvas.getContext('2d')
+  const ctx = canvas.getContext('2d', { willReadFrequently: true })
   if (!ctx) return null
   ctx.fillStyle = EARTH
   ctx.strokeStyle = '#ffffff'

@@ -72,6 +72,17 @@ export default function MapTasks({ map, lists: initialLists, tasks: initialTasks
     }
   }
 
+  // While the team's colleague works on a task, the board is read again now
+  // and then: her report lands, and the task comes back to whoever gave it.
+  const colleagueWorking = board.tasks.some((task) => task.assignee?.working)
+  useEffect(() => {
+    if (!colleagueWorking) return
+    const timer = window.setInterval(() => {
+      api<Board>(`${base}/tasks.json`).then((fresh) => setBoard(fresh)).catch(() => {})
+    }, 8000)
+    return () => window.clearInterval(timer)
+  }, [colleagueWorking, base])
+
   const updateTask = (task: TaskData, attrs: Record<string, unknown>) =>
     run(api(`${base}/tasks/${task.id}`, { method: 'PATCH', body: { task: attrs } }))
 
@@ -79,7 +90,11 @@ export default function MapTasks({ map, lists: initialLists, tasks: initialTasks
   // server's board follows (and puts it back if the change is refused).
   function assign(task: TaskData, key: string) {
     const person = participants.find((p) => assigneeKey(p) === key)
-    const next = person ? { id: person.id, email: person.email, name: person.name, avatarUrl: person.avatarUrl, invited: person.id == null || undefined } : undefined
+    const next = person
+      ? person.agentId != null
+        ? { agentId: person.agentId, name: person.name, avatarUrl: person.avatarUrl, agent: true, working: true }
+        : { id: person.id, email: person.email, name: person.name, avatarUrl: person.avatarUrl, invited: person.id == null || undefined }
+      : undefined
     setBoard((b) => ({ ...b, tasks: b.tasks.map((x) => (x.id === task.id ? { ...x, assignee: next } : x)) }))
     void updateTask(task, assigneeParams(key))
   }
@@ -470,8 +485,9 @@ function TaskRow({ task, mapId, today, open, canEdit, canTick, participants, cur
             )}
           </div>
         )}
-        {(task.tags.length > 0 || task.dueOn || task.features) && (
+        {(task.tags.length > 0 || task.dueOn || task.features || task.assignee?.working) && (
           <div className="mt-1 flex flex-wrap items-center gap-1.5">
+            {task.assignee?.working && <span className="inline-flex items-center rounded-full bg-leaf-100 px-2 py-0.5 text-sm text-leaf-800">{task.assignee.name} {t('agents.tasks.working')}</span>}
             {task.dueOn && <DueBadge due={task.dueOn} today={today} done={done} />}
             {task.features?.slice(0, MAX_FEATURE_CHIPS).map((f) => <FeatureChip key={f.id} mapId={mapId} feature={f} />)}
             {task.features && task.features.length > MAX_FEATURE_CHIPS && (
@@ -500,7 +516,8 @@ function TaskDetail({ task, lists, participants, suggestions, mapId, today, onSa
 
   const members = participants.filter((p) => p.id != null)
   // Invited addresses, plus the task's own if its invitation has run out.
-  const invitees = participants.filter((p) => p.id == null)
+  const invitees = participants.filter((p) => p.id == null && p.agentId == null)
+  const colleague = participants.find((p) => p.agentId != null) ?? (task.assignee?.agent ? { agentId: task.assignee.agentId, name: task.assignee.name, role: 'agent' } : undefined)
   if (task.assignee?.invited && !invitees.some((p) => p.email === task.assignee!.email)) invitees.push({ email: task.assignee.email, name: task.assignee.name, role: 'invited' })
 
   const saveTitle = () => { if (title.trim() && title !== task.title) void onSave({ title }) }
@@ -522,6 +539,11 @@ function TaskDetail({ task, lists, participants, suggestions, mapId, today, onSa
           <span className={field}>{t('tasks.task.assignee')}</span>
           <select value={assigneeKey(task.assignee)} onChange={(e) => void onSave(assigneeParams(e.target.value))} className={inputClass}>
             <option value="">{t('tasks.task.nobody')}</option>
+            {colleague && (
+              <optgroup label={t('agents.tasks.group')}>
+                <option value={assigneeKey(colleague)}>{colleague.name}</option>
+              </optgroup>
+            )}
             {members.map((p) => <option key={assigneeKey(p)} value={assigneeKey(p)}>{p.name}</option>)}
             {invitees.length > 0 && (
               <optgroup label={t('tasks.task.invited_group')}>
@@ -530,6 +552,7 @@ function TaskDetail({ task, lists, participants, suggestions, mapId, today, onSa
             )}
           </select>
           {task.assignee?.invited && <span className="block text-sm text-loam-500">{t('tasks.task.invited_hint')}</span>}
+          {task.assignee?.agent && <span className="block text-sm text-loam-500">{t('agents.tasks.hint')}</span>}
         </label>
         <label className="block space-y-1">
           <span className={field}>{t('tasks.task.due_on')}</span>

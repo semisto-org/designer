@@ -1,5 +1,4 @@
 import clsx from 'clsx'
-import { isAnnotationLayer } from '@/map/scenario'
 import { Target, TriangleAlert } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { t } from '@/lib/i18n'
@@ -11,11 +10,6 @@ import { isPermacultureZone, PERMACULTURE_ZONE_COLORS, zoneNumberOf, zoneOfFeatu
 import type { MapFeature } from '@/types'
 
 /** A zone itself, or any element once the terrain has zones (sectors and notes aside). */
-export function appliesToZone(feature: MapFeature): boolean {
-  if (isPermacultureZone(feature)) return true
-  return !isAnnotationLayer(feature.properties.layer) && feature.properties.status === 'active'
-}
-
 /**
  * Inspector section of the permaculture zones. On a zone: its number, as
  * six pills, and what it holds. On any other element: the zone it stands

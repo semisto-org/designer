@@ -16,6 +16,8 @@ module Mcp
       # On a territory's coarse relief, a point read on a river map moves to
       # the valley floor within this distance (`outlet` says where).
       TERRITORY_SNAP_M = 90
+      # On a fine window (5 m), the valley floor of a street or a field is near.
+      FINE_SNAP_M = 30
 
       arguments(
         properties: {
@@ -23,12 +25,13 @@ module Mcp
           territory_id: { type: "integer", minimum: 1, description: :territory_id },
           feature_id: { type: "integer", minimum: 1, description: :feature_id },
           lng: { type: "number", minimum: -180, maximum: 180, description: :lng },
-          lat: { type: "number", minimum: -90, maximum: 90, description: :lat }
+          lat: { type: "number", minimum: -90, maximum: 90, description: :lat },
+          retry_relief: { type: "boolean", description: :retry_relief }
         }
       )
       hints
 
-      def perform(map_id: nil, territory_id: nil, feature_id: nil, lng: nil, lat: nil)
+      def perform(map_id: nil, territory_id: nil, feature_id: nil, lng: nil, lat: nil, retry_relief: false)
         place = find_place!(map_id, territory_id)
         raise ToolError, t("tools.get_catchment.missing_point") if territory?(place) && (feature_id || lng.nil? || lat.nil?)
 
@@ -41,13 +44,22 @@ module Mcp
           elsif lng && lat
             if territory?(place)
               require_point_near!(place, lng, lat, MAX_DISTANCE_M)
-              territory_relief!(place)
+              # The fine window imports beside the coarse relief, not after it
+              # (unless the provider just failed the coarse one).
+              Relief::TerritoryRelief.new(place, window: Relief::DetailWindow.for_point(lng, lat)).ensure! unless place.terrain&.failed?
+              territory_relief!(place, force: retry_relief)
             end
             Relief::Catchment.new(place, lng:, lat:, snap_m: (TERRITORY_SNAP_M if territory?(place)))
           else
             raise ToolError, t("tools.get_catchment.missing_target")
           end
         result = catchment.call
+        note = (t("tools.get_catchment.territory_note") if territory?(place))
+        fine = nil
+        if territory?(place) && !feature_id
+          fine, note = fine_catchment(place, lng, lat, coarse: result)
+          result = fine if fine
+        end
         {
           feature_id:, point: feature_id ? nil : [ lng, lat ],
           area_m2: result.area_m2, inside_boundary_m2: result.inside_boundary_m2, beyond_relief: result.beyond_relief,
@@ -55,28 +67,51 @@ module Mcp
           annual_rainfall_mm: result.annual_rainfall_mm, annual_rain_m3: result.annual_rain_m3,
           infiltration_mm_h: result.infiltration_mm_h, infiltration_distance_m: result.infiltration_distance_m, empties_in_h: result.empties_in_h,
           cell_size_m: result.cell_size_m, outlet: result.outlet, geometry: result.geometry,
-          note: (t("tools.get_catchment.territory_note") if territory?(place))
+          relief: (fine ? "fine" : "coarse" if territory?(place)), note:
         }.compact
       rescue Relief::Catchment::Error => e
         raise ToolError, e.message
       end
 
       private
-        # The territory's relief, imported on first use (and again after a
-        # failed or dead import). Raises while it is not ready yet.
-        def territory_relief!(territory)
-          terrain = territory.terrain
-          return if terrain&.ready? && terrain.grid.attached?
+        # The same catchment on the fine window (5 m) around the point, when
+        # it is ready and the catchment stays inside it; otherwise the coarse
+        # one, with a note that says why (and the window is launched).
+        def fine_catchment(territory, lng, lat, coarse:)
+          relief = Relief::TerritoryRelief.new(territory, window: Relief::DetailWindow.for_point(lng, lat))
+          relief.ensure!
+          unless relief.ready?
+            state = relief.state
+            key = state[:status] == "failed" ? "fine_failed" : "fine_pending"
+            return [ nil, t("tools.get_catchment.#{key}", error: state[:error].to_s) + " " + t("tools.get_catchment.territory_note") ]
+          end
+
+          fine = Relief::Catchment.new(territory, lng:, lat:, snap_m: FINE_SNAP_M, terrain: relief.terrain).call
+          return [ nil, t("tools.get_catchment.fine_too_large", coarse_km2: (coarse.area_m2 / 1_000_000.0).round(2)) + " " + t("tools.get_catchment.territory_note") ] if fine.beyond_relief
+
+          [ fine, t("tools.get_catchment.fine_note") ]
+        rescue Relief::Catchment::Error
+          [ nil, t("tools.get_catchment.territory_note") ]
+        end
+
+        # The territory's relief, imported on first use (Relief::TerritoryRelief).
+        # Raises, with where the import stands, while it is not ready.
+        def territory_relief!(territory, force: false)
           raise ToolError, t("errors.no_relief_provider") unless territory.region && Providers::Elevation.for(territory.region)
 
-          if terrain.nil? || !terrain.in_progress?
-            raise ToolError, t("tools.get_catchment.relief_failed", error: terrain.error) if terrain&.failed? && terrain.updated_at > 1.hour.ago
+          relief = Relief::TerritoryRelief.new(territory)
+          relief.ensure!(force:)
+          return if relief.ready?
 
-            terrain ||= territory.build_terrain
-            terrain.update!(status: "pending", progress: 0, error: nil)
-            ReliefImportJob.perform_later(terrain)
-          end
-          raise ToolError, t("tools.get_catchment.relief_pending", progress: terrain.progress.to_i)
+          raise ToolError, relief_message(relief.state)
+        end
+
+        def relief_message(state)
+          time = ->(iso) { iso && I18n.l(Time.zone.parse(iso).in_time_zone("Europe/Brussels"), format: "%d/%m à %H:%M") }
+          key = "tools.get_catchment.relief.#{state[:status]}"
+          t(key, progress: state[:progress].to_i, error: state[:error].to_s, attempts: state[:attempts], max: state[:max_attempts],
+                 retry_at: time.call(state[:retry_at]), queued_at: time.call(state[:queued_at]), started_at: time.call(state[:started_at])) +
+            " " + t("tools.get_catchment.relief.state", state: state.to_json)
         end
 
         def summarize_result(data) = { area_m2: data[:area_m2], feature_id: data[:feature_id] }.compact

@@ -52,6 +52,7 @@ class OauthAccessToken < ApplicationRecord
 
   def record_use!
     update_column(:last_used_at, Time.current) if last_used_at.nil? || last_used_at < 1.minute.ago
+    user.active!
   end
 
   # RFC 6749 §5.1 token response, with the plaintexts of a fresh token.

@@ -8,17 +8,12 @@ import { useEditor } from '@/map/editor/EditorContext'
 import { measure } from '@/map/editor/measure'
 import type { MapFeature } from '@/types'
 
-const KINDS = ['pond', 'swale', 'keyline', 'rain_garden', 'half_moon', 'check_dam', 'fascine', 'beaver_dam_analogue', 'hedge_bank']
 // Structures across the flow: they slow water, they do not store a volume.
 const ACROSS = new Set(['check_dam', 'fascine', 'beaver_dam_analogue', 'hedge_bank'])
 // Above this catchment (m²), one structure alone takes too much water.
 const SERIES_FROM_M2: Record<string, number> = { check_dam: 20_000, fascine: 5_000 }
 
 /** Ponds, swales, rain gardens, half-moons and structures across the flow: what drains into them. */
-export function appliesToCatchment(feature: MapFeature): boolean {
-  return KINDS.includes(feature.properties.kind) && feature.properties.status !== 'rejected'
-}
-
 /** GET /maps/:id/relief/catchment (Relief::Catchment). */
 export type CatchmentResult = {
   geometry: Geometry

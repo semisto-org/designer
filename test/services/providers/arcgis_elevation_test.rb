@@ -50,10 +50,39 @@ class Providers::ArcgisElevationTest < ActiveSupport::TestCase
     assert_equal 4, @provider.sample(:terrain, @points, @extent).size
   end
 
-  test "refuses a short answer rather than shifting the grid" do
+  test "refuses a long answer rather than shifting the grid" do
     stub_request(:post, "#{ReliefTestHelper::MNT}/identify").to_return(status: 200, body: file_fixture("relief/identify_mnt.json").read)
     error = assert_raises(Providers::ArcgisElevation::Error) { @provider.sample(:terrain, @points.first(3), @extent) }
     assert_match(/4 values for 3 points/, error.message)
+  end
+
+  # The SPW leaves out points beyond its rasters (a margin in Flanders):
+  # 0 values for 1,500 points stopped Beauvechain's relief for days.
+  test "a short answer splits the chunk until each piece answers, beyond the rasters is no data" do
+    extent = Relief::Extent.around([ 4.9, 50.34, 4.9006, 50.3401 ], cell_size_m: 1, margin_m: 0)
+    points = Array.new(64) { |i| extent.point(i) }
+    border = points[40][0]
+    requests = 0
+    stub_request(:post, "#{ReliefTestHelper::MNT}/identify").to_return do |request|
+      requests += 1
+      asked = JSON.parse(URI.decode_www_form(request.body).to_h.fetch("geometry")).fetch("points")
+      results = asked.select { |x, _| x < border.round(3) }.map { |_| { "attributes" => { "Pixel Value" => "200.5" } } }
+      { status: 200, body: { results: }.to_json }
+    end
+    values = @provider.sample(:terrain, points, extent)
+    assert_equal 64, values.size
+    beyond = points.each_index.select { |i| points[i][0].round(3) >= border.round(3) }
+    assert beyond.all? { |i| values[i].nil? }
+    # Inside the rasters, every value is right; only a short piece of 16
+    # points or fewer at the edge is left empty.
+    assert values.compact.all? { |v| v == 200.5 }
+    assert values.compact.size >= 64 - beyond.size - 16
+    assert requests < 20, "#{requests} requests"
+  end
+
+  test "a chunk entirely beyond the rasters is no data, without failing" do
+    stub_request(:post, "#{ReliefTestHelper::MNT}/identify").to_return(status: 200, body: { results: [] }.to_json)
+    assert_equal [ nil ] * 4, @provider.sample(:terrain, @points, @extent)
   end
 
   test "gives up after three attempts" do

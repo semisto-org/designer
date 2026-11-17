@@ -14,7 +14,7 @@ module Mcp
           unread: inbox.items.map do |item|
             {
               map_id: item.map.id, map_name: item.map.name, unread: item.unread, mentions: item.mentions,
-              last_message: { author: item.last.author.display_name, body: item.last.body.squish.truncate(Collab::ChatInbox::EXCERPT), created_at: item.last.created_at.iso8601 },
+              last_message: { author: item.last.author_name, body: item.last.body.squish.truncate(Collab::ChatInbox::EXCERPT), created_at: item.last.created_at.iso8601 },
               url: "#{map_url(item.map)}?discussion=#{item.map.comment_key}"
             }
           end,

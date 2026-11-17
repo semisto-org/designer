@@ -61,4 +61,22 @@ class Maps::FieldPlantingTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
     assert_not PlantVariety.exists?(name: "Nouvelle")
   end
+
+  test "the label read again on the land: another cultivar, even another species, joins the palette" do
+    plant({ species_id: @apple.id }, palette: {})
+    feature = @map.features.find(response.parsed_body["id"])
+    patch map_feature_path(@map, feature), params: { feature: { lock_version: feature.lock_version, properties_patch: { nursery_form: "pot" }, palette: { variety_name: "Belle de Boskoop", size: "En pot" } } }, as: :json
+    assert_response :success
+    feature.reload
+    assert_equal plant_varieties(:boskoop).id, feature.plant_variety_id
+    assert_equal "pot", feature.properties["nursery_form"]
+    assert @map.palette_items.exists?(species_id: @apple.id, variety_id: plant_varieties(:boskoop).id)
+
+    alder = plant_species(:alder)
+    patch map_feature_path(@map, feature), params: { feature: { lock_version: feature.lock_version, properties_patch: { species_id: alder.id, variety_id: nil }, palette: {} } }, as: :json
+    assert_response :success
+    feature.reload
+    assert_equal [ alder.id, nil ], [ feature.plant_species_id, feature.plant_variety_id ]
+    assert @map.palette_items.exists?(species_id: alder.id, variety_id: nil)
+  end
 end

@@ -28,12 +28,16 @@ module Mcp
           project_percent: map.project_sheet.progress[:percent],
           project_drafts_pending: map.project_sheet_drafts.count,
           project_team_notes: project_team_notes(map),
+          # « Collègue IA »: the team's AI colleague, when a team admin
+          # switched her on for this map (team members ask her in the app).
+          ai_colleague: (map.colleague && { name: map.colleague.name, can_ask: map.colleague_for(user).present? }),
           elements: element_counts(map),
           tags: tag_counts(map),
           variants: variants(map),
           palette: palette(map),
           palette_budget: palette_budget(map),
           palette_drafts_pending: map.palette_drafts.count,
+          planting_round: PlantingRound.new(map).as_json,
           place: place(map),
           succession: SuccessionBalance.new(map).as_json,
           bioindicators: bioindicators(map),
@@ -149,7 +153,7 @@ module Mcp
         # in no phase. An element joins a phase through its `phase_id`
         # property (propose_feature_updates); get_implementation_plan has the detail.
         def implementation(map)
-          plan = Implementation::Plan.new(map, networks: editor?).as_json
+          plan = Implementation::Plan.new(map, networks: sees_networks?).as_json
           {
             phases: plan[:phases].map do |phase|
               { id: phase[:id], name: phase[:name], starts_on: phase[:startsOn], ends_on: phase[:endsOn], notes: phase[:notes],
@@ -175,7 +179,7 @@ module Mcp
           return { member: false } unless map.chat_member?(user)
           messages = map.comments.visible
           read = CommentRead.find_by(user:, commentable: map)&.last_read_at
-          unread = messages.where.not(author_id: user.id)
+          unread = messages.not_written_by(user)
           unread = unread.where(created_at: read..) if read
           {
             member: true, messages: messages.count, unread: unread.count,
@@ -449,7 +453,7 @@ module Mcp
 
         def element_counts(map)
           counts = map.features.where.not(status: "rejected").group(:layer, :status).count
-          counts = counts.reject { |(layer, _), _| layer == "networks" } unless editor?
+          counts = counts.reject { |(layer, _), _| layer == "networks" } unless sees_networks?
           by_layer = counts.each_with_object({}) do |((layer, status), n), acc|
             (acc[layer] ||= { "active" => 0, "draft" => 0 })[status] = n
           end
@@ -479,7 +483,7 @@ module Mcp
         # The map's tags (shared by all its elements) and how many elements carry each.
         def tag_counts(map)
           scope = map.features.where.not(status: "rejected")
-          scope = scope.where.not(layer: "networks") unless editor?
+          scope = scope.where.not(layer: "networks") unless sees_networks?
           scope.tag_counts
         end
 

@@ -97,3 +97,4 @@ gem "rubyzip", ">= 2.4", "< 4"
 gem "pdf-reader", "~> 2.15"
 
 gem "rqrcode", "~> 3.2"
+gem "anthropic"

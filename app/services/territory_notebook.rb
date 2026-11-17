@@ -6,11 +6,14 @@
 #
 # Two versions:
 # - working (« carnet de travail »), for the collège communal: every kept
-#   lead, those not yet seen on site listed apart as hypotheses, never on
-#   the map; a lead on farmland is left out until the farmer was met and
-#   answered (only their number shows).
-# - public: leads seen on site only, no outline on private or agricultural
-#   land, and only the markers seen on site or confirmed.
+#   lead, those still only seen at the desk listed apart as hypotheses,
+#   never on the map; a lead on farmland is left out until the farmer was
+#   met and answered (only their number shows).
+# - public: leads confirmed by an actor or seen on site only (Michael,
+#   2026-11-16: a desk reading of a commune the team does not know is not
+#   enough), no outline on private or agricultural land, and only the
+#   markers confirmed or seen on site. An actor who confirmed is named by
+#   their organisation there, never by their name.
 #
 # Leads come soil practices first, then slowing water upstream, then
 # structures: the parcel is the first retention work.
@@ -34,12 +37,13 @@ class TerritoryNotebook
       says: { actors: of(:actor).map { |item| actor(item) }, expectations: of(:expectation).map { |item| expectation(item) } },
       basins: basins.map { |item| basin(item) },
       shows: { markers: markers.map { |item| marker(item) } },
-      seen: { markers: markers.select { |item| %w[seen confirmed].include?(item.prop(:proof)) }.map { |item| marker(item) },
-              leads: leads.select(&:seen_on_site?).map { |item| { id: item.id, title: item.title, seenOn: item.prop(:seen_on) } } },
-      leads: leads.select(&:seen_on_site?).map { |item| lead(item) },
-      hypotheses: public? ? [] : leads.reject(&:seen_on_site?).map { |item| lead(item).except(:geometry) },
+      seen: { markers: markers.select(&:confirmed?).map { |item| marker(item) },
+              leads: leads.select { |item| item.verification_level == "site" }.map { |item| { id: item.id, title: item.title, seenOn: item.prop(:verified_on) } } },
+      leads: leads.select(&:confirmed?).map { |item| lead(item) },
+      hypotheses: public? ? [] : leads.reject(&:confirmed?).map { |item| lead(item).except(:geometry) },
+      toConfirm: public? ? 0 : @items.count { |item| item.verifiable? && item.prop(:confirm_with_id).present? },
       waitingForFarmer: public? ? 0 : of(:lead).count(&:waiting_for_farmer?),
-      firstSteps: leads.select { |item| (!public? || item.seen_on_site?) && item.prop(:first_step).to_i.between?(1, 3) }.sort_by { |item| item.prop(:first_step).to_i }
+      firstSteps: leads.select { |item| (!public? || item.confirmed?) && item.prop(:first_step).to_i.between?(1, 3) }.sort_by { |item| item.prop(:first_step).to_i }
                        .map { |item| { id: item.id, title: item.title, order: item.prop(:first_step), thisWinter: item.prop(:this_winter) == true } },
       decision: { nextStep: @territory.notebook_text(:next_step), budget: @territory.notebook_text(:next_step_budget) },
       sources: of(:source).map { |item| source(item) },
@@ -68,8 +72,8 @@ class TerritoryNotebook
       {
         id: item.id, title: item.title, body: item.body, order: item.prop(:order), outlet: item.prop(:outlet),
         areaKm2: item.geometry && area_km2(item),
-        seenMarkers: inside.(markers.select { |x| %w[seen confirmed].include?(x.prop(:proof)) }),
-        leads: inside.(public? ? leads.select(&:seen_on_site?) : leads)
+        seenMarkers: inside.(markers.select(&:confirmed?)),
+        leads: inside.(public? ? leads.select(&:confirmed?) : leads)
       }
     end
 
@@ -84,7 +88,7 @@ class TerritoryNotebook
     end
 
     def markers
-      @markers ||= of(:marker).select { |item| !public? || %w[seen confirmed].include?(item.prop(:proof)) }
+      @markers ||= of(:marker).select { |item| !public? || item.confirmed? }
     end
 
     def sources_by_id = @sources_by_id ||= of(:source).index_by(&:id)
@@ -102,8 +106,8 @@ class TerritoryNotebook
     end
 
     def marker(item)
-      { id: item.id, title: item.title, body: item.body, basinId: basin_id(item), occurredOn: item.prop(:occurred_on), proof: item.prop(:proof) || "computed",
-        markerKind: item.prop(:marker_kind), sources: source_refs(item.prop(:source_ids)) }
+      { id: item.id, title: item.title, body: item.body, basinId: basin_id(item), occurredOn: item.occurred_label, proof: item.prop(:proof) || "computed",
+        markerKind: item.prop(:marker_kind), sources: source_refs(item.prop(:source_ids)), verification: verification(item) }
     end
 
     def source(item)
@@ -117,13 +121,31 @@ class TerritoryNotebook
         id: item.id, title: item.title, body: item.body, basinId: basin_id(item),
         rank: item.prop(:rank), theme: item.prop(:theme), land: item.prop(:land) || "unknown", magnitude: item.prop(:magnitude),
         answers: Array(item.prop(:expectation_ids)).filter_map { |id| expectations[id]&.title },
-        seenOnSite: item.seen_on_site?, seenOn: item.prop(:seen_on),
+        seenOnSite: item.seen_on_site?, seenOn: item.prop(:seen_on), verification: verification(item),
         farmer: public? ? nil : item.prop(:farmer),
         keeper: item.prop(:keeper), orphan: item.orphan?,
         decision: item.prop(:decision),
         sharp: item.sharp?,
         geometry: drawable?(item) ? item.geometry_geojson : nil
       }
+    end
+
+    def actors_by_id = @actors_by_id ||= of(:actor).index_by(&:id)
+
+    # How far the entry was checked, by whom and when. The public version
+    # names an actor by their organisation or function, and a free name not
+    # at all: the people met did not agree to be printed.
+    def verification(item)
+      level = item.verification_level
+      by =
+        if level == "desk" then nil
+        elsif public?
+          actor = actors_by_id[item.prop(:verified_by_id)]
+          actor && (actor.prop(:organization).presence || actor.prop(:function).presence)
+        else
+          item.verifier_name(actors_by_id)
+        end
+      { level:, by:, on: (item.prop(:verified_on) unless level == "desk") }
     end
 
     def held_from_public?(item)
@@ -133,7 +155,7 @@ class TerritoryNotebook
     # The public version draws leads on public land only. A lead whose farmer
     # said no is never drawn on their field, nor a soil practice before yes.
     def drawable?(item)
-      item.geometry && item.seen_on_site? && item.farmer_answer != "no" &&
+      item.geometry && item.confirmed? && item.farmer_answer != "no" &&
         !(item.soil_practice? && item.farmer_answer != "yes") && (!public? || item.prop(:land) == "public")
     end
 

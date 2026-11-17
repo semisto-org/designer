@@ -428,6 +428,8 @@ Rails.application.routes.draw do
       end
       resources :photo_albums, only: %i[create update destroy]
       resources :documents, only: %i[index show create update destroy] do
+        # Renames a tag (a shelf of the library) on every document carrying it.
+        patch :tags, action: :rename_tag, on: :collection
         member do
           get :file
           # The text of a Markdown document, read and saved by its editor.
@@ -499,6 +501,12 @@ Rails.application.routes.draw do
       resources :memberships, only: %i[update destroy]
       # « Forfait de l'équipe »: an admin's plan pays for every team map.
       resource :billing, only: %i[update destroy]
+      # « Collègue IA »: the team's AI colleague, her settings and the maps
+      # where an admin switched her on.
+      resource :agent, path: "collegue", only: %i[show update] do
+        resources :maps, only: :update, controller: "agent_maps"
+        resource :avatar, only: %i[update destroy], controller: "agent_avatars"
+      end
       # The logo printed at the top of the team maps' documents.
       resource :logo, only: %i[update destroy]
       # « Charte graphique » of the team's documents (admins change it).
@@ -547,11 +555,13 @@ Rails.application.routes.draw do
       post :archive
       post :unarchive
       get :notebook
+      get :confirmations
     end
     resources :items, only: %i[create update destroy], controller: "territories/items" do
       member do
         post :accept
         post :reject
+        post :verify
         get :file
       end
     end
@@ -785,6 +795,7 @@ Rails.application.routes.draw do
   # to the session recording question and the replays it starts, the plan's
   # first print, and the staff page that reads them all.
   post "feedback", to: "feedbacks#create", as: :feedback
+  get "feedback", to: "feedbacks#index", as: :feedbacks
   namespace :account do
     resource :replay_consent, only: :update
     resources :session_replays, only: :create
@@ -796,6 +807,7 @@ Rails.application.routes.draw do
   end
   namespace :admin do
     get "first-hours", to: "first_hours#show", as: :first_hours
+    resources :feedbacks, only: %i[index update]
   end
   # --- end first-hours ---
 

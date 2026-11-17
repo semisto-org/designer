@@ -1,0 +1,4 @@
+# Feature area "geocoder": address search (Providers::Geocoder).
+fr:
+  geocoder:
+    icar_without: "ICAR, sans « %{word} » (souvent le nom d'une section de la commune : vérifie le village)"

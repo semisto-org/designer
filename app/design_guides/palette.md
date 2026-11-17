@@ -44,7 +44,7 @@ Each catalogue value has a source: cite it when it grounds a choice. If a value 
 
 ## Quantities
 
-Space trees by their mature crown, but plant denser at first with pioneers and shrubs to be thinned later. Propose quantities realistic for the person's budget and time, and remember that the youngest plants often establish best.
+Space trees by their mature crown, but plant denser at first with pioneers and shrubs to be thinned later. Propose quantities realistic for the person's budget and time, and remember that the youngest plants often establish best. Planting day and the take check of the first springs are in chapter `planting`.
 
 ## Budget
 

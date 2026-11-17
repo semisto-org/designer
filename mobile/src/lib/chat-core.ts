@@ -25,6 +25,8 @@ export type ChatMessage = {
   photo?: { id: number; caption: string | null; video: boolean } | null
   /** A file joined to the message on the website: a pasted screenshot, a PDF… */
   document?: ChatDocument | null
+  /** Written by the team's AI colleague (« Collègue IA »), at the request of this member; `author` bears her name. */
+  agent?: { id: number; name: string; requestedBy: string } | null
   canEdit: boolean
   canDelete: boolean
 }

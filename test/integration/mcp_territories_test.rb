@@ -172,4 +172,104 @@ class McpTerritoriesTest < ActionDispatch::IntegrationTest
     assert_equal "withdrawn", TerritoryItemUpdate.find(update_id).status
     assert TerritoryItem.exists?(kept.id)
   end
+
+  # Beauvechain, 13/11/2026: re-sending every field already proposed was easy to get wrong.
+  test "a new proposal on the same entry completes the pending one, field by field; replace starts over" do
+    lead = @territory.items.create!(kind: "lead", title: "Haie sur talus", properties: { rank: "slow", land: "unknown" })
+    first = { item_id: lead.id, rationale: "Le propriétaire est la commune.", changes: { properties: { land: "public" } } }
+    call_tool(@token, "propose_territory_updates", { territory_id: @territory.id, updates: [ first ] })
+    data, error = call_tool(@token, "propose_territory_updates", { territory_id: @territory.id, updates: [
+      { item_id: lead.id, rationale: "Le service travaux l'entretiendra.", changes: { properties: { keeper: { role: "Service travaux" } } } }
+    ] })
+    refute error, data
+    created = data["created"].sole
+    assert created["completes"]
+    pending = lead.reload.pending_update
+    assert_equal({ "properties" => { "land" => "public", "keeper" => { "role" => "Service travaux" } } }, pending.proposed_changes)
+    assert_match(/commune.*service travaux/m, pending.rationale)
+    assert_equal 1, lead.updates.where(status: "pending").count
+
+    data, = call_tool(@token, "propose_territory_updates", { territory_id: @territory.id, updates: [
+      { item_id: lead.id, rationale: "On repart de zéro sur ce point.", changes: { title: "Haie champêtre" }, replace: true }
+    ] })
+    assert data["created"].sole["replaces"]
+    assert_equal({ "title" => "Haie champêtre" }, lead.reload.pending_update.proposed_changes)
+  end
+
+  test "a removal tied to its replacements can be accepted only once they are kept" do
+    old = @territory.items.create!(kind: "basin", title: "Vallon de la Nethen", properties: { order: 1 })
+    a = @territory.items.create!(kind: "basin", title: "Nethen amont", status: "draft", source: "ai", rationale: "Redessiné d'après PARIS.")
+    b = @territory.items.create!(kind: "basin", title: "Nethen aval", status: "draft", source: "ai", rationale: "Redessiné d'après PARIS.")
+    text, error = call_tool(@token, "propose_territory_deletions", { territory_id: @territory.id, item_ids: [ old.id ], rationale: "Remplacé par deux sous-bassins officiels.", superseded_by: [ a.id, b.id + 999 ] })
+    assert error
+    assert_match(/pas dans le dossier/, text)
+    data, error = call_tool(@token, "propose_territory_deletions", { territory_id: @territory.id, item_ids: [ old.id ], rationale: "Remplacé par deux sous-bassins officiels.", superseded_by: [ a.id, b.id ] })
+    refute error, data
+    update = TerritoryItemUpdate.find(data["created"].sole["id"])
+    assert update.deletion?
+    assert update.blocked?
+    assert_raises(TerritoryItemUpdate::Blocked) { update.accept!(users(:michael)) }
+    assert TerritoryItem.exists?(old.id)
+
+    a.accept!(users(:michael))
+    b.accept!(users(:michael))
+    assert_not update.reload.blocked?
+    update.accept!(users(:michael))
+    assert_not TerritoryItem.exists?(old.id)
+  end
+
+  test "a marker's date can be a month, a season or a year" do
+    data, error = call_tool(@token, "propose_territory_items", { territory_id: @territory.id, items: [
+      { kind: "marker", title: "Coulée de boue, été 2025", rationale: "Témoignage d'un riverain, sans date exacte.", geometry: inside_point,
+        properties: { occurred_on: "2025-07", occurred_precision: "season", proof: "seen" } },
+      { kind: "marker", title: "Mare comblée", rationale: "Photo aérienne de 1971, absente en 1994.", geometry: inside_point, properties: { occurred_on: "1990" } }
+    ] })
+    refute error, data
+    summer, pond = data["created"].map { TerritoryItem.find(_1["id"]) }
+    assert_equal [ "2025-06-21", "season" ], summer.properties.values_at("occurred_on", "occurred_precision")
+    assert_equal "été 2025", summer.occurred_label
+    assert_equal [ "1990-01-01", "year" ], pond.properties.values_at("occurred_on", "occurred_precision")
+    assert_equal "1990", pond.occurred_label
+  end
+
+  test "a marker without basin_id gets the sub-basin of the dossier it falls in, drafts of the same call included" do
+    square = commune_square(size: 0.03)
+    data, error = call_tool(@token, "propose_territory_items", { territory_id: @territory.id, items: [
+      { kind: "marker", title: "Inondation rue du Moulin", rationale: "Presse locale, juillet 2021.", geometry: inside_point, properties: { proof: "computed" } },
+      { kind: "basin", title: "Vallon du Moulin", rationale: "Dessiné d'après le relief.", geometry: square, properties: { order: 1 } }
+    ] })
+    refute error, data
+    marker, basin = data["created"]
+    assert_equal basin["id"], marker["basin_id_auto"]
+    assert_equal basin["id"], TerritoryItem.find(marker["id"]).prop(:basin_id)
+  end
+
+  test "the AI names who to ask and the question; get_territory lists what waits, actor by actor" do
+    items = [
+      { kind: "actor", ref: "giser", title: "Cellule GISER", rationale: "Rend des avis après les coulées de boue." },
+      { kind: "lead", title: "Fascine en haut du vallon", rationale: "Axe de ruissellement concentré au-dessus de la rue.",
+        properties: { land: "public", rank: "slow", confirm_with_ref: "giser", confirm_question: "La coulée de 2021 venait-elle de ce champ ?" } },
+      { kind: "marker", title: "Mare disparue", rationale: "Visible sur la photo de 1971, plus en 2020.", geometry: inside_point }
+    ]
+    data, error = call_tool(@token, "propose_territory_items", { territory_id: @territory.id, items: })
+    refute error, data
+    @territory.items.drafts.each { _1.accept!(users(:bob)) }
+    actor = @territory.items.find_by!(kind: "actor")
+
+    data, error = call_tool(@token, "get_territory", { territory_id: @territory.id })
+    refute error, data
+    waiting = data["to_confirm"]["by_actor"].sole
+    assert_equal [ actor.id, "La coulée de 2021 venait-elle de ce champ ?" ], [ waiting["actor_id"], waiting["items"].sole["question"] ]
+    assert_equal [ "Mare disparue" ], data["to_confirm"]["to_visit"].map { _1["title"] }
+    assert_equal %w[desk actor site], data["values"]["verification"]
+    assert_equal "desk", data["dossier"]["lead"].sole["verification"]
+    assert data["confirmations_url"].end_with?("/territories/#{@territory.id}/confirmations")
+
+    lead = @territory.items.find_by!(kind: "lead")
+    data, error = call_tool(@token, "propose_territory_updates", { territory_id: @territory.id, updates: [
+      { item_id: lead.id, rationale: "Confirmé par la cellule GISER à la réunion du 16 novembre.", changes: { properties: { verification: "actor", verified_by_id: actor.id, verified_on: "2026-11-16" } } }
+    ] })
+    refute error, data
+    assert_equal "desk", lead.reload.verification_level, "nothing changes before a person accepts"
+  end
 end

@@ -33,6 +33,35 @@ class MapTerrain < ApplicationRecord
     %w[pending running].include?(status) && updated_at > STALE_AFTER.ago
   end
 
+  # A provider failure (worth another try), not a place too large.
+  def retriable? = metadata["retriable"] == true
+
+  # A failed import that will run again on its own (ReliefImportJob), or
+  # whose retry is due and about to be picked up.
+  def retry_scheduled?
+    failed? && retry_at.present? && retry_at > 10.minutes.ago
+  end
+
+  # Where the import stands, for the MCP: queued, running (with progress),
+  # retrying (failed, next attempt at retry_at), failed (and why) or ready.
+  def state
+    phase =
+      if ready? then "ready"
+      elsif retry_scheduled? then "retrying"
+      elsif failed? then "failed"
+      elsif !in_progress? then "stalled"
+      elsif status == "running" then "running"
+      else "queued"
+      end
+    {
+      status: phase, progress: (progress if phase == "running"), error: (error if %w[retrying failed].include?(phase)),
+      attempts:, max_attempts: ReliefImportJob::RETRY_WAITS.size + 1,
+      queued_at: (queued_at&.iso8601 if phase == "queued"), started_at: (started_at&.iso8601 if phase == "running"),
+      retry_at: (retry_at&.iso8601 if phase == "retrying"), ready_at: (fetched_at&.iso8601 if phase == "ready"),
+      cell_size_m:
+    }.compact
+  end
+
   def version = (fetched_at || updated_at).to_i.to_s
 
   def file(kind)

@@ -19,6 +19,10 @@ class Task < ApplicationRecord
   belongs_to :map
   belongs_to :task_list
   belongs_to :assignee, class_name: "User", optional: true
+  # Given to the team's colleague (TeamAgent) instead of a person: she works
+  # on it, reports in the map's discussion and hands it back to whoever gave
+  # it to her (Agents::Runner). She never ticks it.
+  belongs_to :agent, class_name: "TeamAgent", optional: true
   belongs_to :completed_by, class_name: "User", optional: true
   belongs_to :created_by, class_name: "User", optional: true
   has_many :task_features, dependent: :delete_all
@@ -37,6 +41,7 @@ class Task < ApplicationRecord
   validate :features_on_the_same_map
   validate :assignee_takes_part, if: -> { assignee_id && will_save_change_to_assignee_id? }
   validate :invitee_is_invited, if: -> { invitee_email && will_save_change_to_invitee_email? }
+  validate :agent_works_on_map, if: -> { agent_id && will_save_change_to_agent_id? }
 
   scope :ordered, -> { order(:position, :id) }
   scope :pending, -> { where(completed_at: nil) }
@@ -69,7 +74,7 @@ class Task < ApplicationRecord
   end
 
   def done? = completed_at.present?
-  def assigned? = assignee_id.present? || invitee_email.present?
+  def assigned? = assignee_id.present? || invitee_email.present? || agent_id.present?
   def overdue?(today = Date.current) = !done? && due_on.present? && due_on < today
 
   # Ticks or unticks the task, remembering who did it.
@@ -130,7 +135,9 @@ class Task < ApplicationRecord
     # Someone with an account, or an address invited to the map that waits
     # for its account (« invité·e »).
     def assignee_json
-      if assignee
+      if agent
+        { agentId: agent.id, name: agent.name, avatarUrl: agent.avatar_url, agent: true, working: AgentRun.open.where(source: self).exists? }.compact
+      elsif assignee
         { id: assignee.id, name: assignee.display_name, avatarUrl: assignee.avatar_url }.compact
       elsif invitee_email
         { email: invitee_email, name: invitee_email, invited: true }
@@ -140,10 +147,12 @@ class Task < ApplicationRecord
     # A task goes to one person: giving it to an account frees the invited
     # address, and the other way round.
     def keep_one_assignee
-      if invitee_email && will_save_change_to_invitee_email?
-        self.assignee_id = nil
+      if agent_id && will_save_change_to_agent_id?
+        self.assignee_id = self.invitee_email = nil
+      elsif invitee_email && will_save_change_to_invitee_email?
+        self.assignee_id = self.agent_id = nil
       elsif assignee_id && will_save_change_to_assignee_id?
-        self.invitee_email = nil
+        self.invitee_email = self.agent_id = nil
       end
     end
 
@@ -173,6 +182,11 @@ class Task < ApplicationRecord
     # member) can be given a task on it.
     def assignee_takes_part
       errors.add(:assignee, :not_a_participant) unless map&.participants&.exists?(id: assignee_id)
+    end
+
+    # The colleague takes tasks only on the maps where she is switched on.
+    def agent_works_on_map
+      errors.add(:agent, :not_on_map) unless map&.colleague&.id == agent_id
     end
 
     # An address can wait for its account only while the map or its team

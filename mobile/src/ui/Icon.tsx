@@ -3,7 +3,7 @@
 import {
   Apple, Aperture, Car, Clock, Minus, Plus, Bandage, Bug, Flower2, Scissors, Wrench, BookOpen, Camera, Check, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, CircleQuestionMark, CloudOff, CloudRainWind, CloudUpload, Droplet, Droplets,
   Eye, EyeOff, Fence, FileText, Leaf, Snowflake, Sun, SunSnow, Flag, Footprints, Heart, HeartPulse, Hourglass, Images, Info, Layers, Layers2, LocateFixed, MapPin, MapPinCheck, Mic, Navigation2, NotebookPen, PenLine, PawPrint, Pause, Route, Ruler, ScanSearch, Shovel, Sprout,
-  SkipForward, Square, ChevronDown, MessagesSquare, SendHorizontal, User, SquareCheck, TreeDeciduous, TriangleAlert, Undo2, Waves, Wind, X, type LucideIcon,
+  SkipForward, Tag, CircleOff, Crosshair, Square, ChevronDown, MessagesSquare, SendHorizontal, User, SquareCheck, TreeDeciduous, TriangleAlert, Undo2, Waves, Wind, X, type LucideIcon,
 } from 'lucide-react-native'
 import { colors } from './theme'
 
@@ -20,6 +20,8 @@ const ICONS = {
   info: Info, warning: TriangleAlert, error: CircleAlert,
   visit: Flag, time: Clock, minus: Minus, plus: Plus, car: Car, ticked: SquareCheck, unticked: Square, sound: Mic, walk: Route, pause: Pause,
   heading: Navigation2, arrived: MapPinCheck, skip: SkipForward,
+  // The planting rounds: the label read again, the plant moved where it stands, a plant that did not take.
+  label: Tag, here: Crosshair, dead: CircleOff,
   document: FileText, retake: Images, ghost: Eye, ghostOff: EyeOff, shutter: Aperture, sketch: PenLine,
   // The themes of a site visit's notes (lib/visit-core.ts).
   wish: Heart, water: Droplets, soil: Layers2, tree: TreeDeciduous, fauna: PawPrint, climate: Wind,

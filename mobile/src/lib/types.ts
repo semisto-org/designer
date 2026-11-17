@@ -94,7 +94,17 @@ export type MapBundle = {
   firstHour?: FirstHour | null
   /** « Temps et dépenses », only for a Pro or Team project's team (older bundles have none). */
   timesheet?: Timesheet | null
+  /** The spring take check: the young plants still to look at (older bundles have none). */
+  takeRound?: TakeRound
   syncedAt: string
+}
+
+/** « Tournée de reprise »: the plants to lead to this spring, with their last check. */
+export type TakeRound = {
+  since: string
+  /** The app offers the round this month (March to September). */
+  open: boolean
+  due: { id: number; lastObservedOn: string | null; lastSurvival: Survival | null }[]
 }
 
 /** What the end of a site visit needs to note its hours: the person's likely phase, recipient and usual trip here. */

@@ -202,7 +202,7 @@ function MessageRow({ mapId, message, previous, handles, me, highlighted, onFeat
         {(!same || newDay) && (
           <Text style={s.author} maxFontSizeMultiplier={MAX_FONT_SCALE}>
             {message.canEdit ? t('mobile.chat.you') : message.author.name}
-            <Text style={s.time}>  {formatTime(message.createdAt)}{message.editedAt ? ` · ${t('mobile.chat.edited')}` : ''}</Text>
+            <Text style={s.time}>  {message.agent ? `${t('mobile.chat.by_agent', { name: message.agent.requestedBy })} · ` : ''}{formatTime(message.createdAt)}{message.editedAt ? ` · ${t('mobile.chat.edited')}` : ''}</Text>
           </Text>
         )}
         <Text style={s.body} maxFontSizeMultiplier={MAX_FONT_SCALE}>

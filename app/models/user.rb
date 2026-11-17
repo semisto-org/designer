@@ -93,10 +93,20 @@ class User < ApplicationRecord
 
   # Every way in ends here: the link and the code stop working.
   def signed_in!
-    update!(last_signed_in_at: Time.current, sign_in_code_digest: nil, sign_in_code_sent_at: nil, sign_in_code_attempts: 0)
+    update!(last_signed_in_at: Time.current, last_active_at: Time.current, sign_in_code_digest: nil, sign_in_code_sent_at: nil, sign_in_code_attempts: 0)
   end
 
   def password? = password_digest.present?
+
+  # When the person last used Terranova: a page, the phone app, the MCP or
+  # the API (« Dernière activité » on a team's page). Written at most every
+  # few minutes, so a busy session costs one UPDATE now and then.
+  ACTIVE_EVERY = 5.minutes
+
+  def active!(at = Time.current)
+    return if last_active_at && last_active_at > at - ACTIVE_EVERY
+    update_column(:last_active_at, at)
+  end
 
   def professional? = account_kind == "professional"
   def account_kind_chosen? = account_kind.present?

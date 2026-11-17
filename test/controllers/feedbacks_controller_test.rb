@@ -47,4 +47,39 @@ class FeedbacksControllerTest < ActionDispatch::IntegrationTest
     post feedback_path, params: { feedback: { message: "Test" } }, as: :json
     assert_equal 0, Feedback.count
   end
+
+  test "keeps an annotated screenshot and the browser's context" do
+    sign_in_as users(:alice)
+    screenshot = fixture_file_upload("plant.png", "image/png")
+    post feedback_path, params: { feedback: {
+      message: "Le bouton est caché", path: "/maps", screenshot:,
+      context: { viewport: "1280×800", language: "fr-BE", user_agent: "Safari", secret: "dropped" }
+    } }
+    assert_response :created
+    feedback = Feedback.last
+    assert feedback.screenshot.attached?
+    assert_equal "image/png", feedback.screenshot.blob.content_type
+    assert_equal({ "viewport" => "1280×800", "language" => "fr-BE", "user_agent" => "Safari" }, feedback.context)
+  end
+
+  test "a screenshot that is not an image is refused" do
+    sign_in_as users(:alice)
+    post feedback_path, params: { feedback: { message: "Hum", screenshot: fixture_file_upload("notes.txt", "image/png") } }
+    assert_response :unprocessable_entity
+    assert_equal 0, Feedback.count
+  end
+
+  test "« Mes retours » lists the person's own feedback with its status and Semisto's answer" do
+    mine = users(:alice).feedbacks.create!(message: "Le contour ?", status: "done", reply: "C'est réglé.")
+    users(:bob).feedbacks.create!(message: "Pas à Alice")
+    sign_in_as users(:alice)
+    get feedbacks_path, headers: inertia_headers
+    assert_response :success
+    body = response.parsed_body
+    assert_equal "feedbacks/index", body["component"]
+    row = body["props"]["feedbacks"].sole
+    assert_equal mine.id, row["id"]
+    assert_equal "done", row["status"]
+    assert_equal "C'est réglé.", row["reply"]
+  end
 end

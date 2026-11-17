@@ -31,6 +31,29 @@ L'espèce et sa variété rejoignent la palette de la carte, avec le contenant :
 
 Le GPS d'un téléphone se trompe de 3 à 5 mètres. Pour des plants serrés, ajuste leur place ensuite sur la vue aérienne ou la vue drone.
 
+## La tournée de plantation
+
+Quand les plants sont déjà dessinés sur la carte, le téléphone te mène de l'un à l'autre le jour de la plantation. Sur le terrain, touche **Commencer la tournée** : l'app montre le plant à planter le plus proche, à quelle distance et dans quelle direction (« 7 m au nord-est »), avec une flèche qui suit ton téléphone, son numéro, son espèce et sa variété. Quand tu y es, le téléphone vibre et affiche **Tu y es**.
+
+- **Planté !** le marque planté aujourd'hui, là où il était dessiné.
+- **Planté ici** le marque planté là où tu te tiens : le trou n'est pas tout à fait au point dessiné (une racine, une pierre, un meilleur endroit). La carte garde sa vraie place.
+- **Étiquette** relit l'étiquette du plant : la pépinière a livré une autre variété, voire une autre espèce. Le plant garde sa place, sa date et son journal ; la nouvelle variété rejoint la palette.
+- **Passer** le laisse pour une autre fois.
+
+Une erreur ? **Annuler**, dans le message qui s'affiche, remet tout comme avant.
+
+Hors tournée, la fiche d'un élément sur le téléphone a aussi **Il est ici**, pour poser un point là où tu te tiens, et **Étiquette** pour un plant.
+
+## La tournée de reprise, au printemps
+
+De mars à septembre, l'app propose la **tournée de reprise** : elle te mène à chaque jeune plant, planté depuis moins de deux printemps et pas encore vu cette saison. Regarde ses bourgeons, puis un seul geste :
+
+- **Repris** : les bourgeons sont verts et gonflés, il est reparti ;
+- **En difficulté** : peu de feuilles, des pointes sèches, de l'écorce rongée ;
+- **Mort** : gratte l'écorce d'un rameau, c'est brun et sec dessous.
+
+Chaque réponse s'ajoute au journal du plant, comme une **Reprise**. Sous le nom du plant, l'app rappelle ce que tu avais noté au printemps dernier. Un plant trouvé mort n'est plus proposé les années suivantes. Ton IA lit le bilan de ta tournée et peut te proposer quoi replanter à la place d'un plant mort, d'après la cause que tu lui donnes.
+
 ## La frise du temps
 
 Sur la carte, un plant planté a une couronne pleine ; un plant encore **en projet** est un peu transparent : couronne en pointillés, à peine teintée, et point creux en son centre.
@@ -84,7 +107,7 @@ Ces tâches sont aussi sur la page **Tâches** de la carte. Chacune y montre les
 
 Un rythme simple suffit :
 
-- **au printemps** qui suit la plantation, au débourrement : le plant est-il reparti ?
+- **au printemps** qui suit la plantation, au débourrement : le plant est-il reparti ? L'app te le fait vérifier avec la tournée de reprise.
 - **en été**, après les premières chaleurs : souffre-t-il du sec ?
 - **à l'automne**, avant la chute des feuilles : a-t-il poussé cette année ?
 

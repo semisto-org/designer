@@ -1,6 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react'
 import clsx from 'clsx'
-import { ArrowLeft, BookOpen, Layers, Lock, Plus, Sparkles, X } from 'lucide-react'
+import { ArrowLeft, BookOpen, Layers, ListChecks, Lock, Plus, Sparkles, X } from 'lucide-react'
 import type { MapMouseEvent } from 'maplibre-gl'
 import type { Geometry } from 'geojson'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -99,12 +99,20 @@ export default function TerritoryShow(props: TerritoryShowProps) {
           <p className="mt-1 text-sm text-loam-500">{t('territories.show.area', { area: formatKm2(territory.areaM2), team: territory.teamName })}</p>
           <div className="mt-3 flex flex-wrap gap-2">
             <ButtonLink href={`/territories/${territory.id}/notebook`} size="sm"><BookOpen className="h-4 w-4" aria-hidden />{t('territories.show.notebook')}</ButtonLink>
+            <ButtonLink href={`/territories/${territory.id}/confirmations`} size="sm" variant="secondary">
+              <ListChecks className="h-4 w-4" aria-hidden />
+              {props.verification.waiting > 0 ? t('territories.show.confirmations_count', { count: props.verification.waiting }) : t('territories.show.confirmations')}
+            </ButtonLink>
             {canEdit && <Button size="sm" variant="ghost" onClick={archive}>{t('territories.show.archive')}</Button>}
             {territory.archived && props.moduleGranted && (
               <Button size="sm" variant="secondary" onClick={() => router.post(`/territories/${territory.id}/unarchive`)}>{t('territories.show.unarchive')}</Button>
             )}
             {!canEdit && <Pill icon={<Lock aria-hidden />}>{t('territories.show.read_only')}</Pill>}
           </div>
+          <ReliefLine relief={props.relief} />
+          {props.verification.desk + props.verification.confirmed + props.verification.seen > 0 && (
+            <p className="mt-2 text-sm text-loam-500">{t('territories.show.verification_line', { desk: props.verification.desk, actor: props.verification.confirmed, site: props.verification.seen })}</p>
+          )}
           {territory.archived && <p className="mt-3 rounded-lg bg-loam-50 p-3 text-sm text-loam-700">{t('territories.show.archived_note')}</p>}
           {!territory.archived && !props.moduleGranted && <p className="mt-3 rounded-lg bg-humus-50 p-3 text-sm text-humus-800">{t('territories.show.module_off_note')}</p>}
         </header>
@@ -170,6 +178,18 @@ export default function TerritoryShow(props: TerritoryShowProps) {
         </section>
       </aside>
     </div>
+  )
+}
+
+/** Where the commune's relief stands: the AI's catchments wait for it. */
+function ReliefLine({ relief }: { relief: TerritoryShowProps['relief'] }) {
+  if (relief.status === 'none') return null
+  const retryAt = relief.retry_at ? new Date(relief.retry_at).toLocaleString('fr-BE', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }) : ''
+  const tone = relief.status === 'failed' || relief.status === 'retrying' ? 'text-clay-700' : 'text-loam-500'
+  return (
+    <p className={`mt-2 text-sm ${tone}`}>
+      {t(`territories.show.relief.${relief.status}`, { progress: relief.progress ?? 0, error: relief.error ?? '', retry_at: retryAt, attempts: relief.attempts ?? 0, max: relief.max_attempts ?? 0, cell: relief.cell_size_m ?? '' })}
+    </p>
   )
 }
 

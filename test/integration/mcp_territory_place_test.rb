@@ -98,7 +98,8 @@ class McpTerritoryPlaceTest < ActionDispatch::IntegrationTest
       text, error = call_tool(@token, "get_catchment", { territory_id: @territory.id, **@inside })
     end
     assert error
-    assert_match(/se prépare/, text)
+    assert_match(/en file d'attente/, text)
+    assert_match(/"status":"queued"/, text)
     assert_equal "pending", @territory.reload.terrain.status
 
     # While it runs, no second import.
@@ -114,6 +115,87 @@ class McpTerritoryPlaceTest < ActionDispatch::IntegrationTest
     text, error = call_tool(@token, "get_catchment", { territory_id: @territory.id, feature_id: 1 })
     assert error
     assert_match(/lng et lat/, text)
+  end
+
+  test "get_catchment on a territory says why its relief failed and when it retries, and relaunches only when asked" do
+    configure_relief_region
+    terrain = @territory.create_terrain!(status: "failed", error: "Le service du relief n'a pas répondu correctement.", attempts: 2,
+                                         retry_at: 25.minutes.from_now, metadata: { "retriable" => true })
+    text, error = nil
+    assert_no_enqueued_jobs(only: ReliefImportJob) do
+      text, error = call_tool(@token, "get_catchment", { territory_id: @territory.id, **@inside })
+    end
+    assert error
+    assert_match(/essai 2 sur 4/, text)
+    assert_match(/n'a pas répondu/, text)
+    assert_match(/se relance seule le/, text)
+
+    terrain.update!(retry_at: nil, attempts: 4)
+    text, = call_tool(@token, "get_catchment", { territory_id: @territory.id, **@inside })
+    assert_match(/après 4 essais/, text)
+    assert_match(/retry_relief/, text)
+    assert_equal "failed", @territory.reload.terrain.status
+
+    assert_enqueued_with(job: ReliefImportJob) do
+      text, = call_tool(@token, "get_catchment", { territory_id: @territory.id, **@inside, retry_relief: true })
+    end
+    assert_match(/en file d'attente/, text)
+    assert_equal 0, terrain.reload.attempts
+
+    data, = call_tool(@token, "get_territory", { territory_id: @territory.id })
+    assert_equal "queued", data.dig("relief", "status")
+  end
+
+  test "a relief that failed before failures said whether to retry starts again at once" do
+    configure_relief_region
+    terrain = @territory.create_terrain!(status: "failed", error: "Le service du relief n'a pas répondu correctement.")
+    assert_enqueued_with(job: ReliefImportJob) do
+      call_tool(@token, "get_catchment", { territory_id: @territory.id, **@inside })
+    end
+    assert_equal "pending", terrain.reload.status
+  end
+
+  test "get_catchment on a territory prefers its fine window at 5 m, once ready, and launches it beside the coarse relief" do
+    configure_relief_region
+    window = Relief::DetailWindow.for_point(@inside[:lng], @inside[:lat])
+    # A ridge across the commune's centre, the point on its southern slope:
+    # its catchment stops at the ridge, well inside the window.
+    valley = ->(dx, dy) { 200 + dx.abs * 0.01 - dy.abs * 0.05 }
+    synthetic_terrain(@territory, cell_size_m: 20, margin_m: 200, &valley)
+
+    data = nil
+    assert_enqueued_with(job: ReliefImportJob) do
+      data, = call_tool(@token, "get_catchment", { territory_id: @territory.id, **@inside })
+    end
+    assert_equal "coarse", data["relief"]
+    assert_match(/relief fin \(5 m\) autour de ce point se prépare/, data["note"])
+    assert_equal "pending", @territory.detail_terrains.find_by!(detail_key: window.key).status
+
+    synthetic_terrain(@territory, window:, &valley)
+    data, error = call_tool(@token, "get_catchment", { territory_id: @territory.id, **@inside })
+    refute error, data
+    assert_equal "fine", data["relief"]
+    assert_equal 5.0, data["cell_size_m"]
+    assert_match(/rue ou à travers une parcelle/, data["note"])
+  end
+
+  test "get_flow_axes reads the axes of a territory's fine window, prepared on the first call" do
+    configure_relief_region
+    text, error = nil
+    assert_enqueued_with(job: ReliefImportJob) do
+      text, error = call_tool(@token, "get_flow_axes", { territory_id: @territory.id, **@inside })
+    end
+    assert error
+    assert_match(/se prépare/, text)
+
+    synthetic_terrain(@territory, window: Relief::DetailWindow.for_point(@inside[:lng], @inside[:lat])) { |dx, dy| 200 + dy * 0.02 + dx.abs * 0.05 }
+    data, error = call_tool(@token, "get_flow_axes", { territory_id: @territory.id, **@inside, min_drained_m2: 50_000 })
+    refute error, data
+    assert_equal 5.0, data["cell_size_m"]
+    assert_operator data["count"], :>=, 1
+    assert_equal "FeatureCollection", data.dig("axes", "type")
+    assert data.dig("axes", "features").all? { |f| f.dig("properties", "drained_m2") >= 50_000 }
+    assert_match(/après une averse/, data["note"])
   end
 
   test "get_catchment on a territory of a region without relief says so" do
@@ -183,5 +265,48 @@ class McpTerritoryPlaceTest < ActionDispatch::IntegrationTest
     text, error = call_tool(@token, "get_hydrography", { territory_id: @territory.id })
     assert error
     assert_match(/ne répond pas/, text)
+  end
+
+  # Beauvechain, 13/11/2026: copying 13 polygons by hand, and testing
+  # « point in polygon » by hand to know which sub-basin a place is in.
+  test "a basin names its official sectors and gets their outline; a point says which sub-basin and sector it falls in" do
+    seed_wallonia_layers
+    eau = "https://geoservices.wallonie.be/arcgis/rest/services/EAU"
+    regions(:wallonia).update!(settings: regions(:wallonia).settings.merge("hydrography" => {
+      "attribution" => "SPW (test)",
+      "sub_basins" => { "url" => "#{eau}/SECTEURS_PARIS_1621/MapServer/1", "label" => "secteur PARIS", "id_field" => "SECT_PARIS",
+                        "water_body_field" => "MAS_EAU_SURF", "sectors_url" => "#{eau}/SECTEURS_PARIS_1621/MapServer/0", "watercourse_field" => "COURS_EAU" }
+    }))
+    box = ->(w, s, e, n) { { type: "Polygon", coordinates: [ [ [ w, s ], [ e, s ], [ e, n ], [ w, n ], [ w, s ] ] ] } }
+    x0, y0 = YVOIR[:lng], YVOIR[:lat]
+    stub_request(:get, %r{#{eau}/SECTEURS_PARIS_1621/MapServer/1/query}).to_return(status: 200, headers: { "Content-Type" => "application/json" }, body: {
+      type: "FeatureCollection", features: [
+        { type: "Feature", properties: { SECT_PARIS: "DyGe163", MAS_EAU_SURF: "DG06R" }, geometry: box.(x0, y0, x0 + 0.025, y0 + 0.05) },
+        { type: "Feature", properties: { SECT_PARIS: "DyGe164", MAS_EAU_SURF: "DG06R" }, geometry: box.(x0 + 0.025, y0, x0 + 0.05, y0 + 0.05) }
+      ]
+    }.to_json)
+    stub_request(:get, %r{#{eau}/SECTEURS_PARIS_1621/MapServer/0/query}).to_return(status: 200, headers: { "Content-Type" => "application/json" }, body: {
+      features: [ { attributes: { SECT_PARIS: "DyGe163", COURS_EAU: "Le Nodebais" } } ]
+    }.to_json)
+
+    data, error = call_tool(@token, "propose_territory_items", { territory_id: @territory.id, items: [
+      { kind: "basin", ref: "nodebais", title: "Vallon du Nodebais", rationale: "Deux secteurs PARIS d'un même vallon, regroupés.",
+        properties: { order: 1, paris_sector_ids: %w[DyGe163 DyGe164] } },
+      { kind: "basin", title: "Introuvable", rationale: "Un code qui n'existe pas ici.", properties: { paris_sector_ids: %w[XxXx999] } }
+    ] })
+    refute error, data
+    created = data["created"].sole
+    assert_equal %w[DyGe163 DyGe164], created.dig("outline", "sector_ids")
+    basin = TerritoryItem.find(created["id"])
+    assert_includes [ RGeo::Feature::Polygon, RGeo::Feature::MultiPolygon ], basin.geometry.geometry_type
+    assert_in_delta 19.6, basin.prop(:area_km2), 1.5
+    assert_match(/XxXx999/, data["rejected"].sole["error"])
+
+    stub_request(:get, %r{\Ahttps://geoservices\.wallonie\.be/arcgis/rest/services/SOL_SOUS_SOL/CNSW/MapServer/identify}).to_return(json_response("identify_sols.json"))
+    point = { lng: x0 + 0.01, lat: y0 + 0.01 }
+    data, error = call_tool(@token, "identify_at_point", { territory_id: @territory.id, layers: %w[sols], **point })
+    refute error, data
+    assert_equal [ basin.id ], data.dig("water", "basins").pluck("id")
+    assert_equal [ "DyGe163", "Le Nodebais" ], data.dig("water", "paris_sector").values_at("id", "watercourse")
   end
 end

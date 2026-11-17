@@ -1,0 +1,14 @@
+<%= t(".hello", name: @user.display_name) %>
+
+<%= t(".status.#{@feedback.status}") %>
+
+« <%= @feedback.message.truncate(600) %> »
+<% if @feedback.reply.present? %>
+
+<%= t(".reply", name: @feedback.handled_by&.display_name || "Semisto") %>
+<%= @feedback.reply %>
+<% end %>
+
+<%= t(".all") %> : <%= @feedbacks_url %>
+
+<%= t(".thanks") %>

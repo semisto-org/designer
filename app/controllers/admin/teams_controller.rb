@@ -15,6 +15,7 @@ module Admin
             id: team.id, name: team.name, createdAt: team.created_at.iso8601,
             membersCount: members[team.id] || 0, mapsCount: maps[team.id] || 0,
             territoryModule: team.territory_module_granted_at&.iso8601,
+            agentsModule: team.agents_module_granted_at&.iso8601,
             territoriesActive: territories[[ team.id, true ]] || 0,
             territoriesArchived: territories[[ team.id, false ]] || 0
           }
@@ -22,9 +23,10 @@ module Admin
       }
     end
 
-    # territory_module: "grant" | "revoke"
+    # territory_module: "grant" | "revoke", or agents_module: "grant" | "revoke"
     def update
       team = Organization.find(params[:id])
+      return update_agents_module(team) if params.key?(:agents_module)
       case params[:territory_module]
       when "grant"
         team.grant_territory_module!
@@ -37,5 +39,18 @@ module Admin
       end
       redirect_to admin_teams_path, notice: t("admin.teams.flash.#{params[:territory_module] == 'grant' ? 'granted' : 'revoked'}", name: team.name), status: :see_other
     end
+
+    private
+      # « Collègue IA » (TeamAgent): the pilot is opened team by team.
+      def update_agents_module(team)
+        case params[:agents_module]
+        when "grant" then team.grant_agents_module!
+        when "revoke" then team.revoke_agents_module!
+        else return head :unprocessable_entity
+        end
+        granted = params[:agents_module] == "grant"
+        AdminEvent.record!("agents_module_#{granted ? 'granted' : 'revoked'}", admin: Current.user, request:, team_id: team.id, label: team.name)
+        redirect_to admin_teams_path, notice: t("admin.teams.flash.agents_#{granted ? 'granted' : 'revoked'}", name: team.name), status: :see_other
+      end
   end
 end

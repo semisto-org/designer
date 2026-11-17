@@ -208,6 +208,10 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_equal [ 2, 1, 1, 10.0 ], entry.values_at("planned", "planted", "to_plant", "unit_price_eur")
     assert_equal "invasive", entry["excluded_by"]
     assert_equal({ "to_buy_eur" => 10.0, "total_eur" => 20.0 }, data["palette_budget"])
+    # The planting season, as the phone's rounds walk it.
+    assert_operator data["planting_round"]["to_plant"], :>=, 1
+    assert_equal PlantingRound.new(@map).as_json.deep_stringify_keys, data["planting_round"]
+    assert_equal %w[checked due open since], data["planting_round"]["take"].keys.sort
   end
 
   test "update_palette_budget notes the price, size, supplier and target of palette lines, and nothing else" do
@@ -486,7 +490,7 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     stub_request(:get, SPW_REST).to_return(status: 503)
     data, error = call_tool(@owner, "identify_at_point", { map_id: @map.id, lng: 4.907, lat: 50.341, layers: %w[sols] })
     refute error
-    assert_match(/pas encore disponible/, data["results"].sole["error"])
+    assert_match(/n.a pas répondu à temps/, data["results"].sole["error"])
   end
 
   test "trace_contour gives the contour line through a point, or asks for the relief" do

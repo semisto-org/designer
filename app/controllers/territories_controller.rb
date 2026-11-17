@@ -6,7 +6,7 @@
 class TerritoriesController < ApplicationController
   include TerritoryScoped
 
-  before_action :set_territory, only: %i[show update archive unarchive notebook]
+  before_action :set_territory, only: %i[show update archive unarchive notebook confirmations]
   before_action :require_territory_editor!, only: %i[update archive]
 
   def index
@@ -55,7 +55,9 @@ class TerritoriesController < ApplicationController
       teamMaps: @territory.team_maps.map { |map| { id: map.id, name: map.name, boundary: map.geometry_geojson(:boundary), areaM2: map.area_m2 } },
       researchGrid: @territory.research_grid,
       canEdit: @territory.editable_by?(Current.user),
-      moduleGranted: @territory.organization.territory_module?
+      moduleGranted: @territory.organization.territory_module?,
+      relief: Relief::TerritoryRelief.new(@territory).state,
+      verification: TerritoryConfirmations.new(@territory).counts
     }
   end
 
@@ -92,6 +94,15 @@ class TerritoriesController < ApplicationController
       canEdit: @territory.editable_by?(Current.user),
       baseLayer: @territory.readable_layers.find { |layer| layer.category == "base" && layer.kind == "style" }&.as_inertia,
       overlays: @territory.readable_layers.select { |layer| layer.options["territory_default"] == true }.map(&:as_inertia)
+    )
+  end
+
+  # « À confirmer avec… »: per actor, what waits for their opinion, to print
+  # for a meeting (?actor=ID for one sheet), and what to go and see on site.
+  def confirmations
+    render inertia: "territories/confirmations", props: TerritoryConfirmations.new(@territory, actor_id: params[:actor]).as_inertia.merge(
+      canEdit: @territory.editable_by?(Current.user),
+      theme: DocumentTheme.new(@territory.organization).as_json
     )
   end
 

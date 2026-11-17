@@ -2,13 +2,16 @@ import { usePage } from '@inertiajs/react'
 import type { ErrorEvent as MapErrorEvent, MapSourceDataEvent } from 'maplibre-gl'
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useAlign } from '@/drone/align'
-import AlignOverlay from '@/drone/AlignOverlay'
 import { importsStore } from '@/drone/imports'
 import { aerialStore, useAerialState } from '@/drone/store'
 import { placeAerialLayers, syncAerialViews } from '@/drone/layers'
+import { deferred } from '@/map/panels/deferred'
 import { aerialViewIdOf } from '@/drone/placement'
 import { useEditor } from '@/map/editor/EditorContext'
 import type { AerialImport, AerialView } from '@/types/drone'
+
+// Fetched when a view is first being aligned (drone/align).
+const AlignOverlay = deferred(() => import('@/drone/AlignOverlay'), 'none')
 
 const NONE: AerialView[] = []
 const NO_IMPORTS: AerialImport[] = []
@@ -94,5 +97,5 @@ export default function AerialViewsOverlay() {
     }
   }, [instance, views])
 
-  return <AlignOverlay views={views} />
+  return aligning != null ? <AlignOverlay views={views} /> : null
 }

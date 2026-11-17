@@ -1,18 +1,11 @@
 import { Field, Select } from '@/components/ui/Field'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
-import { isAnnotationLayer, isPlanned } from '@/map/scenario'
 import type { MapFeature } from '@/types'
-import { showVariant, useVariants, variantStore } from './store'
+import { showVariant, useVariants } from './store'
 import { variantOf } from './variants'
 
 /** A project element (or a note, a zone) on a map that has variants. */
-export function appliesToVariant(feature: MapFeature): boolean {
-  const p = feature.properties
-  if (variantStore.get().variants.length === 0 || p.status === 'rejected') return false
-  return isPlanned(p) || isAnnotationLayer(p.layer) || p.status === 'draft'
-}
-
 /**
  * Inspector section « Variante »: common to every variant, or this one's
  * own. Moving it to another variant shows that variant, so the element

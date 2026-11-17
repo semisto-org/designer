@@ -58,7 +58,7 @@ module Collab
       end
 
       def unread_for(user, since)
-        scope = @map.comments.visible.where(created_at: ..@now).where.not(author_id: user.id)
+        scope = @map.comments.visible.where(created_at: ..@now).not_written_by(user)
         scope = scope.where(created_at: since..) if since
         scope.chronological.reject { |c| c.mentioned_user_ids.include?(user.id) }.last(MAX_MESSAGES)
       end

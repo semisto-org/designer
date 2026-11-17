@@ -6,9 +6,10 @@ import type {
   LayerSpecification,
   Map as MapLibreMap,
 } from 'maplibre-gl'
-import { COLOR_SWATCHES, ELEMENTS } from '@/map/drawing/catalog'
+import { ELEMENTS } from '@/map/drawing/catalog'
 import { composeFilter, hiddenTests } from '@/map/drawing/hidden'
 import { drawIcon, ICON_NAMES } from '@/map/drawing/icons'
+import { resolveMissingImages } from '@/map/layers/missingImages'
 import { FEATURES_SOURCE } from '@/map/layers/features'
 import { GROUND_IN_PROJECT_FACTOR, IN_PRESENT_RENDER, PLANNED_ELEMENT_EXPR, PLANNED_OPACITY, TO_REMOVE_EXPR, TO_REMOVE_OPACITY } from '@/map/scenario'
 import type { ElementSpec } from '@/types/drawing'
@@ -344,7 +345,8 @@ const imageCache = new Map<string, ImageData>()
 function canvas(size: number) {
   const element = document.createElement('canvas')
   element.width = element.height = size * PIXEL_RATIO
-  const ctx = element.getContext('2d')!
+  // Read back at once (getImageData): a canvas kept in memory, not on the GPU.
+  const ctx = element.getContext('2d', { willReadFrequently: true })!
   ctx.scale(PIXEL_RATIO, PIXEL_RATIO)
   return { element, ctx }
 }
@@ -405,48 +407,38 @@ function imageFor(id: string): ImageData | null {
   return imageCache.get(id)!
 }
 
-/**
- * Every image the drawing layers can ask for: the icons of the library and
- * the fill patterns in each colour a patterned element can take (its own
- * and the inspector's swatches). Registered up front rather than through
- * MapLibre's single missing-image resolver, which other modules may need.
- */
-const DRAWING_IMAGES = [
-  ...ICON_NAMES.map((name) => `drawing-icon-${name}`),
-  ...patterned.flatMap((e) => [...new Set([e.color, ...COLOR_SWATCHES])].map((color) => `drawing-${e.fill!.pattern}-${color.toLowerCase()}`)),
-  ...[...new Set([...arrowed.map((e) => e.color), ...COLOR_SWATCHES])].map((color) => `drawing-arrow-${color.toLowerCase()}`),
-]
+/** The images the drawing layers ask for: an icon of the library, or a fill pattern or arrow in one colour. */
+const DRAWING_IMAGE = new RegExp(`^drawing-(icon-(${ICON_NAMES.join('|')})|(hatch|dots|arrow)-#[0-9a-f]{6})$`)
 
-const patternWatched = new WeakSet<MapLibreMap>()
+const imagesWatched = new WeakSet<MapLibreMap>()
+const copiesWatched = new WeakSet<MapLibreMap>()
 
 /**
- * Adds the drawing images (`drawing-icon-<name>`, `drawing-hatch-<#color>`,
- * `drawing-dots-<#color>`, `drawing-arrow-<#color>`) to a map; safe to call again after a style
- * change. The PDF's offscreen map also copies, on demand, the images other
- * modules added to the editor map (`copyFrom`).
+ * Gives a map the drawing images (`drawing-icon-<name>`, `drawing-hatch-<#color>`,
+ * `drawing-dots-<#color>`, `drawing-arrow-<#color>`), each drawn the first
+ * time a feature on screen asks for it: drawing all of them up front (the
+ * whole icon library, every pattern in every swatch) cost an old laptop
+ * more than a second before the map showed. Safe to call again after a
+ * style change. The PDF's offscreen map also copies, on demand, the images
+ * other modules added to the editor map (`copyFrom`).
  */
 export function installDrawingImages(map: MapLibreMap, copyFrom?: MapLibreMap) {
   // The plants overlay's hatching, for a printed copy of the map.
   ensureSupportHatch(map)
-  for (const id of DRAWING_IMAGES) {
-    if (map.hasImage(id)) continue
-    const image = imageFor(id)
-    if (image) map.addImage(id, image, { pixelRatio: PIXEL_RATIO })
-  }
-  // A colour picked freely in the inspector: draw its pattern when first asked.
-  if (!patternWatched.has(map)) {
-    patternWatched.add(map)
-    map.on('styleimagemissing', (e: { id: string }) => {
-      if (!/^drawing-(hatch|dots|arrow)-#[0-9a-f]{6}$/.test(e.id) || map.hasImage(e.id)) return
-      const image = imageFor(e.id)
-      if (image) map.addImage(e.id, image, { pixelRatio: PIXEL_RATIO })
+  if (!imagesWatched.has(map)) {
+    imagesWatched.add(map)
+    resolveMissingImages(map, (id) => {
+      if (!DRAWING_IMAGE.test(id)) return
+      const image = imageFor(id)
+      if (image) map.addImage(id, image, { pixelRatio: PIXEL_RATIO })
     })
   }
-  if (copyFrom) {
-    map.setMissingStyleImageResolver((id) => {
+  if (copyFrom && !copiesWatched.has(map)) {
+    copiesWatched.add(map)
+    resolveMissingImages(map, (id) => {
       const source = copyFrom.hasImage(id) ? copyFrom.getImage(id) : null
       // Stretch and content keep stretchable images (label backgrounds) fitting their text.
-      if (source && !map.hasImage(id)) {
+      if (source) {
         map.addImage(id, source.data, {
           pixelRatio: source.pixelRatio, sdf: source.sdf, stretchX: source.stretchX, stretchY: source.stretchY, content: source.content,
         })

@@ -13,7 +13,6 @@ import type { ClimateStatus, StorageReading, StorageReadingsData } from '@/types
 import { storageAdvice } from './advice'
 import { chartDomain, dayNumber, scale } from './chart'
 
-export const appliesToFruitStore = (feature: MapFeature) => feature.properties.kind === 'fruit_store' && feature.properties.status !== 'rejected'
 
 const STATUS_CLASS: Record<ClimateStatus, string> = {
   good: 'bg-leaf-50 ring-leaf-200',

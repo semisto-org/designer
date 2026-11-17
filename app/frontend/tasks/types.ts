@@ -39,7 +39,8 @@ export type Board = { lists: TaskListData[]; tasks: TaskData[]; seeded?: boolean
  * invited to the map or its team who has not joined yet (`invited`, no id):
  * the task becomes theirs when they join.
  */
-export type Assignee = { id?: number; email?: string; name: string; avatarUrl?: string; invited?: boolean }
+/** `agentId`: the team's AI colleague (« Collègue IA »), `working` while she is on the task. */
+export type Assignee = { id?: number; email?: string; agentId?: number; name: string; avatarUrl?: string; invited?: boolean; agent?: boolean; working?: boolean }
 
 /**
  * Someone a task can be given to; invitees have an `email` and no `id`.
@@ -47,7 +48,7 @@ export type Assignee = { id?: number; email?: string; name: string; avatarUrl?: 
  * project's team (`crew`, `lead` for its Project Manager), the people of the
  * map itself (`map`, viewers included), the rest of the team (`team`).
  */
-export type Participant = { id?: number; email?: string; name: string; role: string; group?: 'crew' | 'map' | 'team'; avatarUrl?: string; lead?: boolean }
+export type Participant = { id?: number; email?: string; agentId?: number; name: string; role: string; group?: 'crew' | 'map' | 'team' | 'agent'; avatarUrl?: string; lead?: boolean }
 
 /** A task on the cross-map page, with its map and list. */
 export type TaskWithMap = TaskData & { map: { id: number; name: string }; listName: string }
