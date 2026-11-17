@@ -56,6 +56,12 @@ class Maps::FeatureUpdatesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Dans la largeur", change.last[:afterLabel]
   end
 
+  test "soil sent to several places reads in words" do
+    mound = @map.features.create!(layer: "structures", kind: "mound", name: "Butte du nord", geometry: square(lng: 4.907, size: 0.0001), properties: { "height_m" => 0.8 })
+    change = FeatureUpdateDraft.labeled([ { field: "properties.subsoil_to", before: "removed", after: [ { "to" => mound.id }, { "to" => "spread", "m3" => 4.5 } ] } ], map: @map)
+    assert_equal [ "Évacuée hors du terrain", "Butte du nord, Étalée sur place (4,5 m³)" ], change.first.values_at(:beforeLabel, :afterLabel)
+  end
+
   test "lists the pending changes with their diff and names for catalogue ids" do
     herb = plant(1)
     propose(herb, { "properties" => { "species_id" => plant_species(:apple).id } })

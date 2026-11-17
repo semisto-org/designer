@@ -33,7 +33,20 @@ Pour chacune des deux, choisis une destination :
 - **À côté du trou** : le bourrelet d'une baissière (choisi d'office pour une nouvelle baissière), les berges d'une mare, un talus le long d'un chemin ;
 - **Étalée sur place**, **En tas, pour plus tard** ou **Évacuée hors du terrain**.
 
+Une couche peut aussi aller à **plusieurs endroits** : choisis une première destination, puis **Ajouter une destination**. Laisse le volume vide et Terranova répartit la terre selon la place qui reste dans chaque butte ; tape un volume pour en fixer un, il passe en premier. Ce qu'aucune butte ne peut plus prendre va vers les destinations sans limite (une zone, à côté du trou, en tas…).
+
 Sur la carte, une flèche couleur de terre part de chaque trou vers ce qui reçoit sa terre, avec le volume à mi-chemin. Elle s'imprime aussi sur le plan à l'échelle.
+
+## Terrasses et profils en déblai-remblai
+
+Sur une pente, une terrasse se fait en creusant en amont et en remblayant en aval. Dans la bibliothèque des structures :
+
+- **Terrasse en déblai-remblai** : dessine le contour du plateau, puis choisis son **Niveau du plateau** : au bord amont (tout en remblai), au milieu (le déblai remplit le remblai), au bord aval (tout en déblai), ou à une **Cote** que tu donnes ;
+- **Profil le long d'une ligne** : trace la ligne, puis choisis une **Banquette** (une bande plate entaillée dans la pente, par exemple le long d'une courbe de niveau) ou un **Talus ou levée** (une bande de terre rapportée, avec sa hauteur), sa largeur, et si son niveau suit le terrain, reste de niveau à une cote, ou descend en pente régulière (une rampe).
+
+Le **Talus** dit combien de mètres à l'horizontale il faut pour un mètre de haut (1,5 par défaut). Une fois le relief téléchargé, la section **Déblai et remblai** de la fiche donne le niveau, les volumes, la plus grande profondeur et la plus grande hauteur. Ce qui reste du déblai se place comme la terre d'une mare ; ce qui manque au remblai se reçoit comme dans une butte. La vue 3D montre la terrasse et ses talus sur ton vrai terrain.
+
+Avant de commencer, va planter un piquet à chaque coin et marque le niveau au cordeau : tu verras sur place la terre à enlever et celle à apporter.
 
 ## Le bilan des terres
 

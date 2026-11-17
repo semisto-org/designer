@@ -86,6 +86,7 @@ module Relief
         }.compact
       )
       BuildingsWarmJob.perform_later(@owner) unless @territory
+      MapFeature.regrade_map(@owner) unless @territory
       @terrain
     rescue Incomplete => e
       fail!(e.message, retriable: true)

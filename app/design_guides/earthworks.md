@@ -28,6 +28,8 @@ Dug soil takes about a quarter more room than in the ground (a third or more for
 
 Each dug element names a destination for its topsoil (`topsoil_to`) and its subsoil (`subsoil_to`): the id of a receiving feature of the map, or `berm`, `spread`, `stockpile`, `removed`.
 
+A part can also go to several places, as a list: `subsoil_to: [{ "to": 3012 }, { "to": 3014 }, { "to": "spread", "m3": 4 }]`. An entry with `m3` takes that volume (in place) first; the others share the rest according to the room left in each mound or bed (its capacity minus what other digs already send it), and what no receiver can hold goes to the entries without a capacity (a zone, `berm`, `spread`, `stockpile`, `removed`). So one pond can fill three mounds without anyone doing the sums. To change the destinations of an existing element, use `propose_feature_updates` with the whole list.
+
 1. **Right next to the hole** (`berm`): the downhill berm of a swale (subsoil first, topsoil on top to plant it), the banks of a pond, a bank along a sunken path that also shelters it from the wind. No transport at all. New swales start with this destination.
 2. **A mound or a bank of the design** (`mound`, with `height_m` and a `purpose`: growing bed, bank for a hedge, windbreak, screen, play): it holds about half its footprint × its height. A raised bed (`raised_bed`) is filled to the brim. A mound placed where it serves twice (sheltering a planting from the wind, framing a sitting place) beats a heap in a corner.
 3. **Spread on site** (`spread`, or on a zone of the map, which then shows the thickness obtained): a few centimetres over a meadow or a future planting area. More than 10 to 15 cm smothers the grass and the soil life below.
@@ -35,6 +37,18 @@ Each dug element names a destination for its topsoil (`topsoil_to`) and its subs
 5. **Off the site** (`removed`): last resort. It costs money and loses the soil. Say how much would leave and suggest a mound first.
 
 Never put soil in a low point where water gathers, on the roots of a tree you keep (inside its crown), or across a natural water path without planning where the water then goes (chapter `water`).
+
+## Terraces and benches: cut and fill on a slope
+
+On a slope, level ground is made by cutting uphill and filling downhill. Two elements do it on the map's relief, and Terranova computes their volumes (`properties.grading`: `level_m`, `cut_m3`, `fill_m3`, `cut_area_m2`, `fill_area_m2`, `max_cut_m`, `max_fill_m`) as soon as the relief is downloaded, drafts included:
+
+- **`graded_terrace`** (polygon): a level plateau. `hinge` hangs its level on the ground: `upper` (the uphill edge: all fill), `middle` (cut and fill balance, the usual choice: no soil moved in or out), `lower` (the downhill edge: all cut), or `level` with `level_m` (a given altitude, for a building pad or a terrace that must meet a door sill).
+- **`graded_profile`** (line): a cross-section swept along the line. `shape: bench` is a level strip `width_m` wide cut into the slope (along a contour for a walkable terrace or a row of trees); `shape: bank` a raised strip `height_m` high (a levee, a bank to sit a hedge on). `level_mode`: `follow` (the ground at the line), `level` (at `level_m`), or `grade` (a ramp falling `grade_pct` % from the first point; negative to rise).
+- `slope_ratio`: horizontal metres per metre of height of the side slopes, 1.5 by default. Steeper than 1 needs a dry stone wall or a gabion; flatter than 2 is easy to mow and plant.
+
+A terrace's own cut fills its own fill first. A surplus is subsoil to send (`subsoil_to`, like a pond's); a shortfall makes it a receiver for other digs. The topsoil of the whole footprint is stripped first and spread back on the finished surface.
+
+To propose one: draw it as a draft with a rationale, read its volumes with `get_feature`, and adjust the level (or the hinge) until the balance suits the place, then say in the rationale why that level (door sill, access, view, the water's path). Never send fill across a natural water path, and give every terrace a way for the water to leave (a slight crossfall, a swale at the foot of the cut).
 
 ## When to dig
 

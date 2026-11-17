@@ -14,6 +14,7 @@ class MapFeature < ApplicationRecord
   include MapFeature::Tags
   include MapFeature::PlantNumber
   include MapFeature::SoilDestination
+  include MapFeature::Grading
   include MapFeature::WaterCapacity
   include MapFeature::InfiltrationTest
   include MapFeature::StormObservation

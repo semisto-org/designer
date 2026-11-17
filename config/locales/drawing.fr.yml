@@ -43,6 +43,8 @@ fr:
       compost: "Compost"
       raised_bed: "Bac surélevé"
       mound: "Butte ou talus"
+      graded_terrace: "Terrasse en déblai-remblai"
+      graded_profile: "Profil le long d'une ligne"
       terrace: "Terrasse"
       playground: "Aire de jeux"
       fence: "Clôture"
@@ -91,6 +93,12 @@ fr:
 
     fields:
       above_ground_m: "Hauteur au-dessus du sol"
+      hinge: "Niveau du plateau"
+      level_m: "Cote (altitude)"
+      slope_ratio: "Talus (m à l'horizontale par m de haut)"
+      shape: "Profil"
+      level_mode: "Niveau le long de la ligne"
+      grade_pct: "Pente en long"
       sector_type: "Type de secteur"
       height_m: "Hauteur"
       floors: "Niveaux"
@@ -162,6 +170,18 @@ fr:
       sign: "Signe"
 
     options:
+      hinge:
+        upper: "Au bord amont : tout en remblai"
+        middle: "Au milieu : déblai et remblai s'équilibrent"
+        lower: "Au bord aval : tout en déblai"
+        level: "À la cote donnée"
+      shape:
+        bench: "Banquette (entaillée dans la pente)"
+        bank: "Talus ou levée (en remblai)"
+      level_mode:
+        follow: "Suit le terrain le long de la ligne"
+        level: "De niveau, à la cote donnée"
+        grade: "En pente régulière depuis le début"
       sector_type:
         wind: "Vent dominant"
         cold_wind: "Vent froid"

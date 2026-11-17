@@ -43,6 +43,32 @@ class MapFeatureSoilDestinationTest < ActiveSupport::TestCase
     assert_not pond.reload.properties.key?("topsoil_to")
   end
 
+  test "the soil can go to several places, with or without a fixed volume" do
+    first, second = mound!, mound!
+    pond = pond!("subsoil_to" => [ { "to" => first.id.to_s }, { "to" => second.id, "m3" => "4,5" }, { "to" => "spread" } ])
+    assert_equal [ { "to" => first.id }, { "to" => second.id, "m3" => 4.5 }, { "to" => "spread" } ], pond.properties["subsoil_to"]
+
+    # A deleted mound drops out of the list; a single destination left is stored as before.
+    second.destroy!
+    pond.update!(properties: pond.properties.merge("subsoil_to" => [ { "to" => first.id }, { "to" => second.id, "m3" => 2 } ]))
+    assert_equal first.id, pond.reload.properties["subsoil_to"]
+  end
+
+  test "a list of destinations is checked entry by entry" do
+    mound = mound!
+    [
+      [ { "to" => "moon" } ],
+      [ { "to" => mound.id }, { "to" => mound.id } ],
+      [ { "to" => mound.id, "m3" => -1 } ],
+      [ { "to" => mound.id, "share" => 2 } ],
+      [ "berm", "spread" ],
+      Array.new(11) { |i| { "to" => "spread", "m3" => i } }
+    ].each do |value|
+      pond = @map.features.new(layer: "water", kind: "pond", geometry: square(size: 0.0001), properties: { "depth_m" => 1, "topsoil_to" => value })
+      assert_not pond.valid?, value.inspect
+    end
+  end
+
   test "topsoil depth and « déjà creusé » are checked" do
     assert pond!("topsoil_cm" => 30, "dug" => true).valid?
     assert_not @map.features.new(layer: "water", kind: "pond", geometry: square(size: 0.0001), properties: { "topsoil_cm" => 150 }).valid?

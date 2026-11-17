@@ -23,6 +23,7 @@ import { __iconData as house } from 'lucide-react/dist/esm/icons/house.mjs'
 import { __iconData as landPlot } from 'lucide-react/dist/esm/icons/land-plot.mjs'
 import { __iconData as logs } from 'lucide-react/dist/esm/icons/logs.mjs'
 import { __iconData as moon } from 'lucide-react/dist/esm/icons/moon.mjs'
+import { __iconData as layers } from 'lucide-react/dist/esm/icons/layers.mjs'
 import { __iconData as mountain } from 'lucide-react/dist/esm/icons/mountain.mjs'
 import { __iconData as moveRight } from 'lucide-react/dist/esm/icons/move-right.mjs'
 import { __iconData as pawPrint } from 'lucide-react/dist/esm/icons/paw-print.mjs'
@@ -80,6 +81,7 @@ const ICON_DATA: Record<string, LucideIconData> = {
   'land-plot': landPlot,
   'logs': logs,
   'moon': moon,
+  'layers': layers,
   'mountain': mountain,
   'move-right': moveRight,
   'paw-print': pawPrint,

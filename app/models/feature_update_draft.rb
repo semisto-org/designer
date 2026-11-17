@@ -144,9 +144,14 @@ class FeatureUpdateDraft < ApplicationRecord
     ids = ->(field) { diff.select { |c| c[:field] == field }.flat_map { |c| [ c[:before], c[:after] ] }.compact.map(&:to_i) }
     species = PlantSpecies.where(id: ids.("properties.species_id")).includes(:common_names).index_by(&:id)
     varieties = PlantVariety.where(id: ids.("properties.variety_id")).includes(:species).index_by(&:id)
+    soil_fields = %w[properties.topsoil_to properties.subsoil_to]
+    soil_ids = diff.select { |c| soil_fields.include?(c[:field]) }.flat_map { |c| [ c[:before], c[:after] ] }
+                   .flat_map { |v| Array.wrap(v) }.map { |v| v.is_a?(Hash) ? v["to"] || v[:to] : v }.grep(Integer)
+    soil_targets = soil_ids.any? && map ? map.features.where(id: soil_ids).to_h { [ _1.id, _1.name.presence || I18n.t("editor.kinds.#{_1.kind}", default: _1.kind) ] } : {}
     name = lambda do |field, value|
       return nil if value.nil?
       case field
+      when *soil_fields then soil_destinations_label(value, soil_targets)
       when "properties.species_id" then species[value.to_i]&.then { |s| [ s.common_name, s.latin_name ].compact.uniq.join(" · ") }
       when "properties.variety_id" then varieties[value.to_i]&.full_latin_name
       when "properties.training" then I18n.t("plant_feature.trainings.#{value}", default: nil)
@@ -159,6 +164,16 @@ class FeatureUpdateDraft < ApplicationRecord
       end
     end
     diff.map { |c| c.merge({ beforeLabel: name.(c[:field], c[:before]), afterLabel: name.(c[:field], c[:after]) }.compact) }
+  end
+
+  # « Butte 1 (12 m³), étalée sur place » for a soil destination, one or several.
+  def self.soil_destinations_label(value, targets)
+    Array.wrap(value).map do |entry|
+      to = entry.is_a?(Hash) ? entry["to"] || entry[:to] : entry
+      m3 = entry.is_a?(Hash) ? entry["m3"] || entry[:m3] : nil
+      label = to.is_a?(Integer) ? targets[to] || "##{to}" : I18n.t("earthworks.destinations.#{to}", default: to.to_s)
+      m3 ? "#{label} (#{ActiveSupport::NumberHelper.number_to_rounded(m3, precision: 1, strip_insignificant_zeros: true, separator: ',')} m³)" : label
+    end.join(", ").presence
   end
 
   private
