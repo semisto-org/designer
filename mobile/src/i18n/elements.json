@@ -325,6 +325,22 @@
         "pickable": true,
         "icon": "mountain"
       },
+      "graded_terrace": {
+        "geometries": [
+          "Polygon"
+        ],
+        "color": "#8b6a3c",
+        "pickable": true,
+        "icon": "layers"
+      },
+      "graded_profile": {
+        "geometries": [
+          "LineString"
+        ],
+        "color": "#8b6a3c",
+        "pickable": true,
+        "icon": "spline"
+      },
       "terrace": {
         "geometries": [
           "Polygon"
