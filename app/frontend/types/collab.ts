@@ -14,6 +14,10 @@ export type CommentData = {
   id: number
   body: string
   author: { id: number; name: string; avatarUrl: string | null }
+  /** Written by the team's AI colleague (« Collègue IA »), at the request of this member; `author` then bears her name. */
+  agent?: { id: number; name: string; requestedBy: string } | null
+  /** This message asked the colleague something: where her work stands. */
+  agentRun?: { status: 'queued' | 'running' | 'done' | 'limit' | 'budget' | 'failed'; name: string } | null
   createdAt: string
   editedAt: string | null
   mentions: Mention[]
@@ -31,7 +35,7 @@ export type CommentData = {
 }
 
 /** A person who can be @mentioned. */
-export type Mentionable = { id: number; name: string; handle: string; avatarUrl: string | null }
+export type Mentionable = { id: number; name: string; handle: string; avatarUrl: string | null; agent?: boolean }
 
 export type ChatLevel = 'all' | 'mentions' | 'none'
 
@@ -43,6 +47,8 @@ export type ThreadData = {
   level?: ChatLevel | null
   lastReadAt: string | null
   members: Mentionable[]
+  /** The team's AI colleague when she is switched on for this map; `canAsk` for the members of her team. */
+  colleague?: { id: number; name: string; avatarUrl?: string | null; canAsk: boolean } | null
   /** Who my next comment will e-mail (mentions aside); null for the map's live discussion. */
   notified?: string[] | null
   commentEmails: boolean

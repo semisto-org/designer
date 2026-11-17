@@ -1,4 +1,5 @@
 import { Bell, BellOff, Pencil, Trash2 } from 'lucide-react'
+import { AgentByline, AgentWorking } from './AgentMarks'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { api, ApiError } from '@/lib/api'
 import { t } from '@/lib/i18n'
@@ -51,6 +52,15 @@ export function CommentThread({ type, id, emptyHint }: { type: ThreadType; id: n
     const timer = window.setInterval(() => { if (!document.hidden) void load() }, 30_000)
     return () => window.clearInterval(timer)
   }, [load, mapId])
+
+  // While the team's colleague works on a message of this thread, read it
+  // again every few seconds: her answer lands here.
+  const colleagueWorking = thread?.comments.some((c) => c.agentRun && (c.agentRun.status === 'queued' || c.agentRun.status === 'running')) ?? false
+  useEffect(() => {
+    if (!colleagueWorking) return
+    const timer = window.setInterval(() => { if (!document.hidden) void load() }, 6_000)
+    return () => window.clearInterval(timer)
+  }, [colleagueWorking, load])
 
   // Opening a link from an e-mail (#comment-12) scrolls to the comment.
   const loaded = thread !== null
@@ -145,10 +155,11 @@ export function CommentThread({ type, id, emptyHint }: { type: ThreadType; id: n
                 ? (event) => { if (isBareTap(event)) setRevealed((current) => (current === comment.id ? null : comment.id)) }
                 : undefined}
             >
-              <Avatar name={comment.author.name} url={comment.author.avatarUrl} />
+              <Avatar name={comment.author.name} url={comment.author.avatarUrl} agent={!!comment.agent} />
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-baseline gap-x-2 text-xs text-loam-500">
                   <span className="font-medium text-loam-800">{comment.author.name}</span>
+                  {comment.agent && <AgentByline agent={comment.agent} />}
                   <time dateTime={comment.createdAt} title={new Date(comment.createdAt).toLocaleString('fr-BE')}>{timeAgo(comment.createdAt)}</time>
                   {comment.editedAt && <span>{t('collab.comments.edited')}</span>}
                   {isNew(comment) && <span className="rounded bg-prune-600 px-1.5 text-[10px] font-semibold uppercase tracking-wide text-white">{t('collab.comments.new')}</span>}
@@ -168,6 +179,7 @@ export function CommentThread({ type, id, emptyHint }: { type: ThreadType; id: n
                 ) : (
                   <CommentBody body={comment.body} mentions={comment.mentions} />
                 )}
+                {editing !== comment.id && <AgentWorking run={comment.agentRun} />}
                 {editing !== comment.id && (
                   <div className="mt-1 flex items-center gap-1 text-xs text-loam-500">
                     <button

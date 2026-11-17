@@ -11,8 +11,8 @@ import type { Assignee, Participant } from '@/tasks/types'
 /** Past this many people, the picker offers a search field. */
 const SEARCH_FROM = 8
 
-type Group = 'me' | 'crew' | 'map' | 'team' | 'invited'
-const GROUPS: Group[] = ['me', 'crew', 'map', 'team', 'invited']
+type Group = 'me' | 'agent' | 'crew' | 'map' | 'team' | 'invited'
+const GROUPS: Group[] = ['me', 'agent', 'crew', 'map', 'team', 'invited']
 
 /**
  * Who does a task, at the right end of its line (Michael, 2026-11-10): the
@@ -53,12 +53,12 @@ export function AssigneePicker({ assignee, participants, currentUserId, canEdit,
   const groups = useMemo(() => {
     const needle = query.trim().toLowerCase()
     const shown = participants.filter((p) => !needle || p.name.toLowerCase().includes(needle) || (p.email ?? '').toLowerCase().includes(needle))
-    const groupOf = (p: Participant): Group => (p.id === currentUserId ? 'me' : p.id == null ? 'invited' : p.group ?? 'map')
+    const groupOf = (p: Participant): Group => (p.agentId != null ? 'agent' : p.id === currentUserId ? 'me' : p.id == null ? 'invited' : p.group ?? 'map')
     return GROUPS.map((group) => ({ group, people: shown.filter((p) => groupOf(p) === group) })).filter((g) => g.people.length > 0)
   }, [participants, query, currentUserId])
 
   if (!canEdit) {
-    return assignee ? <span className="shrink-0 pt-0.5"><AssigneeBadge name={assigneeName(assignee)} url={assignee.avatarUrl} /></span> : null
+    return assignee ? <span className="shrink-0 pt-0.5"><AssigneeBadge name={assigneeName(assignee)} url={assignee.avatarUrl} agent={assignee.agent} /></span> : null
   }
 
   const pick = (key: string) => {
@@ -71,7 +71,7 @@ export function AssigneePicker({ assignee, participants, currentUserId, canEdit,
     <div ref={box} className="relative shrink-0">
       {assignee ? (
         <IconButton label={label} size="sm" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-haspopup="dialog" className="h-auto! w-auto! p-0.5">
-          <AssigneeBadge name={assigneeName(assignee)} url={assignee.avatarUrl} />
+          <AssigneeBadge name={assigneeName(assignee)} url={assignee.avatarUrl} agent={assignee.agent} />
         </IconButton>
       ) : (
         <IconButton
@@ -101,7 +101,7 @@ export function AssigneePicker({ assignee, participants, currentUserId, canEdit,
           <div className="max-h-80 overflow-y-auto">
             {groups.map(({ group, people }) => (
               <div key={group} className="py-1">
-                {group !== 'me' && <p className="px-2 pb-0.5 pt-1 text-sm font-medium text-loam-500">{t(`tasks.picker.groups.${group}`)}</p>}
+                {group !== 'me' && <p className="px-2 pb-0.5 pt-1 text-sm font-medium text-loam-500">{group === 'agent' ? t('agents.tasks.group') : t(`tasks.picker.groups.${group}`)}</p>}
                 {people.map((p) => {
                   const key = assigneeKey(p)
                   const chosen = key === current
@@ -110,7 +110,7 @@ export function AssigneePicker({ assignee, participants, currentUserId, canEdit,
                       key={key} variant="ghost" size="sm" onClick={() => pick(key)} aria-pressed={chosen}
                       className={clsx('w-full justify-start! font-normal! text-loam-800!', chosen && 'bg-prune-50')}
                     >
-                      <AssigneeBadge name={p.name} url={p.avatarUrl} />
+                      <AssigneeBadge name={p.name} url={p.avatarUrl} agent={p.agentId != null} />
                       <span className="min-w-0 flex-1 truncate text-left">
                         {group === 'me' ? t('tasks.picker.me') : p.name}
                         {p.lead && <span className="ml-1.5 text-loam-500">{t('tasks.picker.lead')}</span>}

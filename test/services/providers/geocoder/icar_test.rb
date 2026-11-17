@@ -37,6 +37,23 @@ class Providers::Geocoder::IcarTest < ActiveSupport::TestCase
     assert_equal [ 4.9072, 50.3423, 19, "ICAR" ], [ results.first.lng, results.first.lat, results.first.zoom, results.first.detail ]
   end
 
+  # Beauvechain, 13/11/2026: the register names the commune, not its section.
+  test "a section's name the register does not know is left out, the postcode keeping the search in the commune" do
+    stub_request(:get, %r{\A#{Regexp.escape(URL)}/[14]/query}).to_return(arcgis([]))
+    found = stub_request(:get, %r{\A#{Regexp.escape(URL)}/1/query}).with { |request|
+      where = where_of(request)
+      where.include?("LIB_RT_") && !where.include?("NOD_BAIS") && where.include?("CODE_POSTAL = '1320'")
+    }.to_return(arcgis([
+      { attributes: { RUE_NM: "Rue de la Liberté", CODE_POSTAL: "1320", COM_NM: "Beauvechain" }, geometry: { x: 4.77, y: 50.77 } },
+      { attributes: { RUE_NM: "Rue de la Liberté", CODE_POSTAL: "1320", COM_NM: "Beauvechain" }, geometry: { x: 4.78, y: 50.775 } }
+    ]))
+    results = Providers::Geocoder.build({}).search("Rue de la Liberté, 1320 Nodebais", region: @wallonia)
+    assert_requested found
+    assert_equal "Rue de la Liberté, Beauvechain", results.first.label
+    assert_match(/sans « Nodebais »/, results.first.detail)
+    assert_equal [ 4.77, 50.77, 4.78, 50.775 ], results.first.bbox
+  end
+
   test "an E stands for any letter, as the register writes Eglise or Église" do
     stub = stub_request(:get, %r{\A#{Regexp.escape(URL)}/1/query}).with { |request| where_of(request).include?("LIKE '%_GLIS_%'") }
       .to_return(arcgis([ { attributes: { ADR_NUMERO: "1", RUE_NM: "Rue de l'Eglise", CODE_POSTAL: "5530", COM_NM: "Yvoir" }, geometry: { x: 4.97, y: 50.31 } } ]))

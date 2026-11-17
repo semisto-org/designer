@@ -26,12 +26,12 @@ module Mcp
         TaskList::Defaults.seed!(map, by: user)
         lists = map.task_lists.reload.to_a
         raise ToolError, t("errors.task_list_not_found", id: list_id) if list_id && lists.none? { _1.id == list_id }
-        scope = map.tasks.includes(:assignee, :completed_by, :task_list, :features)
+        scope = map.tasks.includes(:assignee, :agent, :completed_by, :task_list, :features)
         scope = scope.where(task_list_id: list_id) if list_id
         scope = scope.pending if status == "pending"
         scope = scope.done if status == "done"
         scope = scope.where(assignee: user) if assignee == "me"
-        scope = scope.where(assignee_id: nil, invitee_email: nil) if assignee == "nobody"
+        scope = scope.where(assignee_id: nil, invitee_email: nil, agent_id: nil) if assignee == "nobody"
         scope = scope.tagged(tag) if tag
         if feature_ids.present? || numbers.present?
           about = features_for(map, { "feature_ids" => feature_ids, "numbers" => numbers }.compact)

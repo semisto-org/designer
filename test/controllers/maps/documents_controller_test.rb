@@ -185,6 +185,31 @@ class Maps::DocumentsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 0, @map.documents.count
   end
 
+  test "an editor renames a tag on every document carrying it; a viewer cannot" do
+    first = create_document(tags: [ "analyse", "pré-projet" ])
+    second = create_document(tags: [ "Analyse" ])
+    other = create_document(tags: [ "Plans" ])
+
+    sign_in_as users(:alice)
+    patch tags_map_documents_path(@map), params: { from: "analyse", to: "Analyses de sol" }, as: :json
+    assert_response :forbidden
+
+    sign_in_as users(:michael)
+    patch tags_map_documents_path(@map), params: { from: "analyse", to: " " }, as: :json
+    assert_response :unprocessable_entity
+    patch tags_map_documents_path(@map), params: { from: "analyse", to: "x" * 41 }, as: :json
+    assert_response :unprocessable_entity
+    assert_equal [ "analyse", "pré-projet" ], first.reload.tags
+
+    patch tags_map_documents_path(@map), params: { from: "analyse", to: "Analyses de sol" }, as: :json
+    assert_response :success
+    assert_equal 2, response.parsed_body["renamed"]
+    assert_equal 3, response.parsed_body["documents"].size
+    assert_equal [ "Analyses de sol", "pré-projet" ], first.reload.tags
+    assert_equal [ "Analyses de sol" ], second.reload.tags
+    assert_equal [ "Plans" ], other.reload.tags
+  end
+
   test "the file is shown inline when the browser can preview it, downloaded otherwise" do
     pdf = create_document
     text = create_document("notes.txt", "text/plain")

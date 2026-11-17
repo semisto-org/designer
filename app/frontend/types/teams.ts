@@ -23,6 +23,8 @@ export type TeamMember = {
   avatarUrl: string | null
   /** Only admins see e-mail addresses. */
   email: string | null
+  /** When the member last used Terranova (web, phone, AI), null for « jamais ». */
+  lastActiveAt: string | null
   role: TeamRole
   you: boolean
   /** Maps of the team owned by this member. */
@@ -63,6 +65,8 @@ export type TeamBilling = {
 
 export type TeamPageProps = {
   team: { id: number; name: string; role: TeamRole; createdAt: string; logoUrl: string | null }
+  /** « Collègue IA » (TeamAgent), once Semisto opened the module for the team; `name` null until an admin introduced her. */
+  colleague?: { name: string | null; avatarUrl?: string | null; ready: boolean } | null
   members: TeamMember[]
   maps: TeamMap[]
   maxNameLength: number

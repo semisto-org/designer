@@ -50,7 +50,8 @@ module Mcp
           {
             label: result.label, detail: result.detail, point: [ result.lng, result.lat ], bbox: result.bbox,
             inside: (inside?(place, result) if place&.boundary),
-            distance_m: (distance_m(place, result) if place&.boundary)
+            distance_m: (distance_m(place, result) if place&.boundary),
+            water: (water_context(place, result.lng, result.lat) if territory?(place))
           }.compact
         end
 

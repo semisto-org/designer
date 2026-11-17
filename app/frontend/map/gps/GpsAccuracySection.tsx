@@ -9,10 +9,6 @@ import { gpsAccuracy, gpsToCheck } from '@/map/gps/accuracy'
 import type { MapFeature } from '@/types'
 
 /** Points placed from the phone's GPS get this inspector section. */
-export function appliesToGpsPoint(feature: MapFeature): boolean {
-  return feature.geometry.type === 'Point' && gpsAccuracy(feature.properties) != null
-}
-
 /**
  * How precise the phone's GPS was, and for an imprecise fix nobody checked
  * yet, what to do: move the point to its real place, or say it is right.

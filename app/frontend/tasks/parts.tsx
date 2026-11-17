@@ -1,28 +1,31 @@
 import clsx from 'clsx'
 import { Calendar, Check, MapPin, X } from 'lucide-react'
 import { useId, useState, type KeyboardEvent } from 'react'
+import { Avatar } from '@/collab/Avatar'
 import { inputClass } from '@/components/ui/Field'
 import { t } from '@/lib/i18n'
 import { addTag, MAX_TAG_LENGTH, MAX_TAGS, removeTag } from '@/map/tags/tags'
 import { dueOf, type Day, type Season } from '@/tasks/dates'
 import type { Assignee, Participant, TaskFeature } from '@/tasks/types'
 
-/** A stable key for who a task goes to: `u<id>`, or `e<email>` for an invitee. */
+/** A stable key for who a task goes to: `u<id>`, `e<email>` for an invitee, `a<id>` for the team's AI colleague. */
 export function assigneeKey(person: Assignee | Participant | null | undefined): string {
   if (!person) return ''
+  if (person.agentId != null) return `a${person.agentId}`
   return person.id != null ? `u${person.id}` : `e${person.email ?? ''}`
 }
 
 /** What to send to give a task to the person behind `key` (or to nobody). */
 export function assigneeParams(key: string): Record<string, unknown> {
+  if (key.startsWith('a')) return { agent_id: Number(key.slice(1)) }
   if (key.startsWith('u')) return { assignee_id: Number(key.slice(1)) }
   if (key.startsWith('e')) return { invitee_email: key.slice(1) }
-  return { assignee_id: null, invitee_email: null }
+  return { assignee_id: null, invitee_email: null, agent_id: null }
 }
 
 /** The name shown for an assignee, marked when they have not joined yet. */
 export function assigneeName(person: Assignee | Participant): string {
-  return person.id == null ? t('tasks.task.invited', { name: person.name }) : person.name
+  return person.id == null && person.agentId == null ? t('tasks.task.invited', { name: person.name }) : person.name
 }
 
 /** The round box of a task: an empty ring, a leaf when done. */
@@ -59,10 +62,11 @@ export function initials(name: string): string {
   return name.split(/[\s.@_-]+/).filter(Boolean).slice(0, 2).map((part) => part[0]!.toUpperCase()).join('')
 }
 
-export function AssigneeBadge({ name, url, withName }: { name: string; url?: string | null; withName?: boolean }) {
+/** `agent`: the team's AI colleague, drawn apart from the people (a leaf-green disc and a sparkle). */
+export function AssigneeBadge({ name, url, withName, agent }: { name: string; url?: string | null; withName?: boolean; agent?: boolean }) {
   return (
-    <span className="inline-flex items-center gap-1.5 text-sm text-loam-700" title={name}>
-      {url ? <img src={url} alt="" referrerPolicy="no-referrer" className="h-6 w-6 shrink-0 rounded-full object-cover" /> : <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-prune-100 text-[13px] font-semibold text-prune-700" aria-hidden>
+    <span className="inline-flex items-center gap-1.5 text-sm text-loam-700" title={agent ? `${name} · ${t('agents.tasks.group')}` : name}>
+      {agent ? <Avatar name={name} url={url} agent className="h-6 w-6" /> : url ? <img src={url} alt="" referrerPolicy="no-referrer" className="h-6 w-6 shrink-0 rounded-full object-cover" /> : <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-prune-100 text-[13px] font-semibold text-prune-700" aria-hidden>
         {initials(name)}
       </span>}
       <span className={withName ? '' : 'sr-only'}>{name}</span>

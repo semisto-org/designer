@@ -23,6 +23,7 @@ class Map < ApplicationRecord
   belongs_to :owner, class_name: "User"
   belongs_to :organization, optional: true
   belongs_to :region
+  belongs_to :agent_enabled_by, class_name: "User", optional: true
   has_many :memberships, class_name: "MapMembership", dependent: :destroy
   has_many :visits, class_name: "MapVisit", dependent: :delete_all
   has_many :members, through: :memberships, source: :user
@@ -88,6 +89,9 @@ class Map < ApplicationRecord
 
   scope :active, -> { where(archived_at: nil) }
 
+  # The colleague was switched on for this map within its team: leaving the
+  # team switches her off.
+  before_save -> { self.agent_enabled_at = self.agent_enabled_by_id = nil }, if: -> { will_save_change_to_organization_id? && !new_record? }
   after_create :add_owner_membership
   after_save :refresh_area, if: :saved_change_to_boundary?
   # « Premières heures » (admin): when the place first got its outline. Its
@@ -153,6 +157,21 @@ class Map < ApplicationRecord
   end
 
   def chat_audience?(user) = user.present? && chat_audience.exists?(id: user.id)
+
+  # « Collègue IA »: the team's colleague (TeamAgent) when a team admin
+  # switched her on for this map. Off by default, map by map, and shown to
+  # everyone on the map.
+  def agent_enabled? = organization_id.present? && agent_enabled_at.present?
+
+  def colleague
+    organization.colleague if agent_enabled? && !archived?
+  end
+
+  # Only a member of the map's team asks the colleague anything.
+  def colleague_for(user)
+    agent = colleague
+    agent if agent && user && organization.member?(user)
+  end
 
   def editable_by?(user) = %w[owner editor].include?(role_for(user))
   def manageable_by?(user) = role_for(user) == "owner"

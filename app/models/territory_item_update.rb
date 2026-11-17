@@ -9,8 +9,15 @@
 # by the entry's schema (TerritoryItem::SCHEMA):
 #   { "title" => "…", "body" => "…", "geometry" => { GeoJSON } | nil,
 #     "properties" => { "land" => "public", "keeper" => { "role" => "…" }, "magnitude" => nil } }
-# where nil removes a value; or, for a removal, only { "delete" => true }.
+# where nil removes a value; or, for a removal, { "delete" => true }, with
+# `superseded_by` the entries that replace it: the removal can be accepted
+# only once a person has kept every one of them (a basin redrawn as two).
+#
+# A new proposal on an entry that already waits completes it, field by
+# field (Michael, 2026-11-16); `replace` starts it over.
 class TerritoryItemUpdate < ApplicationRecord
+  class Blocked < StandardError; end
+
   STATUSES = %w[pending accepted rejected withdrawn].freeze
   FIELDS = %w[title body geometry properties].freeze
   DELETION = { "delete" => true }.freeze
@@ -27,7 +34,7 @@ class TerritoryItemUpdate < ApplicationRecord
   scope :pending, -> { where(status: "pending").where.not(territory_item_id: nil) }
 
   def pending? = status == "pending"
-  def self.deletion?(changes) = changes.respond_to?(:to_h) && changes.to_h.deep_stringify_keys == DELETION
+  def self.deletion?(changes) = changes.respond_to?(:to_h) && changes.to_h.deep_stringify_keys["delete"] == true
   def deletion? = self.class.deletion?(proposed_changes)
 
   # Checks and cleans what an AI asks to change on `item`. Returns
@@ -137,6 +144,28 @@ class TerritoryItemUpdate < ApplicationRecord
     unflatten(leaves(changes).reject { |path, value| current(item, path) == value })
   end
 
+  # What waits already, completed by what is new: nested properties merge
+  # key by key, and only what still differs from the entry is kept.
+  def self.merge(item, pending, changes)
+    return changes if pending.nil? || pending.deletion?
+
+    unflatten(leaves(pending.proposed_changes).to_h.merge(leaves(changes).to_h).to_a).then { |merged| only_differences(item, merged) }
+  end
+
+  # The entries this removal waits for (superseded_by), with their status.
+  def superseded_by_ids = Array(proposed_changes["superseded_by"]).map(&:to_i)
+
+  def replacements
+    ids = superseded_by_ids
+    return [] if ids.empty?
+
+    found = territory.items.where(id: ids).index_by(&:id)
+    ids.map { |id| found[id] ? { id:, title: found[id].title, status: found[id].status } : { id:, status: "removed" } }
+  end
+
+  # A removal tied to replacements that are not all kept yet.
+  def blocked? = deletion? && replacements.any? { |r| r[:status] != "active" }
+
   # Before → after, field by field, against the entry as it is now.
   def diff(item = territory_item)
     return [ { field: "delete", before: nil, after: true } ] if deletion?
@@ -167,16 +196,19 @@ class TerritoryItemUpdate < ApplicationRecord
   def as_review_json(item = territory_item)
     {
       id:, rationale:, deletion: deletion?, clientName: client_name, authorName: created_by&.display_name,
-      changes: diff(item), createdAt: created_at.iso8601
-    }
+      changes: diff(item), createdAt: created_at.iso8601,
+      supersededBy: (replacements.presence if deletion?), blocked: blocked?
+    }.compact
   end
 
   def self.err(key, **options) = I18n.t("mcp.territory_update_errors.#{key}", **options)
 
   private
     def accept_deletion!(user)
+      raise Blocked, I18n.t("territories.errors.superseded_waiting", titles: replacements.reject { |r| r[:status] == "active" }.map { |r| r[:title] || "##{r[:id]}" }.join(", ")) if blocked?
+
       item = territory_item
-      update!(status: "accepted", reviewed_by: user, reviewed_at: Time.current, applied_changes: DELETION,
+      update!(status: "accepted", reviewed_by: user, reviewed_at: Time.current, applied_changes: proposed_changes,
               previous_values: { "kind" => item.kind, "title" => item.title })
       item.destroy!
       nil

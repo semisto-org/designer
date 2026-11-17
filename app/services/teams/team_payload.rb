@@ -1,6 +1,7 @@
 module Teams
   # What a team's page shows. Every member sees who is in the team and the
-  # team's maps; only admins see e-mail addresses and pending invitations.
+  # team's maps and when each member was last active on Terranova; only
+  # admins see e-mail addresses and pending invitations.
   class TeamPayload
     def initialize(team, user)
       @team = team
@@ -11,6 +12,8 @@ module Teams
     def as_json(*)
       data = {
         team: { id: @team.id, name: @team.name, role: @membership.role, createdAt: @team.created_at.iso8601, logoUrl: @team.logo_url },
+        # « Collègue IA »: shown once Semisto granted the module to the team.
+        colleague: (@team.agents_module? ? { name: @team.team_agent&.name, avatarUrl: @team.team_agent&.avatar_url, ready: @team.colleague.present? } : nil),
         members: members,
         maps: maps,
         billing: billing,
@@ -35,7 +38,8 @@ module Teams
           .map do |m|
             {
               id: m.id, userId: m.user_id, name: m.user.display_name, avatarUrl: m.user.avatar_url,
-              email: (m.user.email_address if admin?), role: m.role, you: m.user_id == @user.id,
+              email: (m.user.email_address if admin?), lastActiveAt: m.user.last_active_at&.iso8601,
+              role: m.role, you: m.user_id == @user.id,
               mapsCount: owned.fetch(m.user_id, 0), lastAdmin: m.admin? && admins == 1
             }
           end

@@ -1,19 +1,23 @@
 import { Link } from '@inertiajs/react'
-import { ArrowRight, Loader2 } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { AddressDoor } from '@/components/site/home/AddressDoor'
+import { Hero } from '@/components/site/home/Hero'
+import { Year } from '@/components/site/home/Year'
 import { Standouts } from '@/components/site/Standouts'
-import { Timelapse } from '@/components/site/timelapse/Timelapse'
-import { ButtonLink } from '@/components/ui/Button'
 import { content, tf } from '@/lib/content'
 import { formatPrice } from '@/lib/money'
-import { AddressSearch } from '@/map/data/AddressSearch'
-import { useStartTrial } from '@/trials/start'
 import type { CatalogPlan } from '@/types/billing'
 
 type Source = { name: string; detail: string }
 type Tier = { name: string; price: string; note: string }
 
-/** The home page: thirty years of an example terrain as you scroll, the standout features, then the practical notes. */
+/**
+ * The home page opens on the visitor's own place: « Où est ton terrain ? »
+ * and an address field that shows it at once, without an account. Then a
+ * first year with Terranova, the standout features, the practical notes,
+ * and the same door again at the end.
+ */
 export default function Home({ catalog }: { catalog: CatalogPlan[] }) {
   const price = (key: string) => formatPrice(catalog.find((plan) => plan.key === key)?.priceCents ?? 0)
   const tiers = content<Tier[]>('site.home.practical.pricing.tiers', { yearly: price('yearly'), atelier: price('atelier') })
@@ -21,16 +25,8 @@ export default function Home({ catalog }: { catalog: CatalogPlan[] }) {
 
   return (
     <>
-      <Timelapse>
-        <WhereIsYourPlace />
-        <div className="flex flex-wrap gap-2.5">
-          <ButtonLink href="/session/new" variant="secondary">{tf('site.home.story.final_cta')}</ButtonLink>
-          <ButtonLink href="/tarifs" variant="ghost">{tf('site.home.story.final_secondary')}</ButtonLink>
-        </div>
-        <p className="font-hand text-[1.4rem] leading-tight text-leaf-600">{tf('site.home.story.free')}</p>
-        <p className="text-sm text-loam-400">{tf('site.home.story.example')}</p>
-      </Timelapse>
-
+      <Hero />
+      <Year />
       <Standouts />
 
       <section className="relative z-10 border-t border-loam-200 bg-loam-50" aria-labelledby="practical-title">
@@ -68,35 +64,16 @@ export default function Home({ catalog }: { catalog: CatalogPlan[] }) {
           </div>
         </div>
       </section>
-    </>
-  )
-}
 
-/**
- * The time-lapse ends on a question: « Où est ton terrain ? ». The address
- * opens the visitor's own place at once, without an account (a trial).
- */
-function WhereIsYourPlace() {
-  const { start, starting, error } = useStartTrial({ via: 'home' })
-  return (
-    <div className="mt-3 rounded-2xl bg-loam-50/90 p-4 ring-1 ring-loam-200 backdrop-blur-sm">
-      <p className="font-hand text-[1.75rem] leading-tight text-prune-700">{tf('site.home.story.where.title')}</p>
-      <p className="mt-1 text-sm text-loam-600">{tf('site.home.story.where.hint')}</p>
-      <AddressSearch
-        className="mt-3"
-        endpoint="/essai/geocode"
-        label={tf('site.home.story.where.label')}
-        placeholder={tf('site.home.story.where.placeholder')}
-        onSelect={(place) => void start(place)}
-      />
-      {starting && (
-        <p className="mt-2 inline-flex items-center gap-2 text-sm text-loam-600" role="status">
-          <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-          {tf('site.home.story.where.starting')}
-        </p>
-      )}
-      {error && <p className="mt-2 text-sm text-clay-600" role="alert">{error}</p>}
-    </div>
+      <section className="border-t border-loam-200 bg-loam-100/60" aria-labelledby="invite-title">
+        <div className="mx-auto max-w-2xl px-4 py-16 text-center sm:py-24">
+          <p className="font-hand text-2xl text-leaf-600">{tf('site.home.invite.kicker')}</p>
+          <h2 id="invite-title" className="mt-1 text-balance font-serif text-3xl font-medium leading-tight text-prune-900 sm:text-4xl">{tf('site.home.invite.title')}</h2>
+          <p className="mx-auto mt-4 max-w-xl text-pretty text-lg leading-relaxed text-loam-500">{tf('site.home.invite.body')}</p>
+          <AddressDoor className="mt-8 text-left" />
+        </div>
+      </section>
+    </>
   )
 }
 

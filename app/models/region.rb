@@ -57,6 +57,22 @@ class Region < ApplicationRecord
     rest.empty? ? value : value.is_a?(Hash) ? value.dig(*rest) : nil
   end
 
+  # The region whose settings hold this top-level key: itself, or the
+  # ancestor it inherits it from (the relief of Wallonia is Wallonia's, the
+  # Copernicus relief of a map in Europe is Europe's).
+  def setting_region(key)
+    settings.key?(key.to_s) ? self : parent&.setting_region(key)
+  end
+
+  # The outline grown by `metres` (nil without an outline), for the cells a
+  # region's own services can answer: its outline is simplified, its
+  # rasters run a little past it.
+  def outline_buffered(metres)
+    return nil unless outline
+
+    self.class.where(id:).pick(Arel.sql(self.class.sanitize_sql_array([ "ST_Buffer(outline::geography, ?)::geometry", metres.to_f ])))
+  end
+
   # The map catalogue: the region's own layers and its parent's, minus the
   # parent's layers the region replaces (same key). A relation, so callers
   # chain `enabled`, `bases`, `where(key:)`… as on `layers`.

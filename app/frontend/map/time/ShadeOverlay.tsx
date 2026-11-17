@@ -1,7 +1,7 @@
-import { featureCollection, polygon, union } from '@turf/turf'
+import { featureCollection, polygon } from '@turf/turf'
 import type { Feature, FeatureCollection, MultiPolygon, Polygon } from 'geojson'
 import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl'
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { strataKey } from '@/map/drawing/hidden'
 import { useDrawingState } from '@/map/drawing/store'
 import { useEditor } from '@/map/editor/EditorContext'
@@ -22,10 +22,32 @@ const MERGE_LIMIT = 400
 
 type Shadows = FeatureCollection<Polygon | MultiPolygon>
 
-/** One wash of shade: overlapping shadows merged, so where two trees shade the same ground it is not darker. */
-function merged(rings: [number, number][][]): Shadows {
+type Union = typeof import('@turf/union').union
+
+// Merging shapes takes polyclip and its big-number maths, about 80 KB the
+// editor does not need until a season's shade is first shown.
+let union: Union | null = null
+let unionLoading: Promise<void> | null = null
+
+function useUnion(wanted: boolean): Union | null {
+  const [, setLoaded] = useState(union != null)
+  useEffect(() => {
+    if (!wanted || union) return
+    let live = true
+    unionLoading ??= import('@turf/union').then((m) => { union = m.union }).catch(() => { unionLoading = null })
+    void unionLoading.then(() => { if (live) setLoaded(true) })
+    return () => { live = false }
+  }, [wanted])
+  return union
+}
+
+/**
+ * One wash of shade: overlapping shadows merged, so where two trees shade the
+ * same ground it is not darker. Until `union` arrives, drawn one by one.
+ */
+function merged(rings: [number, number][][], union: Union | null): Shadows {
   const polygons = rings.map((ring) => polygon([ring]))
-  if (polygons.length < 2 || polygons.length > MERGE_LIMIT) return featureCollection(polygons)
+  if (!union || polygons.length < 2 || polygons.length > MERGE_LIMIT) return featureCollection(polygons)
   try {
     const one = union(featureCollection(polygons))
     return featureCollection(one ? [one as Feature<Polygon | MultiPolygon>] : polygons)
@@ -67,6 +89,7 @@ export default function ShadeOverlay() {
   const hidden = useDrawingState((s) => s.hiddenLayers)
   const hiddenStrata = useDrawingState((s) => s.hiddenStrata)
   const { features, moment, timeline, shade, mode } = editor
+  const union = useUnion(shade != null)
 
   const shadows = useMemo<Shadows>(() => {
     if (!shade || hidden.includes('plants')) return featureCollection([])
@@ -82,8 +105,8 @@ export default function ShadeOverlay() {
       const ring = crownShadow(feature.geometry.coordinates as [number, number], plant, size, shade)
       if (ring) rings.push(ring)
     }
-    return merged(rings)
-  }, [features, moment, timeline, shade, mode, data, hidden, hiddenStrata])
+    return merged(rings, union)
+  }, [features, moment, timeline, shade, mode, data, hidden, hiddenStrata, union])
 
   const latest = useRef(shadows)
   latest.current = shadows

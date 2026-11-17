@@ -14,7 +14,7 @@ module Mcp
 
       def perform(map_id:)
         map = find_map!(map_id)
-        plan = Implementation::Plan.new(map, networks: editor?).as_json
+        plan = Implementation::Plan.new(map, networks: sees_networks?).as_json
         {
           url: "#{map_url(map)}/implementation",
           phases: plan[:phases].map { phase_json(_1) },

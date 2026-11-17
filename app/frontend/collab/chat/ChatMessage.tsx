@@ -12,6 +12,7 @@ import { LAYER_COLORS } from '@/map/layers/features'
 import { photoUrl } from '@/map/photos/format'
 import { photoActions } from '@/map/photos/store'
 import type { ChatDocument, CommentData, Mentionable } from '@/types/collab'
+import { AgentByline, AgentWorking } from '../AgentMarks'
 import { Avatar } from '../Avatar'
 import { ownActionsClass, revealOnTap } from '../ownActions'
 import { geometryCenter } from '../geometry'
@@ -70,10 +71,11 @@ export function ChatMessage({ comment, members, highlighted, editing, busy, onEd
       className={clsx('group flex gap-2 rounded-lg transition-colors duration-700', highlighted && 'bg-humus-50 ring-4 ring-humus-50')}
       onClick={ownActions ? (event) => revealOnTap(event, setRevealed) : undefined}
     >
-      <Avatar name={comment.author.name} url={comment.author.avatarUrl} />
+      <Avatar name={comment.author.name} url={comment.author.avatarUrl} agent={!!comment.agent} />
       <div className="min-w-0 flex-1">
         <p className="flex flex-wrap items-baseline gap-x-2 text-sm text-loam-500">
           <span className="font-medium text-loam-900">{comment.author.name}</span>
+          {comment.agent && <AgentByline agent={comment.agent} />}
           <time dateTime={comment.createdAt} title={new Date(comment.createdAt).toLocaleString('fr-BE')}>{timeAgo(comment.createdAt)}</time>
           {comment.editedAt && <span>{t('collab.comments.edited')}</span>}
         </p>
@@ -145,6 +147,7 @@ export function ChatMessage({ comment, members, highlighted, editing, busy, onEd
         )}
 
         {comment.document && !editing && <ChatDocumentCard document={comment.document} />}
+        {!editing && <AgentWorking run={comment.agentRun} />}
 
         {!editing && (
           <div className="mt-1 flex items-center gap-1 text-sm text-loam-500">

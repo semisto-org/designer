@@ -3,7 +3,10 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { RevealLabel } from '@/components/ui/RevealLabel'
 import { t } from '@/lib/i18n'
-import { ShareDialog } from './ShareDialog'
+import { deferred } from '@/map/panels/deferred'
+
+// Fetched when the dialog first opens.
+const ShareDialog = deferred<{ onClose: () => void }>(() => import('./ShareDialog').then((m) => ({ default: m.ShareDialog })), 'none')
 
 /** Header action "Partager": opens the sharing dialog. */
 export default function ShareButton() {

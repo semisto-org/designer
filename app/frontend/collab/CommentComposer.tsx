@@ -129,8 +129,9 @@ export function CommentComposer({ members, notified, initial = '', placeholder, 
                 onMouseDown={(e) => { e.preventDefault(); insert(m) }}
                 className={'flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm ' + (i === active ? 'bg-prune-50 text-prune-800' : 'text-loam-700 hover:bg-loam-50')}
               >
-                <Avatar name={m.name} url={m.avatarUrl} className="h-5 w-5 text-[10px]" />
+                <Avatar name={m.name} url={m.avatarUrl} agent={m.agent} className="h-5 w-5 text-[10px]" />
                 {m.handle}
+                {m.agent && <span className="text-loam-500">{t('agents.chat.mention_hint')}</span>}
               </button>
             </li>
           ))}

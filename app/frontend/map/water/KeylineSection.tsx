@@ -9,10 +9,6 @@ import { installKeylinePreview } from '@/map/layers/keyline'
 import { clampCount, DEFAULT_SPACING, MAX_PER_SIDE, parallelProperties, totalLength, useOf, type ParallelLine } from '@/map/water/keyline'
 import type { MapFeature } from '@/types'
 
-export function appliesToKeyline(feature: MapFeature): boolean {
-  return feature.properties.kind === 'keyline' && feature.properties.status !== 'rejected' && feature.geometry?.type === 'LineString'
-}
-
 type State = { status: 'loading' } | { status: 'ready'; lines: ParallelLine[] } | { status: 'error'; message: string; reason?: string }
 
 /**

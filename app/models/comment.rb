@@ -10,8 +10,8 @@
 #
 # Messages brought in from elsewhere (Imports::MySemisto::ChatImporter) are
 # saved inside `Comment.importing { }`: they keep their original text and
-# dates, follow nobody, mention nobody, e-mail nobody, ring no bell or phone
-# and are not relayed live.
+# dates, follow nobody, mention nobody (person or colleague), e-mail nobody,
+# ring no bell or phone, wake no colleague and are not relayed live.
 class Comment < ApplicationRecord
   include PointLocation
 
@@ -23,6 +23,9 @@ class Comment < ApplicationRecord
   belongs_to :author, class_name: "User"
   belongs_to :map_photo, optional: true
   belongs_to :map_document, optional: true
+  # Written by the team's colleague (TeamAgent) at the request of `author`,
+  # the member who mentioned her or gave her the task.
+  belongs_to :agent, class_name: "TeamAgent", optional: true
   has_many :applauses, dependent: :destroy
 
   # Keep line breaks, drop control characters and surrounding blank space.
@@ -39,6 +42,7 @@ class Comment < ApplicationRecord
   before_update :stamp_edit, if: :will_save_change_to_body?
   after_save :subscribe_participants, unless: :imported?
   after_create_commit :notify_later, unless: :imported?
+  after_create_commit :wake_colleague, if: -> { mentioned_agent_ids.any? && !imported? }
   after_update_commit :notify_new_mentions, if: -> { saved_change_to_body? && !imported? }
   after_commit :relay_live, if: -> { chat? && !imported? }
 
@@ -59,6 +63,15 @@ class Comment < ApplicationRecord
 
   scope :visible, -> { where(deleted_at: nil) }
   scope :chronological, -> { order(:created_at, :id) }
+  # What `user` did not write themselves: other people's messages, and the
+  # colleague's answers to them.
+  scope :not_written_by, ->(user) { where("comments.author_id <> ? OR comments.agent_id IS NOT NULL", user.id) }
+
+  def by_agent? = agent_id.present?
+  # Who signs the message, and the person who typed it (nobody, for the colleague).
+  def author_name = by_agent? ? agent.name : author.display_name
+  def human_author_id = by_agent? ? nil : author_id
+  def written_by?(user) = !by_agent? && author_id == user&.id
 
   def deleted? = deleted_at.present?
   def chat? = commentable_type == "Map"
@@ -136,6 +149,17 @@ class Comment < ApplicationRecord
 
     def resolve_mentions
       self.mentioned_user_ids = Collab::Mentions.parse(body, mention_pool).map(&:id)
+      # Her answer reaches the member who asked, as a mention would.
+      self.mentioned_user_ids |= [ author_id ] if by_agent?
+      # The colleague is woken by a member of her team, on a new message only
+      # (an edit never wakes her), and never by her own words.
+      return unless new_record?
+      colleague = by_agent? ? nil : map&.colleague_for(author)
+      self.mentioned_agent_ids = colleague&.mentioned_in?(body) ? [ colleague.id ] : []
+    end
+
+    def wake_colleague
+      Agents::Wake.for_comment(self)
     end
 
     # Tells the discussion's open tabs that this message changed (MapChatChannel).

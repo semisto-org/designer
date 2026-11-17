@@ -12,7 +12,13 @@
 #   Wallonia, 0.5 to 20 km²: the scale the territory guide works at), each
 #   with its official outline, its share inside the commune, the sector it
 #   flows into, a suggested order from upstream, and a ready `basin` draft
-#   for propose_territory_items.
+#   for propose_territory_items (the draft names its sector with
+#   `paris_sector_ids`: the server attaches the outline, see `outline_of`).
+#
+# `issues` says what the layers leave unclear: a sector without code or
+# name (Wallonia ships one, « 0 », scattered from Braine-l'Alleud to
+# Saint-Trond), streams without a name, and the fringes of the commune that
+# no sector covers, with the water bodies found there.
 #
 # The upstream API is Providers::Hydrography; every measure (lengths,
 # areas, what flows into what) is computed here, in PostGIS.
@@ -27,6 +33,11 @@ class TerritoryHydrography
   # An outlet this close to another sub-basin flows into it.
   OUTLET_SNAP_M = 75
   SIMPLIFY_DEGREES = 0.00005
+  # One metre in degrees of latitude, for a tolerance given in metres.
+  DEGREES_PER_M = 1 / 111_320.0
+  SECTIONS = %w[watercourses runoff_axes water_bodies sub_basins].freeze
+  # A fringe smaller than this is the slack between two official outlines.
+  MIN_FRINGE_KM2 = 0.05
   CATEGORY_ORDER = %w[navigable category_1 category_2 category_3 unclassified undefined].freeze
   # A stream that only touches the commune line.
   MIN_LENGTH_M = 20
@@ -38,20 +49,81 @@ class TerritoryHydrography
 
   def available? = !@provider.nil?
 
-  def call(min_runoff_class: nil, outlines: true)
+  # `sections` keeps only some parts of the answer, `sector_ids` only some
+  # sub-basins, `simplify_m` simplifies lines and outlines to that many
+  # metres (about 5 by default): a commune's outlines can outgrow an AI's
+  # answer otherwise.
+  def call(min_runoff_class: nil, outlines: true, sections: nil, sector_ids: nil, simplify_m: nil)
     raise Unavailable, "not configured" unless available?
 
     @outlines = outlines
+    @simplify = simplify_m ? simplify_m.to_f * DEGREES_PER_M : SIMPLIFY_DEGREES
+    @issues = []
+    wanted = sections.presence ? SECTIONS & Array(sections).map(&:to_s) : SECTIONS
     min_class = (min_runoff_class || @provider.section("runoff_axes")&.dig("default_min_class") || 3).to_i
-    {
-      attribution: @provider.attribution,
-      watercourses: watercourses,
-      runoff_axes: runoff_axes(min_class),
-      water_bodies: water_bodies,
-      sub_basins: sub_basins
-    }
+    result = { attribution: @provider.attribution }
+    result[:watercourses] = watercourses if wanted.include?("watercourses")
+    result[:runoff_axes] = runoff_axes(min_class) if wanted.include?("runoff_axes")
+    result[:water_bodies] = water_bodies if wanted.include?("water_bodies")
+    if wanted.include?("sub_basins")
+      ids = Array(sector_ids).map(&:to_s).presence
+      result[:sub_basins] = ids ? sub_basins.select { |row| ids.include?(row[:id]) } : sub_basins
+      result[:missing_sector_ids] = ids - result[:sub_basins].pluck(:id) if ids && (ids - result[:sub_basins].pluck(:id)).any?
+    end
+    result[:issues] = @issues if @issues.any?
+    result
   rescue Providers::GeoHttp::Error => e
     raise Unavailable, e.message
+  end
+
+  # The official outline of one or more sectors (PARIS), merged into one
+  # when several make up one valley: { geometry:, area_km2:, inside_km2:,
+  # sector_ids:, missing: }. Sectors are searched around the territory.
+  def outline_of(sector_ids)
+    raise Unavailable, "not configured" unless available?
+    config = @provider.section("sub_basins") or raise Unavailable, "no sub-basins"
+
+    ids = Array(sector_ids).map(&:to_s).uniq
+    features = @provider.sub_basins(bbox).select { |f| ids.include?(f.properties[config["id_field"]].to_s) && f.geometry }
+    found = features.map { |f| f.properties[config["id_field"]].to_s }.uniq
+    return { sector_ids: [], missing: ids } if features.empty?
+
+    sql = <<~SQL.squish
+      WITH t AS (SELECT ST_GeomFromEWKT(:boundary) AS b),
+      u AS (
+        SELECT ST_Multi(ST_CollectionExtract(ST_UnaryUnion(ST_Collect(ST_MakeValid(ST_SetSRID(ST_GeomFromGeoJSON(e), 4326)))), 3)) AS g
+        FROM jsonb_array_elements_text(CAST(:rows AS jsonb)) e
+      )
+      SELECT ST_AsGeoJSON(ST_SimplifyPreserveTopology(u.g, :tolerance), 6), ST_Area(u.g::geography) / 1e6,
+             ST_Area(ST_Intersection(u.g, t.b)::geography) / 1e6
+      FROM u, t
+    SQL
+    geometry, area, inside = select_rows(sql, boundary: boundary_ewkt, rows: features.map { |f| f.geometry.to_json }.to_json,
+                                         tolerance: DEGREES_PER_M).first
+    { geometry: JSON.parse(geometry), area_km2: area.to_f.round(2), inside_km2: inside.to_f.round(2), sector_ids: found, missing: ids - found }
+  rescue Providers::GeoHttp::Error => e
+    raise Unavailable, e.message
+  end
+
+  # The sector (PARIS) whose contributive basin holds this point, or nil.
+  def sector_at(lng, lat)
+    config = @provider&.section("sub_basins") or return nil
+
+    features = @provider.sub_basins(bbox).select(&:geometry)
+    return nil if features.empty?
+
+    rows = features.each_with_index.map { |f, i| { k: i, g: f.geometry.to_json } }
+    sql = <<~SQL.squish
+      SELECT (e->>'k')::int FROM jsonb_array_elements(CAST(:rows AS jsonb)) e
+      WHERE ST_Covers(ST_MakeValid(ST_SetSRID(ST_GeomFromGeoJSON(e->>'g'), 4326)), ST_SetSRID(ST_MakePoint(:lng, :lat), 4326))
+    SQL
+    hits = select_rows(sql, rows: rows.to_json, lng:, lat:).map { |(k)| features[k.to_i] }
+    feature = hits.find { |f| valid_sector_id?(f.properties[config["id_field"]]) } or return nil
+    id = feature.properties[config["id_field"]].to_s
+    watercourse = tidy_watercourse(@provider.sectors([ id ]).first&.properties&.dig(config["watercourse_field"]))
+    { id:, watercourse:, water_body: feature.properties[config["water_body_field"]] }.compact
+  rescue Providers::GeoHttp::Error
+    nil
   end
 
   private
@@ -84,8 +156,20 @@ class TerritoryHydrography
           atlas_number: atlas, length_in_territory_m: length_m.round, geometry:
         }.compact
       end
+      rows.each do |row|
+        next if row[:name]
+
+        row[:unnamed] = true
+        @issues << {
+          kind: "unnamed_watercourse", category: row[:category], atlas_number: row[:atlas_number], length_in_territory_m: row[:length_in_territory_m],
+          message: I18n.t("territories.hydrography.issues.unnamed", length: format_km(row[:length_in_territory_m]), category: row[:category_label] || row[:category],
+                                                                      atlas: row[:atlas_number] ? I18n.t("territories.hydrography.issues.atlas", number: row[:atlas_number]) : "")
+        }
+      end
       rows.sort_by { |r| [ CATEGORY_ORDER.index(r[:category]) || CATEGORY_ORDER.size, r[:name] ? 0 : 1, -r[:length_in_territory_m] ] }
     end
+
+    def format_km(metres) = ActiveSupport::NumberHelper.number_to_rounded(metres / 1000.0, precision: 1, separator: ",")
 
     # « Le » + « BOCQ » → « Le Bocq » ; « Ruisseau » + « QUARANTE DEUX MILLE -42000- » → « Ruisseau n° 42000 ».
     def watercourse_name(properties, config)
@@ -155,7 +239,7 @@ class TerritoryHydrography
     end
 
     def geometry_sql(expression)
-      @outlines ? "ST_AsGeoJSON(ST_SimplifyPreserveTopology(#{expression}, #{SIMPLIFY_DEGREES}), 6)" : "NULL"
+      @outlines ? "ST_AsGeoJSON(ST_SimplifyPreserveTopology(#{expression}, #{(@simplify || SIMPLIFY_DEGREES).to_f}), 6)" : "NULL"
     end
 
     # --- Water bodies -------------------------------------------------------
@@ -168,8 +252,8 @@ class TerritoryHydrography
 
         p = features[i].properties
         {
-          id: p[config["id_field"]], name: p[config["name_field"]], area_km2: area_km2.round(2), inside_km2: inside_km2.round(2),
-          share_of_territory: share(inside_km2), sheet_url: p[config["sheet_field"]].presence, outline: geometry
+          id: p[config["id_field"]], name: meaningful(p[config["name_field"]]), area_km2: area_km2.round(2), inside_km2: inside_km2.round(2),
+          share_of_territory: share(inside_km2), sheet_url: p[config["sheet_field"]].to_s.then { |url| url if url.match?(%r{\Ahttps?://}) }, outline: geometry
         }.compact
       end.sort_by { |row| -row[:inside_km2] }
     end
@@ -188,6 +272,12 @@ class TerritoryHydrography
       end
       measured = measure_polygons(features, outlets:, srid: config["outlet_srid"])
       kept = measured.select { |_, area, inside, _, _| inside >= MIN_INSIDE_KM2 || (area.positive? && inside / area >= MIN_INSIDE_SHARE) }
+      invalid, kept = kept.partition { |i, *| !valid_sector_id?(ids[i]) || sectors[ids[i]].nil? }
+      invalid.each do |i, area_km2, inside_km2, *|
+        @issues << { kind: "invalid_sector", id: ids[i], area_km2: area_km2.round(2), inside_km2: inside_km2.round(2),
+                     message: I18n.t("territories.hydrography.issues.invalid_sector", id: ids[i].presence || "?", area: format_km2(area_km2), inside: format_km2(inside_km2)) }
+      end
+      fringe(kept.map { |i, *| features[i] }, config)
       kept_ids = kept.map { |i, *| ids[i] }
       flows = kept.to_h { |i, *, into| [ ids[i], (ids[into] if into && kept_ids.include?(ids[into])) ] }
       orders = suggested_orders(flows)
@@ -223,13 +313,53 @@ class TerritoryHydrography
       watercourse || landmark
     end
 
-    def draft(id, watercourse, landmark, outlet, order, area_km2, inside_km2, geometry, config)
+    def draft(id, watercourse, landmark, outlet, order, area_km2, inside_km2, _geometry, config)
       # Unique in the dossier: two sectors of one stream differ by their landmark, or by their code.
       title = landmark ? [ watercourse, landmark ].compact.join(" — ") : [ watercourse, "(#{id})" ].compact.join(" ")
       {
-        kind: "basin", ref: id.to_s.parameterize, title:, geometry:,
-        properties: { order:, outlet: }.compact,
+        kind: "basin", ref: id.to_s.parameterize, title:,
+        properties: { order:, outlet:, paris_sector_ids: [ id.to_s ] }.compact,
         rationale: I18n.t("territories.hydrography.draft_rationale", source: config["label"], id:, area: format_km2(area_km2), inside: format_km2(inside_km2))
+      }.compact
+    end
+
+    # « Néant », « NA »: the SPW's way of saying there is none.
+    def meaningful(value)
+      text = value.to_s.squish
+      text.presence unless text.match?(/\A(n[ée]ant|na|n\/a|-)\z/i)
+    end
+
+    # Wallonia's layer carries a polygon coded « 0 », without name nor
+    # outlet, spread over half the province: not a sector.
+    def valid_sector_id?(id) = id.to_s.strip.present? && !id.to_s.strip.match?(/\A0+\z/)
+
+    # The part of the commune that no kept sector covers (a slope draining
+    # straight to the neighbour), and the water bodies found there.
+    def fringe(kept_features, config)
+      bodies_config = @provider.section("water_bodies")
+      bodies = bodies_config ? @provider.water_bodies(bbox).select(&:geometry) : []
+      sql = <<~SQL.squish
+        WITH t AS (SELECT ST_GeomFromEWKT(:boundary) AS b),
+        s AS (SELECT ST_UnaryUnion(ST_Collect(ST_MakeValid(ST_SetSRID(ST_GeomFromGeoJSON(e), 4326)))) AS g FROM jsonb_array_elements_text(CAST(:sectors AS jsonb)) e),
+        f AS (SELECT CASE WHEN s.g IS NULL THEN t.b ELSE ST_CollectionExtract(ST_Difference(t.b, s.g), 3) END AS g FROM t, s)
+        SELECT ST_Area(f.g::geography) / 1e6,
+               (SELECT json_agg(json_build_array((e->>'k')::int, ST_Area(ST_Intersection(f.g, ST_MakeValid(ST_SetSRID(ST_GeomFromGeoJSON(e->>'g'), 4326)))::geography) / 1e6))
+                  FROM jsonb_array_elements(CAST(:bodies AS jsonb)) e),
+               #{geometry_sql('f.g')}
+        FROM f
+      SQL
+      area, by_body, geometry = select_rows(sql, boundary: boundary_ewkt, sectors: kept_features.map { |f| f.geometry.to_json }.to_json,
+                                            bodies: bodies.each_with_index.map { |b, k| { k:, g: b.geometry.to_json } }.to_json).first
+      return if area.to_f < MIN_FRINGE_KM2
+
+      found = JSON.parse(by_body || "[]").select { |_, km2| km2.to_f >= MIN_FRINGE_KM2 / 5 }.sort_by { |_, km2| -km2.to_f }.map do |k, km2|
+        p = bodies[k].properties
+        { id: p[bodies_config["id_field"]], name: meaningful(p[bodies_config["name_field"]]), inside_km2: km2.to_f.round(2) }.compact
+      end
+      @issues << {
+        kind: "uncovered", inside_km2: area.to_f.round(2), share_of_territory: share(area.to_f), water_bodies: found, outline: geometry && JSON.parse(geometry),
+        message: I18n.t("territories.hydrography.issues.uncovered", area: format_km2(area.to_f), source: config["label"],
+                                                                      bodies: found.map { |b| b[:id] }.join(", ").presence || I18n.t("territories.hydrography.issues.no_body"))
       }.compact
     end
 

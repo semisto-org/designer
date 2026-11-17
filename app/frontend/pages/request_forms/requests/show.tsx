@@ -67,30 +67,30 @@ export default function RequestShow({ request: initial, account, schema, statuse
         <h1 className="mt-1 text-3xl">{request.name}</h1>
       </div>
 
+      <Card className="space-y-3">
+        <h2 className="font-serif text-xl font-semibold text-prune-800">{t('request_forms.requests.place')}</h2>
+        {request.address && <p className="text-loam-700">{request.address}</p>}
+        {request.center ? (
+          <div className="relative h-80 overflow-hidden rounded-xl ring-1 ring-loam-200 sm:h-[28rem]">
+            <MapView className="absolute inset-0" center={request.center} zoom={17}>
+              <PlacePreview request={request} layers={layers} />
+            </MapView>
+          </div>
+        ) : (
+          <p className="text-sm text-loam-500">{t('request_forms.requests.no_place')}</p>
+        )}
+        {request.parcels.length > 0 && (
+          <p className="text-sm text-loam-600">
+            {t('request_forms.index.parcels', { count: request.parcels.length })}
+            {hectares && ` · ${t('request_forms.requests.area', { area: hectares })}`}
+            {' · '}{request.parcels.map((p) => p.label || p.capakey).join(', ')}
+          </p>
+        )}
+        {request.parcels.length > 0 && !request.boundary && <p className="text-sm text-humus-700">{t('request_forms.requests.no_outline')}</p>}
+      </Card>
+
       <div className="grid gap-6 lg:grid-cols-[1fr_18rem]">
         <div className="space-y-6">
-          <Card className="space-y-3">
-            <h2 className="font-serif text-xl font-semibold text-prune-800">{t('request_forms.requests.place')}</h2>
-            {request.address && <p className="text-loam-700">{request.address}</p>}
-            {request.center ? (
-              <div className="relative h-72 overflow-hidden rounded-xl ring-1 ring-loam-200">
-                <MapView className="absolute inset-0" center={request.center} zoom={17}>
-                  <PlacePreview request={request} layers={layers} />
-                </MapView>
-              </div>
-            ) : (
-              <p className="text-sm text-loam-500">{t('request_forms.requests.no_place')}</p>
-            )}
-            {request.parcels.length > 0 && (
-              <p className="text-sm text-loam-600">
-                {t('request_forms.index.parcels', { count: request.parcels.length })}
-                {hectares && ` · ${t('request_forms.requests.area', { area: hectares })}`}
-                {' · '}{request.parcels.map((p) => p.label || p.capakey).join(', ')}
-              </p>
-            )}
-            {request.parcels.length > 0 && !request.boundary && <p className="text-sm text-humus-700">{t('request_forms.requests.no_outline')}</p>}
-          </Card>
-
           <Card className="space-y-4">
             <h2 className="font-serif text-xl font-semibold text-prune-800">{t('request_forms.requests.answers')}</h2>
             <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">

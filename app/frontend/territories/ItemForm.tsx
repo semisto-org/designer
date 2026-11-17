@@ -12,8 +12,8 @@ const v = (group: string, key: string) => t(`territories.show.values.${group}.${
 
 const SOURCE_KINDS = ['plan', 'council', 'press', 'map', 'study', 'call', 'other']
 const RIGHTS = ['open', 'restricted', 'unknown']
-const PROOFS = ['computed', 'seen', 'confirmed']
 const MARKER_KINDS = ['flood', 'mudflow', 'erosion', 'lost_pond', 'lost_hedge', 'spring', 'other']
+const PRECISIONS = ['day', 'month', 'season', 'year']
 const RANKS = ['soil', 'slow', 'structure']
 const THEMES = ['water', 'tree']
 const LANDS = ['public', 'agricultural', 'private', 'unknown']
@@ -21,6 +21,13 @@ const ANSWERS = ['yes', 'no', 'thinking']
 const DECISIONS = ['retained', 'postponed', 'dismissed']
 const REQUEST_KINDS = ['document', 'info']
 const REQUEST_STATES = ['to_ask', 'asked', 'received', 'refused']
+const VERIFICATIONS = ['desk', 'actor', 'site']
+const VERIFIABLE: TerritoryItemKind[] = ['expectation', 'basin', 'marker', 'lead']
+
+/** The verification keys left empty are sent as null, so the server drops them (it merges what it receives). */
+const VERIFICATION_KEYS = ['verified_by_id', 'verified_by', 'verified_on', 'confirm_with_id', 'confirm_question'] as const
+const withCleared = (props: TerritoryItemProperties) =>
+  ({ ...Object.fromEntries(VERIFICATION_KEYS.map((key) => [key, null])), ...Object.fromEntries(Object.entries(props).filter(([, value]) => value !== undefined && value !== '')) })
 
 /** One excerpt per paragraph: a blank line between two. */
 const splitExcerpts = (text: string) => text.split(/\n\s*\n/).map((x) => x.trim()).filter(Boolean)
@@ -46,7 +53,7 @@ type Props = {
 export function ItemForm({ territoryId, kind, item, sources, expectations, basins, actors, place, onDone }: Props) {
   const [title, setTitle] = useState(item?.title ?? '')
   const [body, setBody] = useState(item?.body ?? '')
-  const [props, setProps] = useState<TerritoryItemProperties>(item?.properties ?? (kind === 'marker' ? { proof: 'computed' } : kind === 'lead' ? { rank: 'soil', theme: 'water', land: 'unknown' } : kind === 'request' ? { request_kind: 'document', state: 'to_ask' } : {}))
+  const [props, setProps] = useState<TerritoryItemProperties>(item?.properties ?? (kind === 'marker' ? { proof: 'computed', verification: 'desk' } : kind === 'lead' ? { rank: 'soil', theme: 'water', land: 'unknown' } : kind === 'request' ? { request_kind: 'document', state: 'to_ask' } : {}))
   const [excerpts, setExcerpts] = useState(joinExcerpts(item?.properties.excerpts))
   const [geometry, setGeometry] = useState<Geometry | null>(item?.geometry ?? null)
   const [file, setFile] = useState<File | null>(null)
@@ -62,7 +69,7 @@ export function ItemForm({ territoryId, kind, item, sources, expectations, basin
     setBusy(true)
     const data: Record<string, string | number | File> = {
       kind, title: title.trim(), body,
-      properties: JSON.stringify(kind === 'source' ? { ...props, excerpts: splitExcerpts(excerpts) } : props),
+      properties: JSON.stringify(kind === 'source' ? { ...props, excerpts: splitExcerpts(excerpts) } : VERIFIABLE.includes(kind) ? withCleared(props) : props),
       geometry: geometry ? JSON.stringify(geometry) : '',
       tab: kind,
     }
@@ -182,7 +189,7 @@ export function ItemForm({ territoryId, kind, item, sources, expectations, basin
         <div className="grid gap-3 sm:grid-cols-3">
           {choice(f('marker_kind'), props.marker_kind, MARKER_KINDS, 'marker_kind', (x) => set('marker_kind', x), true)}
           <Field label={f('occurred_on')}><Input value={props.occurred_on ?? ''} onChange={(e) => set('occurred_on', e.target.value)} placeholder="2021-07-14" /></Field>
-          {choice(f('proof'), props.proof ?? 'computed', PROOFS, 'proof', (x) => set('proof', x as TerritoryItemProperties['proof']))}
+          {choice(f('occurred_precision'), props.occurred_precision, PRECISIONS, 'occurred_precision', (x) => set('occurred_precision', (x || undefined) as TerritoryItemProperties['occurred_precision']), true)}
         </div>
         {pickIds('source_ids', sources, f('source_ids'))}
         {placeButton}
@@ -200,13 +207,6 @@ export function ItemForm({ territoryId, kind, item, sources, expectations, basin
         </div>
         <Field label={f('magnitude')} hint={f('magnitude_hint')}><Input value={props.magnitude ?? ''} onChange={(e) => set('magnitude', e.target.value)} /></Field>
         {pickIds('expectation_ids', expectations, f('expectation_ids'))}
-        <div className="grid gap-3 sm:grid-cols-2">
-          <label className="flex items-center gap-2 self-end pb-2 text-sm text-loam-700">
-            <input type="checkbox" checked={props.seen_on_site === true} onChange={(e) => set('seen_on_site', e.target.checked)} />
-            {f('seen_on_site')}
-          </label>
-          {props.seen_on_site && <Field label={f('seen_on')}><Input type="date" value={props.seen_on ?? ''} onChange={(e) => set('seen_on', e.target.value)} /></Field>}
-        </div>
         {placeButton}
         {needsFarmer && (
           <Group title={f('farmer')}>
@@ -273,10 +273,49 @@ export function ItemForm({ territoryId, kind, item, sources, expectations, basin
     )
   }
 
+  const level = props.verification ?? 'desk'
+  const verification = VERIFIABLE.includes(kind) && (
+    <Group title={f('verification')}>
+      <p className="text-sm text-loam-600">{f('verification_hint')}</p>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {choice(f('verification_level'), level, VERIFICATIONS, 'verification', (x) => {
+          set('verification', x as TerritoryItemProperties['verification'])
+          if (x !== 'desk' && !props.verified_on) set('verified_on', new Date().toISOString().slice(0, 10))
+        })}
+        {level !== 'desk' && <Field label={f('verified_on')}><Input type="date" value={props.verified_on ?? ''} onChange={(e) => set('verified_on', e.target.value)} /></Field>}
+      </div>
+      {level === 'actor' && actors.length > 0 && (
+        <Field label={f('verified_by_id')}>
+          <Select value={props.verified_by_id ?? ''} onChange={(e) => set('verified_by_id', e.target.value ? Number(e.target.value) : undefined)}>
+            <option value="">{t('territories.show.values.none')}</option>
+            {actors.map((actor) => <option key={actor.id} value={actor.id}>{actor.title}</option>)}
+          </Select>
+        </Field>
+      )}
+      {level !== 'desk' && (!props.verified_by_id || level === 'site') && (
+        <Field label={level === 'site' ? f('verified_by_site') : f('verified_by')}><Input value={props.verified_by ?? ''} onChange={(e) => set('verified_by', e.target.value)} /></Field>
+      )}
+      {level !== 'site' && actors.length > 0 && (
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field label={f('confirm_with_id')}>
+            <Select value={props.confirm_with_id ?? ''} onChange={(e) => set('confirm_with_id', e.target.value ? Number(e.target.value) : undefined)}>
+              <option value="">{t('territories.show.values.none')}</option>
+              {actors.map((actor) => <option key={actor.id} value={actor.id}>{actor.title}</option>)}
+            </Select>
+          </Field>
+          {props.confirm_with_id && (
+            <Field label={f('confirm_question')}><Input value={props.confirm_question ?? ''} onChange={(e) => set('confirm_question', e.target.value)} placeholder={f('confirm_question_placeholder')} /></Field>
+          )}
+        </div>
+      )}
+    </Group>
+  )
+
   return (
     <form onSubmit={submit} className="grid gap-3 rounded-2xl bg-loam-50 p-4 ring-1 ring-loam-200">
       <Field label={f('title')}><Input value={title} onChange={(e) => setTitle(e.target.value)} required maxLength={200} autoFocus /></Field>
       {fields}
+      {verification}
       <Field label={f('body')}><Textarea rows={3} value={body} onChange={(e) => setBody(e.target.value)} /></Field>
       <div className="flex justify-end gap-2">
         <Button variant="ghost" onClick={onDone}>{t('territories.show.cancel')}</Button>

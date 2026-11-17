@@ -19,7 +19,7 @@ Dans **Territoires**, clique sur **Ouvrir un territoire**, tape le nom de la com
 - **Sources** : les documents trouvés, avec leur auteur, leur date et leurs droits. Une copie du fichier seulement si ses droits le permettent.
 - **Attentes** : ce que la commune a déjà voté. Note l'année : un plan ancien se fait confirmer par l'administration.
 - **Sous-bassins** : la commune décide, le sous-bassin se conçoit. Nomme chaque vallon (le contrat de rivière les connaît) et numérote-les depuis le plus en amont. Chaque repère et chaque piste s'y rattache, et le carnet les présente de l'amont vers l'aval.
-- **Repères** : un fait daté et placé sur la carte (une inondation, une mare comblée), avec son niveau de preuve : calculé, vu sur place, confirmé par un témoin ou sous la pluie.
+- **Repères** : un fait daté et placé sur la carte (une inondation, une mare comblée), avec où il en est : vu au bureau (calculé), confirmé par un acteur, vu sur place.
 - **Pistes** : d'abord le sol, puis ralentir l'eau en haut du bassin, puis les ouvrages. Un ordre de grandeur, jamais un dimensionnement.
 - **À obtenir** : ce qu'il faut encore demander (un avis de la cellule érosion, l'inventaire du contrat de rivière), à qui, et où on en est. Le document reçu devient une source.
 
@@ -34,8 +34,18 @@ Ce que tu as gardé, ton IA ne le change pas : elle te **propose une modificatio
 ## Les règles du carnet
 
 - Une piste sur terre agricole, ou dont le foncier n'est pas encore connu, n'entre pas au carnet du collège avant la rencontre avec l'exploitant et sa réponse. Seule exception, une pratique de sol (couvert d'hiver, rotation, travail en travers de la pente) : elle y entre tout de suite, sans tracé et sans nommer de parcelle, et n'apparaît dans la version publique qu'après le oui de l'exploitant. La version publique laisse de côté une piste que l'exploitant a refusée ou qu'il réfléchit encore. Tant qu'il n'a pas dit oui, elle reste une **zone floue** sur la carte.
-- Une piste pas encore vue sur place est une **hypothèse** : elle figure à part dans le carnet de travail, jamais sur sa carte ni dans la version publique.
+- Une piste seulement vue au bureau est une **hypothèse** : elle figure à part dans le carnet de travail, jamais sur sa carte ni dans la version publique. Elle passe dans la version publique une fois **confirmée par un acteur** ou **vue sur place**.
 - Une piste sans gestionnaire est **orpheline** : dis qui l'entretient, combien d'heures par an, pour combien d'années.
+
+## Vu au bureau, confirmé, vu sur place
+
+Le tri au bureau ne valide qu'une cohérence : la plupart du temps, l'équipe ne connaît pas la commune. Chaque attente, sous-bassin, repère et piste dit donc où il en est :
+
+- **Vu au bureau** : lu sur la carte ou dans un document. C'est le point de départ de tout ce que propose ton IA.
+- **Confirmé par un acteur** : quelqu'un qui connaît le lieu l'a confirmé. Note qui (un acteur du dossier, ou un nom) et quand.
+- **Vu sur place** : quelqu'un est allé voir. Note qui et quand.
+
+Sur chaque élément, choisis **À confirmer avec** l'acteur qui le sait, et la question à lui poser. Le bouton **À confirmer** du territoire range tout par acteur : une feuille A4 par acteur, à imprimer ou enregistrer en PDF pour la réunion, avec des cases à cocher et la place pour les notes. Au retour, un clic par réponse : « Confirmé par… », « Vu sur place » ou « Retirer de sa liste ». Ce que personne ne peut confirmer à part le terrain est listé à part, **À aller voir sur place**, avec un lien vers la carte pour le retrouver depuis ton téléphone.
 
 ## Le carnet du territoire
 

@@ -3,7 +3,8 @@ module Mcp
     # A territory whole: the commune's boundary, the region's layers that can
     # be read there, the team's maps inside it, its dossier (people met,
     # sources, expectations, sub-basins, markers, leads, requests, drafts and
-    # pending changes included), the research
+    # pending changes included), what waits for each actor's confirmation
+    # and what to go and see on site (TerritoryConfirmations), the research
     # grid of its region and the rules of the « carnet du territoire ».
     class GetTerritory < Base
       include TerritoryAccess
@@ -27,17 +28,21 @@ module Mcp
           team_maps: territory.team_maps.map { |map| { id: map.id, name: map.name, area_m2: map.area_m2&.round, url: map_url(map) } },
           dossier: TerritoryItem::KINDS.index_with { |kind| items.select { |item| item.kind == kind }.map { |item| item_json(item) } },
           notebook: territory.notebook,
+          to_confirm: TerritoryConfirmations.new(territory).as_mcp,
+          relief: Relief::TerritoryRelief.new(territory).state,
           research_grid: territory.research_grid,
           values: {
             proof: TerritoryItem::PROOFS, marker_kind: TerritoryItem::MARKER_KINDS, source_kind: TerritoryItem::SOURCE_KINDS,
             rights: TerritoryItem::RIGHTS, rank: TerritoryItem::RANKS, theme: TerritoryItem::THEMES, land: TerritoryItem::LANDS,
             farmer_answer: TerritoryItem::FARMER_ANSWERS, decision: TerritoryItem::DECISIONS,
-            request_kind: TerritoryItem::REQUEST_KINDS, request_state: TerritoryItem::REQUEST_STATES
+            request_kind: TerritoryItem::REQUEST_KINDS, request_state: TerritoryItem::REQUEST_STATES,
+            verification: TerritoryItem::VERIFICATIONS
           },
           properties_by_kind: TerritoryItem::SCHEMA.transform_values { |schema| schema_keys(schema) },
           rules: t("notes.territory_rules"),
           url: territory_url(territory),
-          notebook_urls: { working: "#{territory_url(territory)}/notebook", public: "#{territory_url(territory)}/notebook?version=public" }
+          notebook_urls: { working: "#{territory_url(territory)}/notebook", public: "#{territory_url(territory)}/notebook?version=public" },
+          confirmations_url: "#{territory_url(territory)}/confirmations"
         }
       end
 

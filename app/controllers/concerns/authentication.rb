@@ -48,6 +48,8 @@ module Authentication
       return end_impersonation(found, reason: "expired") if found.impersonation_expired?
       # Coming back within the year keeps the browser signed in for another one.
       cookies.signed[:session_id] = Session.cookie(found.id) if found.seen!
+      # An admin signed in as someone is not that person being active.
+      found.user.active! unless found.impersonation?
       found
     end
 

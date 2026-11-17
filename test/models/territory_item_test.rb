@@ -16,7 +16,8 @@ class TerritoryItemTest < ActiveSupport::TestCase
     item = lead(rank: "soil", land: "agricultural", nonsense: "x", keeper: { role: " Agent travaux ", hours_per_year: "12", owner_name: "Dupont" },
                 seen_on_site: "true", expectation_ids: [ "3", "x" ], decision: { status: "maybe" })
     assert_equal({ "rank" => "soil", "land" => "agricultural", "keeper" => { "role" => "Agent travaux", "hours_per_year" => 12 },
-                   "seen_on_site" => true, "expectation_ids" => [ 3 ] }, item.properties)
+                   "seen_on_site" => true, "expectation_ids" => [ 3 ] }, item.properties.except("verification", "verified_on", "seen_on"))
+    assert_equal "site", item.prop(:verification)
   end
 
   test "a source keeps a web link only" do
@@ -70,7 +71,7 @@ class TerritoryItemTest < ActiveSupport::TestCase
 
   test "a marker or a lead points to a sub-basin of its own territory" do
     basin = @territory.items.create!(kind: "basin", title: "Vallon du Bocq", properties: { order: "1", outlet: "le Bocq" }, geometry: commune_square(size: 0.02))
-    assert_equal({ "order" => 1, "outlet" => "le Bocq" }, basin.properties)
+    assert_equal({ "order" => 1, "outlet" => "le Bocq", "verification" => "desk" }, basin.properties)
     assert @territory.items.create(kind: "marker", title: "Coulée", properties: { basin_id: basin.id }).persisted?
 
     other = make_territory(make_team("Autre", admin: users(:michael)))
@@ -108,7 +109,79 @@ class TerritoryItemTest < ActiveSupport::TestCase
     marker = @territory.items.create!(kind: "marker", title: "Coulée", properties: { basin_id: basin.id, source_ids: [ source.id ] })
     basin.destroy!
     source.reject!(users(:michael))
-    assert_equal({}, marker.reload.properties)
+    assert_equal({ "verification" => "desk", "proof" => "computed" }, marker.reload.properties)
     assert marker.update(title: "Coulée de boue")
+  end
+
+  # --- verification (Michael, 2026-11-16) ---
+
+  def actor(title = "Cellule GISER")
+    @territory.items.create!(kind: "actor", title:)
+  end
+
+  test "every claim starts at the desk; actors and sources carry no level" do
+    assert_equal "desk", lead.verification_level
+    assert_equal "desk", lead.properties["verification"]
+    assert_nil actor.verification_level
+    refute actor.properties.key?("verification")
+  end
+
+  test "confirmed by an actor says who and when, today by default" do
+    giser = actor
+    item = lead(verification: "actor", verified_by_id: giser.id)
+    assert_equal "actor", item.verification_level
+    assert_equal Date.current.iso8601, item.prop(:verified_on)
+    assert_equal "Cellule GISER", item.verifier_name
+    assert item.confirmed?
+
+    nobody = @territory.items.new(kind: "lead", title: "Fascine", properties: { verification: "actor" })
+    refute nobody.valid?
+    assert nobody.errors.of_kind?(:properties, :verifier_missing)
+    assert @territory.items.new(kind: "lead", title: "Fascine", properties: { verification: "actor", verified_by: "M. Lambert, agriculteur" }).valid?
+  end
+
+  test "the verifier and the actor to ask are actors of this dossier" do
+    other = make_territory(@team, name: "Profondeville").items.create!(kind: "actor", title: "Contrat de rivière")
+    item = @territory.items.new(kind: "marker", title: "Inondation", properties: { confirm_with_id: other.id })
+    refute item.valid?
+    assert item.errors.of_kind?(:properties, :confirm_with)
+  end
+
+  test "a lead seen on site and its level follow each other" do
+    item = lead(seen_on_site: true, seen_on: "2026-10-02")
+    assert_equal "site", item.prop(:verification)
+    assert_equal "2026-10-02", item.prop(:verified_on)
+
+    item.update!(properties: item.properties.merge("verification" => "desk"))
+    refute item.seen_on_site?
+    assert_nil item.prop(:verified_on)
+
+    item.update!(properties: item.properties.merge("verification" => "site", "verified_by" => "Marie", "verified_on" => "2026-11-12"))
+    assert item.seen_on_site?
+    assert_equal "2026-11-12", item.prop(:seen_on)
+  end
+
+  test "a marker's proof and its level follow each other" do
+    item = @territory.items.create!(kind: "marker", title: "Coulée", properties: { proof: "seen" })
+    assert_equal "site", item.prop(:verification)
+    item.update!(properties: item.properties.merge("verification" => "actor", "verified_by" => "Riverain"))
+    assert_equal "confirmed", item.prop(:proof)
+    item.update!(properties: item.properties.merge("proof" => "computed"))
+    assert_equal "desk", item.prop(:verification)
+  end
+
+  test "confirmed by the actor it waited for, it leaves that actor's list" do
+    giser = actor
+    item = lead(confirm_with_id: giser.id, confirm_question: "Le talus déborde-t-il ?")
+    item.update!(properties: item.properties.merge("verification" => "actor", "verified_by_id" => giser.id))
+    assert_nil item.prop(:confirm_with_id)
+    assert_nil item.prop(:confirm_question)
+  end
+
+  test "an actor removed from the dossier no longer verifies nor waits" do
+    giser = actor
+    item = lead(verification: "actor", verified_by_id: giser.id, confirm_with_id: actor("Contrat de rivière").id)
+    giser.reject!(users(:michael))
+    refute item.reload.properties.key?("verified_by_id")
   end
 end

@@ -33,7 +33,7 @@ class TerritoryItemUpdateTest < ActiveSupport::TestCase
     update.accept!(users(:michael), fields: %w[properties.land properties.keeper.hours_per_year properties.magnitude])
     @lead.reload
     assert_equal "Haie sur talus", @lead.title
-    assert_equal({ "rank" => "slow", "land" => "public", "keeper" => { "role" => "Commune", "hours_per_year" => 12 } }, @lead.properties)
+    assert_equal({ "rank" => "slow", "land" => "public", "keeper" => { "role" => "Commune", "hours_per_year" => 12 }, "verification" => "desk" }, @lead.properties)
     assert_equal [ "accepted", users(:michael) ], [ update.status, update.reviewed_by ]
     assert_equal({ "properties.land" => "unknown", "properties.keeper.hours_per_year" => 6, "properties.magnitude" => "≈ 300 m" }, update.previous_values)
     assert_raises(ArgumentError) { propose(@lead, { title: "Autre" }).accept!(users(:michael), fields: []) }

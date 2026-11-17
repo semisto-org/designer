@@ -22,7 +22,9 @@ class Territory < ApplicationRecord
   has_many :items, class_name: "TerritoryItem", dependent: :delete_all
   has_many :item_updates, class_name: "TerritoryItemUpdate", dependent: :delete_all
   # A coarse relief of the whole commune, for get_catchment (Relief::TerrainImport).
-  has_one :terrain, class_name: "MapTerrain", dependent: :destroy
+  has_one :terrain, -> { where(detail_key: nil) }, class_name: "MapTerrain", dependent: :destroy
+  # Fine windows at 5 m around the places an AI reads closely (Relief::DetailWindow).
+  has_many :detail_terrains, -> { where.not(detail_key: nil) }, class_name: "MapTerrain", dependent: :destroy
 
   normalizes :name, with: ->(n) { n.to_s.squish }
   validates :name, presence: true, length: { maximum: NAME_MAX_LENGTH }
@@ -83,6 +85,15 @@ class Territory < ApplicationRecord
   end
 
   def infiltration_measurements = []
+
+  # The sub-basins of the dossier (drafts included) whose outline holds this
+  # point, or a point of this geometry: kept ones first, then the smallest.
+  def basins_at(lng: nil, lat: nil, geometry: nil)
+    ewkt = geometry ? "SRID=4326;#{geometry.as_text}" : "SRID=4326;POINT(#{lng.to_f} #{lat.to_f})"
+    items.not_rejected.of_kind("basin").where.not(geometry: nil)
+      .where("ST_Covers(geometry, ST_PointOnSurface(ST_GeomFromEWKT(?)))", ewkt)
+      .order(Arel.sql("(status = 'active') DESC, ST_Area(geometry) ASC"))
+  end
 
   def notebook_text(key) = notebook.is_a?(Hash) ? notebook[key.to_s].to_s : ""
 

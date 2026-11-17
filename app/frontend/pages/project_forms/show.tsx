@@ -166,7 +166,7 @@ export function FormLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-dvh bg-loam-50">
       <header className="border-b border-loam-900/10 bg-white/90">
-        <div className="mx-auto flex h-14 max-w-5xl items-center px-4"><Wordmark /></div>
+        <div className="mx-auto flex h-14 max-w-5xl items-center px-4"><Wordmark beta={false} /></div>
       </header>
       <main>{children}</main>
     </div>

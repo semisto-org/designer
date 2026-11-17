@@ -25,8 +25,8 @@ module Providers
       def search(query, region: nil) # rubocop:disable Lint/UnusedMethodArgument
         parsed = self.class.parse(query)
         return [] if parsed[:words].empty?
-        rows = parsed[:number] ? addresses(parsed) : []
-        rows = streets(parsed) if rows.empty?
+        rows = lookup(parsed)
+        rows = without_section(parsed) if rows.empty?
         rank(rows, parsed[:tokens])
       end
 
@@ -43,6 +43,29 @@ module Providers
       end
 
       private
+        def lookup(parsed)
+          rows = parsed[:number] ? addresses(parsed) : []
+          rows.empty? ? streets(parsed) : rows
+        end
+
+        # « Rue de la Liberté, 1320 Nodebais »: the register names the
+        # commune (Beauvechain), not its section (Nodebais), so a word that is
+        # only a section's name matches nothing. With a postcode to keep the
+        # search in one commune, each word is dropped in turn, from the last
+        # (the place name) to the first, and the detail says which was left out.
+        def without_section(parsed)
+          return [] unless parsed[:postcode] && parsed[:words].size > 1
+
+          parsed[:words].reverse_each do |word|
+            relaxed = parsed.merge(words: parsed[:words] - [ word ])
+            rows = parsed[:number] ? addresses(relaxed) : streets_in_postcode(relaxed)
+            next if rows.empty?
+
+            return rows.map { |row| row.with(detail: I18n.t("geocoder.icar_without", word: word.capitalize)) }
+          end
+          []
+        end
+
         # Most whole words typed first (« Grand-Place » before « Grand-Rue »
         # and « Place des Grands Prés »), then the shorter name.
         def rank(rows, words)
@@ -76,6 +99,20 @@ module Providers
             Result.new(label: [ a["RUE_NM"], a["COM_NM"] ].compact.join(", "), detail: "ICAR", lng: lng.to_f, lat: lat.to_f,
                        bbox: [ lngs.min, lats.min, lngs.max, lats.max ], zoom: 17)
           end.uniq(&:label)
+        end
+
+        # The streets layer has no postcode: a street is found through its
+        # address points in that postcode, framed by them.
+        def streets_in_postcode(parsed)
+          where = [ "ADR_FIN IS NULL", *place_clauses(parsed) ].join(" AND ")
+          features(ADDRESSES, where, "RUE_NM,CODE_POSTAL,COM_NM").group_by { |f| f["attributes"].values_at("RUE_NM", "COM_NM") }.filter_map do |(street, commune), points|
+            coords = points.filter_map { |f| [ f.dig("geometry", "x"), f.dig("geometry", "y") ] if f.dig("geometry", "x") }
+            next if coords.empty?
+            lngs, lats = coords.map(&:first), coords.map(&:last)
+            lng, lat = coords.sort[coords.size / 2]
+            Result.new(label: [ street, commune ].compact.join(", "), detail: "ICAR", lng: lng.to_f, lat: lat.to_f,
+                       bbox: [ lngs.min, lats.min, lngs.max, lats.max ], zoom: 17)
+          end
         end
 
         # Each word in the street's name or the commune's; the postcode when given.

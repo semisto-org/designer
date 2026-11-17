@@ -31,4 +31,21 @@ class MapFeatureTagsTest < ActiveSupport::TestCase
   test "the GeoJSON of a feature carries its tags" do
     assert_equal [ "haie" ], feature!([ "haie" ]).as_geojson[:properties]["tags"]
   end
+
+  test "rename_tag! renames a tag whatever its case, merging it into a tag already used" do
+    a = feature!([ "analyse", "pré-projet" ])
+    b = feature!([ "Sol", "Analyse" ])
+    c = feature!([ "autre" ])
+    assert_equal 2, @map.features.rename_tag!("ANALYSE", "  Analyses   de sol ")
+    assert_equal [ "Analyses de sol", "pré-projet" ], a.reload.tags
+    assert_equal [ "Sol", "Analyses de sol" ], b.reload.tags
+    assert_equal [ "autre" ], c.reload.tags
+
+    assert_equal 2, @map.features.rename_tag!("Analyses de sol", "sol")
+    assert_equal [ "Sol" ], b.reload.tags, "the two tags merge"
+    assert_equal [ "sol", "pré-projet" ], a.reload.tags
+    assert_equal 0, @map.features.rename_tag!("sol", "sol")
+    assert_raises(ActiveRecord::RecordInvalid) { @map.features.rename_tag!("autre", "x" * 41) }
+    assert_equal [ "autre" ], c.reload.tags
+  end
 end

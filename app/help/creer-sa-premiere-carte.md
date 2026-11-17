@@ -9,7 +9,7 @@ Une **carte**, dans Semisto Terranova, c'est un terrain : son contour, ce qui s'
 
 ## Le plus court : ton adresse, d'abord
 
-Pas besoin de compte pour voir ton terrain. À la fin de la page d'accueil, à la question **Où est ton terrain ?**, tape ton adresse : ta parcelle apparaît sur la photo aérienne, peinte comme la première page d'un carnet, avec ce que sa pente, son orientation et son eau racontent déjà. Touche une parcelle voisine pour l'ajouter.
+Pas besoin de compte pour voir ton terrain. En haut de la page d'accueil, sous **Commence par l'adresse de ton terrain**, tape ton adresse : ta parcelle apparaît sur la photo aérienne, peinte comme la première page d'un carnet, avec ce que sa pente, son orientation et son eau racontent déjà. Touche une parcelle voisine pour l'ajouter.
 
 Pour la garder, tape ton adresse e-mail sous **Garder ce carnet** : ton compte est créé et un lien t'est envoyé. Ouvre-le, sur cet appareil ou sur ton téléphone, ou tape le code reçu : ta carte s'ouvre, déjà nommée d'après ta commune (« Le terrain de Purnode »), son contour tracé. Tu peux la renommer quand tu veux. Sans compte, l'essai s'efface après 48 heures.
 

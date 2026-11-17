@@ -13,6 +13,8 @@ module Territories
       fields = Array(params[:fields]).map(&:to_s).presence unless @update.deletion?
       TerritoryItemUpdate.transaction { @update.accept!(Current.user, fields:) }
       back notice: t(@update.deletion? ? "territories.flash.update_deleted" : "territories.flash.update_accepted")
+    rescue TerritoryItemUpdate::Blocked => e
+      back alert: e.message
     rescue ArgumentError
       back alert: t("territories.errors.no_field_chosen")
     rescue ActiveRecord::RecordInvalid => e

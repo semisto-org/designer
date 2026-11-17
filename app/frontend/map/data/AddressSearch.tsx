@@ -1,10 +1,16 @@
 import clsx from 'clsx'
 import { Loader2, MapPin, Search } from 'lucide-react'
 import { useId, useRef, useState, type KeyboardEvent } from 'react'
+import { buttonClass } from '@/components/ui/Button'
 import { inputClass } from '@/components/ui/Field'
 import { ApiError, api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import type { GeocodeResponse, GeocodeResult } from '@/types/map_data'
+
+// The front door's field: the same ink and focus ring as inputClass, as a tall pill.
+const LARGE_INPUT =
+  'block w-full min-h-14 rounded-full border-0 bg-white px-5 text-lg text-loam-900 shadow-sm ring-1 ring-inset ring-loam-900/20 ' +
+  'placeholder:text-loam-400 focus:ring-2 focus:ring-inset focus:ring-prune-600'
 
 type Status = 'idle' | 'loading' | 'done' | 'error' | 'disabled'
 
@@ -17,6 +23,10 @@ type Props = {
   initialQuery?: string
   /** Another search endpoint (a public form has its own). */
   endpoint?: string
+  /** `lg`: the home page's front door, a tall field and a worded button. */
+  size?: 'md' | 'lg'
+  /** The button's words at size `lg` (otherwise a magnifier alone). */
+  submitLabel?: string
 }
 
 /**
@@ -24,13 +34,14 @@ type Props = {
  * button, never as you type: the default provider (public Nominatim)
  * forbids autocomplete. Usable inside another form (it renders no <form>).
  */
-export function AddressSearch({ regionId, onSelect, label, placeholder, className, initialQuery = '', endpoint = '/geocode' }: Props) {
+export function AddressSearch({ regionId, onSelect, label, placeholder, className, initialQuery = '', endpoint = '/geocode', size = 'md', submitLabel }: Props) {
   const [query, setQuery] = useState(initialQuery)
   const [status, setStatus] = useState<Status>('idle')
   const [message, setMessage] = useState<string | null>(null)
   const [results, setResults] = useState<GeocodeResult[]>([])
   const abort = useRef<AbortController | null>(null)
   const id = useId()
+  const large = size === 'lg'
 
   async function search() {
     const q = query.trim()
@@ -86,8 +97,8 @@ export function AddressSearch({ regionId, onSelect, label, placeholder, classNam
 
   return (
     <div className={className}>
-      {label && <label htmlFor={`${id}-q`} className="mb-1 block text-sm font-medium text-loam-700">{label}</label>}
-      <div className="flex gap-2" role="search">
+      {label && <label htmlFor={`${id}-q`} className={clsx('mb-1 block font-medium text-loam-700', large ? 'text-base' : 'text-sm')}>{label}</label>}
+      <div className={clsx('flex gap-2', large && 'flex-col sm:flex-row')} role="search">
         <input
           id={`${id}-q`}
           type="search"
@@ -100,36 +111,39 @@ export function AddressSearch({ regionId, onSelect, label, placeholder, classNam
           disabled={status === 'disabled'}
           aria-describedby={message ? `${id}-message` : undefined}
           aria-controls={results.length ? `${id}-results` : undefined}
-          className={clsx(inputClass, 'min-w-0 flex-1')}
+          className={clsx(large ? LARGE_INPUT : inputClass, 'min-w-0 flex-1')}
         />
         <button
           type="button"
           onClick={() => void search()}
           disabled={status === 'loading' || status === 'disabled'}
-          aria-label={t('map_data.search.submit')}
-          className="inline-flex shrink-0 items-center justify-center rounded-lg bg-white px-3 text-loam-700 ring-1 ring-inset ring-loam-200 hover:bg-loam-100 disabled:opacity-50"
+          aria-label={large && submitLabel ? undefined : t('map_data.search.submit')}
+          className={large
+            ? buttonClass('primary', 'lg', 'min-h-14 shrink-0')
+            : 'inline-flex shrink-0 items-center justify-center rounded-lg bg-white px-3 text-loam-700 ring-1 ring-inset ring-loam-200 hover:bg-loam-100 disabled:opacity-50'}
         >
           {status === 'loading' ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Search className="h-4 w-4" aria-hidden="true" />}
+          {large && submitLabel}
         </button>
       </div>
       {message && (
-        <p id={`${id}-message`} role="status" className={clsx('mt-1.5 text-xs', status === 'error' ? 'text-clay-500' : 'text-loam-500')}>
+        <p id={`${id}-message`} role="status" className={clsx('mt-1.5', large ? 'text-sm' : 'text-xs', status === 'error' ? 'text-clay-500' : 'text-loam-500')}>
           {message}
         </p>
       )}
       {results.length > 0 && (
-        <ul id={`${id}-results`} aria-label={t('map_data.search.results')} className="mt-1.5 divide-y divide-loam-100 overflow-hidden rounded-lg bg-white ring-1 ring-loam-200">
+        <ul id={`${id}-results`} aria-label={t('map_data.search.results')} className={clsx('mt-1.5 divide-y divide-loam-100 overflow-hidden bg-white ring-1 ring-loam-200', large ? 'rounded-2xl shadow-lg' : 'rounded-lg')}>
           {results.map((result, index) => (
             <li key={`${result.lng},${result.lat},${index}`}>
               <button
                 type="button"
                 onClick={() => choose(result)}
-                className="flex w-full items-start gap-2 px-3 py-2 text-left hover:bg-prune-50 focus:bg-prune-50 focus:outline-none"
+                className={clsx('flex w-full items-start gap-2 text-left', large ? 'px-4 py-3' : 'px-3 py-2', 'hover:bg-prune-50 focus:bg-prune-50 focus:outline-none')}
               >
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-prune-500" aria-hidden="true" />
                 <span className="min-w-0">
-                  <span className="block truncate text-sm text-loam-800">{result.label}</span>
-                  {result.detail && <span className="block truncate text-xs text-loam-500">{result.detail}</span>}
+                  <span className={clsx('block truncate text-loam-800', large ? 'text-base' : 'text-sm')}>{result.label}</span>
+                  {result.detail && <span className={clsx('block truncate text-loam-500', large ? 'text-sm' : 'text-xs')}>{result.detail}</span>}
                 </span>
               </button>
             </li>

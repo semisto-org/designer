@@ -23,6 +23,7 @@ module Mcp
             title: item.title, body: item.body, rationale: item.rationale,
             geometry: item.geometry && Geo.encode(item.geometry),
             properties: item.properties,
+            verification: item.verification_level,
             file: item.file.attached? ? item.file.filename.to_s : nil,
             orphan: (item.orphan? if item.kind == "lead"),
             sharp: (item.sharp? if item.kind == "lead"),
