@@ -688,7 +688,7 @@ export class ReliefController {
     this.strips = strips
     this.designEffects = effects
     this.tanks = tanks
-    this.heaped = new Set(designs.filter((design) => design.type === 'mound').map((design) => design.id))
+    this.heaped = new Set(designs.filter((design) => design.type === 'mound' || design.type === 'grade').map((design) => design.id))
     return designs
   }
 

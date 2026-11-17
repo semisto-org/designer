@@ -1,6 +1,6 @@
 // The map's water works (ponds, swales, keylines dug as swales, check
 // dams, fascines, hedge banks, half-moons, grass strips) and the soil heaped
-// up (mounds, raised beds) as designs the relief can be dug with
+// up (mounds, raised beds) or graded (terraces, benches, banks: cut and fill) as designs the relief can be dug with
 // (design.ts), and the tanks with the roofs that fill them. Shared by the 3D view (controller)
 // and the 2D flow overlay in « Projet » mode (mapOverlay), so both show
 // the same axes.
@@ -43,6 +43,11 @@ const SOIL_EFFECTS: Record<string, SoilEffect> = {
 function numberProp(value: unknown, fallback: number): number {
   const n = typeof value === 'string' ? Number(value) : value
   return typeof n === 'number' && Number.isFinite(n) && n > 0 ? n : fallback
+}
+
+function levelProp(value: unknown): number | null {
+  const n = typeof value === 'string' ? Number(value) : value
+  return typeof n === 'number' && Number.isFinite(n) ? n : null
 }
 
 /**
@@ -114,6 +119,23 @@ export function waterDesigns(meta: GridMeta, features: readonly WaterFeature[]):
       designs.push({
         id, type: 'mound', ring: geometry.coordinates[0].map((p) => toGrid(meta, p)),
         height: numberProp(props.height_m, defaults.height), profile: defaults.profile,
+      })
+    } else if (kind === 'graded_terrace' && geometry?.type === 'Polygon') {
+      designs.push({
+        id, type: 'grade', shape: 'plateau', ring: geometry.coordinates[0].map((p) => toGrid(meta, p)),
+        // The server's level, read on the finer grid, unless the person set one.
+        level: props.hinge === 'level' ? levelProp(props.level_m) : levelProp((props.grading as Record<string, unknown> | undefined)?.level_m),
+        hinge: props.hinge === 'upper' || props.hinge === 'lower' ? props.hinge : 'middle',
+        ratio: numberProp(props.slope_ratio, 1.5),
+      })
+    } else if (kind === 'graded_profile' && geometry?.type === 'LineString') {
+      const mode = String(props.level_mode ?? 'follow')
+      designs.push({
+        id, type: 'grade', shape: props.shape === 'bank' ? 'bank' : 'bench', points: geometry.coordinates.map((p) => toGrid(meta, p)),
+        width: numberProp(props.width_m, props.shape === 'bank' ? 1 : 3), height: numberProp(props.height_m, 0.8),
+        level: mode === 'follow' ? null : levelProp(props.level_m),
+        grade: mode === 'grade' ? levelProp(props.grade_pct) ?? 0 : null,
+        ratio: numberProp(props.slope_ratio, 1.5),
       })
     } else if (kind === 'water_tank' && geometry?.type === 'Point') {
       tanks.push({ id, capacity: numberProp(props.capacity_l, 5000) / 1000, roofArea: 0 })

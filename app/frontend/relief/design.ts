@@ -12,6 +12,8 @@
 // Coordinates: metres on the grid, x east from the first column, y SOUTH
 // from the first row (one cell = `cellSize` m). No import.
 
+import { applyGrade, type GradeDesign } from './grading.ts'
+
 export type GridPoint = { x: number; y: number }
 
 /** Bilinear height at a grid point. */
@@ -96,7 +98,7 @@ export type MoundDesign = {
   profile?: 'dome' | 'flat'
 }
 
-export type Design = SwaleDesign | PondDesign | BarrierDesign | HalfMoonDesign | MoundDesign
+export type Design = SwaleDesign | PondDesign | BarrierDesign | HalfMoonDesign | MoundDesign | GradeDesign
 
 export type Footprint = { id: number | string; cells: number[]; capacity: number }
 
@@ -450,6 +452,7 @@ export function applyDesigns(base: ArrayLike<number>, cols: number, rows: number
       : design.type === 'half_moon' ? digHalfMoons(out, base, cols, rows, cellSize, design)
         : design.type === 'barrier' ? digBarrier(out, target, crest, seep, base, cols, rows, cellSize, design)
           : design.type === 'mound' ? raiseMound(out, base, cols, rows, cellSize, design)
+            : design.type === 'grade' ? applyGrade(out, base, cols, rows, cellSize, design)
             : digSwale(out, base, cols, rows, cellSize, design)
   }
   designs.forEach((design, index) => footprints.push({ id: design.id, cells: cellsByIndex[index], capacity: 0 }))

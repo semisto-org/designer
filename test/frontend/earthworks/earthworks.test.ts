@@ -159,3 +159,19 @@ test('arrows bow from the hole to the receiver and point at it', () => {
   assert.deepEqual(data.features.map((f) => f.properties.role), ['line', 'head', 'label'])
   assert.equal(data.features[2].properties.label, '3 m³')
 })
+
+test('a graded terrace sends what its own fill cannot take, or asks for what it lacks', () => {
+  const balance = earthworksBalance([
+    { id: 1, kind: 'graded_terrace', properties: { grading: { cut_m3: 30, fill_m3: 10 }, subsoil_to: 2 }, measure: surface(100) },
+    { id: 2, kind: 'graded_profile', properties: { grading: { cut_m3: 5, fill_m3: 25 } }, measure: line(30) },
+  ])
+  const dig = balance.digs.find((d) => d.id === 1)!
+  close(dig.excavation.volume, 20)
+  close(dig.excavation.topsoil, 0) // the topsoil goes back on the terrace
+  const bank = balance.receivers.find((r) => r.id === 2)!
+  close(bank.capacity!, 20)
+  close(bank.received.subsoil, 20)
+  close(receiverGap(bank)!, 0)
+  // Without volumes (no relief yet), nothing to count.
+  assert.equal(excavation('graded_terrace', {}, surface(100)), null)
+})

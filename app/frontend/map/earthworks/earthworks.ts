@@ -47,7 +47,31 @@ const num = (value: unknown): number | null => (typeof value === 'number' && Num
  * pond's gentle banks, a swale's V), which is also the share of the opening
  * times depth that the hole holds.
  */
-type Cut = { volume: number; depth: number; profile: 1 | 0.5 }
+type Cut = { volume: number; depth: number; profile: 1 | 0.5; noTopsoil?: boolean }
+
+/**
+ * A graded terrace or profile (properties.grading, computed by the server on
+ * the relief): its own cut fills its own fill first; what is left over is
+ * soil to send elsewhere (subsoil: the topsoil is stripped and spread back on
+ * the new surface), what is missing is room for soil from elsewhere.
+ */
+export function gradingOf(p: Properties): { cut: number; fill: number; level: number | null; maxCut: number; maxFill: number; cutArea: number; fillArea: number } | null {
+  const g = p.grading
+  if (!g || typeof g !== 'object') return null
+  const r = g as Record<string, unknown>
+  const cut = num(r.cut_m3)
+  const fill = num(r.fill_m3)
+  if (cut == null || fill == null) return null
+  return { cut, fill, level: num(r.level_m), maxCut: num(r.max_cut_m) ?? 0, maxFill: num(r.max_fill_m) ?? 0, cutArea: num(r.cut_area_m2) ?? 0, fillArea: num(r.fill_area_m2) ?? 0 }
+}
+
+export const GRADED_KINDS = ['graded_terrace', 'graded_profile']
+
+function gradedCut(p: Properties): Cut | null {
+  const g = gradingOf(p)
+  if (!g || g.cut - g.fill <= 0.05) return null
+  return { volume: g.cut - g.fill, depth: g.maxCut, profile: 1, noTopsoil: true }
+}
 
 // Same shapes as the water estimates (map/drawing/computed.ts): gentle banks
 // for a pond, a V profile for a swale or a ditch, flat bottom elsewhere.
@@ -58,6 +82,8 @@ const CUTS: Record<string, (p: Properties, m: Measure) => Cut | null> = {
   rain_garden: (p, m) => surfaceCut(p, m, 1),
   path: (p, m) => lineCut(p, m, 1, 'dug_depth_m'),
   track: (p, m) => lineCut(p, m, 1, 'dug_depth_m'),
+  graded_terrace: (p) => gradedCut(p),
+  graded_profile: (p) => gradedCut(p),
 }
 
 function surfaceCut(p: Properties, m: Measure, profile: 1 | 0.5): Cut | null {
@@ -95,6 +121,13 @@ const CAPACITIES: Record<string, (p: Properties, m: Measure) => number | null> =
   mound: (p, m) => (m.area && num(p.height_m) ? m.area * num(p.height_m)! * 0.5 : null),
   raised_bed: (p, m) => (m.area && num(p.height_m) ? m.area * num(p.height_m)! : null),
   zone: () => null,
+  graded_terrace: (p) => gradedRoom(p),
+  graded_profile: (p) => gradedRoom(p),
+}
+
+function gradedRoom(p: Properties): number | null {
+  const g = gradingOf(p)
+  return g ? Math.max(0, g.fill - g.cut) : null
 }
 
 export const RECEIVING_KINDS = Object.keys(CAPACITIES)
@@ -172,7 +205,7 @@ export type Excavation = {
 export function excavation(kind: string, properties: Properties, measure: Measure): Excavation | null {
   const cut = CUTS[kind]?.(properties, measure)
   if (!cut || cut.volume <= 0) return null
-  const topsoil = cut.volume * topsoilShare(cut, topsoilCm(properties) / 100)
+  const topsoil = cut.noTopsoil ? 0 : cut.volume * topsoilShare(cut, topsoilCm(properties) / 100)
   const loose = cut.volume * BULKING
   return {
     volume: cut.volume,

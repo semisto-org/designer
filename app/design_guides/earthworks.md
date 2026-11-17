@@ -38,6 +38,18 @@ A part can also go to several places, as a list: `subsoil_to: [{ "to": 3012 }, {
 
 Never put soil in a low point where water gathers, on the roots of a tree you keep (inside its crown), or across a natural water path without planning where the water then goes (chapter `water`).
 
+## Terraces and benches: cut and fill on a slope
+
+On a slope, level ground is made by cutting uphill and filling downhill. Two elements do it on the map's relief, and Terranova computes their volumes (`properties.grading`: `level_m`, `cut_m3`, `fill_m3`, `cut_area_m2`, `fill_area_m2`, `max_cut_m`, `max_fill_m`) as soon as the relief is downloaded, drafts included:
+
+- **`graded_terrace`** (polygon): a level plateau. `hinge` hangs its level on the ground: `upper` (the uphill edge: all fill), `middle` (cut and fill balance, the usual choice: no soil moved in or out), `lower` (the downhill edge: all cut), or `level` with `level_m` (a given altitude, for a building pad or a terrace that must meet a door sill).
+- **`graded_profile`** (line): a cross-section swept along the line. `shape: bench` is a level strip `width_m` wide cut into the slope (along a contour for a walkable terrace or a row of trees); `shape: bank` a raised strip `height_m` high (a levee, a bank to sit a hedge on). `level_mode`: `follow` (the ground at the line), `level` (at `level_m`), or `grade` (a ramp falling `grade_pct` % from the first point; negative to rise).
+- `slope_ratio`: horizontal metres per metre of height of the side slopes, 1.5 by default. Steeper than 1 needs a dry stone wall or a gabion; flatter than 2 is easy to mow and plant.
+
+A terrace's own cut fills its own fill first. A surplus is subsoil to send (`subsoil_to`, like a pond's); a shortfall makes it a receiver for other digs. The topsoil of the whole footprint is stripped first and spread back on the finished surface.
+
+To propose one: draw it as a draft with a rationale, read its volumes with `get_feature`, and adjust the level (or the hinge) until the balance suits the place, then say in the rationale why that level (door sill, access, view, the water's path). Never send fill across a natural water path, and give every terrace a way for the water to leave (a slight crossfall, a swale at the foot of the cut).
+
 ## When to dig
 
 Late summer or early autumn, on a soil that has drained: a wet soil is smeared and compacted by machines and wheelbarrows. Plant or sow the new berms and mounds straight away, before the winter rain washes them.

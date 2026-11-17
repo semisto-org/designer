@@ -8,7 +8,7 @@ import { elementFor, storedProperties } from '@/map/drawing/catalog'
 import { saveFeature } from '@/map/drawing/save'
 import { useEditor } from '@/map/editor/EditorContext'
 import {
-  DESTINATION_KEY, DESTINATIONS, destinationsOf, excavation, isDiggable, isDone, receiverGap, SOIL_PARTS, storedDestinations, topsoilCm,
+  DESTINATION_KEY, DESTINATIONS, destinationsOf, excavation, GRADED_KINDS, gradingOf, isDiggable, isDone, receiverGap, SOIL_PARTS, storedDestinations, topsoilCm,
   type Balance, type Destination, type DestinationEntry, type Dig, type Receiver, type SoilPart,
 } from '@/map/earthworks/earthworks'
 import { featureName, loadsText, m3, measureOf, useEarthworks } from '@/map/earthworks/model'
@@ -25,9 +25,64 @@ const TIPS: Record<string, string> = { pond: 'tip_pond', swale: 'tip_swale', pat
  */
 export default function EarthworksSection({ feature }: { feature: MapFeature }) {
   const { balance, byId } = useEarthworks()
-  if (isDiggable(feature.properties.kind)) return <DigSection feature={feature} balance={balance} byId={byId} />
   const receiver = balance.receivers.find((r) => r.id === feature.properties.id)
+  if (GRADED_KINDS.includes(feature.properties.kind)) {
+    // A terrace: its own cut and fill, then what is left to send or to bring.
+    return (
+      <>
+        <GradingSummary feature={feature} />
+        <DigSection feature={feature} balance={balance} byId={byId} />
+        {receiver && (receiver.capacity ?? 0) > 0.05 && <ReceiverSection feature={feature} receiver={receiver} balance={balance} byId={byId} />}
+      </>
+    )
+  }
+  if (isDiggable(feature.properties.kind)) return <DigSection feature={feature} balance={balance} byId={byId} />
   return receiver ? <ReceiverSection feature={feature} receiver={receiver} balance={balance} byId={byId} /> : null
+}
+
+const levelText = (value: number) => t('earthworks.grading.level_value', { value: formatNumber(Math.round(value * 100) / 100) })
+const metres = (value: number) => t('earthworks.grading.metres', { value: formatNumber(Math.round(value * 100) / 100) })
+
+/** « Déblai et remblai » of a graded terrace or profile, from the volumes the server computed on the relief. */
+function GradingSummary({ feature }: { feature: MapFeature }) {
+  const g = gradingOf(feature.properties)
+  return (
+    <section className="space-y-2 border-t border-loam-100 pt-3 text-sm">
+      <h3 className="flex items-center gap-1.5 font-semibold text-loam-800">
+        <Shovel className="h-4 w-4 text-clay-700" />
+        {t('earthworks.grading.title')}
+      </h3>
+      {!g ? (
+        <p className="text-loam-600">{t('earthworks.grading.no_relief')}</p>
+      ) : (
+        <>
+          {g.level != null && <p className="font-medium text-loam-900">{t('earthworks.grading.level', { level: levelText(g.level) })}</p>}
+          <dl className="grid grid-cols-2 gap-2">
+            <div className="rounded-lg bg-loam-50 p-2.5">
+              <dt className="text-loam-600">{t('earthworks.grading.cut')}</dt>
+              <dd className="font-semibold tabular-nums text-loam-900">{m3(g.cut)}</dd>
+              {g.maxCut > 0.005 && <dd className="text-loam-600">{t('earthworks.grading.max_cut', { value: metres(g.maxCut) })}</dd>}
+            </div>
+            <div className="rounded-lg bg-loam-50 p-2.5">
+              <dt className="text-loam-600">{t('earthworks.grading.fill')}</dt>
+              <dd className="font-semibold tabular-nums text-loam-900">{m3(g.fill)}</dd>
+              {g.maxFill > 0.005 && <dd className="text-loam-600">{t('earthworks.grading.max_fill', { value: metres(g.maxFill) })}</dd>}
+            </div>
+          </dl>
+          <p className={Math.abs(g.cut - g.fill) <= 0.05 * Math.max(g.cut, g.fill, 1) ? 'font-medium text-leaf-700' : 'font-medium text-humus-800'}>
+            {Math.abs(g.cut - g.fill) <= 0.05 * Math.max(g.cut, g.fill, 1) ? t('earthworks.grading.balanced')
+              : g.cut > g.fill ? t('earthworks.grading.surplus', { volume: m3(g.cut - g.fill) })
+                : t('earthworks.grading.shortfall', { volume: m3(g.fill - g.cut) })}
+          </p>
+          <p className="flex items-start gap-1.5 text-loam-700">
+            <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-humus-600" />
+            {t('earthworks.grading.tip_stakes')}
+          </p>
+          <p className="text-loam-500">{t('earthworks.grading.hint')}</p>
+        </>
+      )}
+    </section>
+  )
 }
 
 function DigSection({ feature, balance, byId }: { feature: MapFeature; balance: Balance; byId: Map<number, MapFeature> }) {
@@ -151,7 +206,7 @@ function DigSection({ feature, balance, byId }: { feature: MapFeature; balance: 
             )
           ))}
 
-          {editor.canEdit && (
+          {editor.canEdit && !GRADED_KINDS.includes(p.kind) && (
             <Field label={t('earthworks.section.topsoil_cm')}>
               <div className="relative">
                 <Input
