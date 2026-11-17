@@ -58,4 +58,6 @@ A screen that fails two of these questions is not ready.
 On 5 October 2026, Michael judged a first mock-up (a classic page with a year slider) "interesting but not creative enough". He judged the next concept "excellent": there is no page any more, the screen is the land, and scrolling makes thirty years go by, from the seasons to the mature forest, up to the final pull-back over the neighbouring forest gardens. That is the benchmark: a proposal that stays within the usual structure of a website or an app is not yet at the level.
 
 - Mock-up: https://claude.ai/artifact/ERNV97LHFfjxWz2rF1FZBW
-- In the code: the home page (`app/frontend/components/site/timelapse/`).
+- In the code: the painted time-lapse (`app/frontend/components/site/timelapse/`), which opened the home page until November 2026 and still paints the map's tour, the public maps' garden and the pricing sketches.
+
+On 17 November 2026, Michael moved the time-lapse off the home page: a visitor did not see where to go nor what they could do. The home page now opens on « Où est ton terrain ? » and an address field that shows the visitor's own place at once (the trial, without an account). Boldness still applies, but it serves that door: the visitor's land first, then what they will do with it, at the desk and outside.

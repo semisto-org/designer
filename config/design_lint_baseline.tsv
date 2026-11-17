@@ -82,7 +82,6 @@ hex-color	4	app/frontend/components/plants/SpeciesPlantingsMap.tsx
 small-text	1	app/frontend/components/plants/SpeciesTags.tsx
 small-text	1	app/frontend/components/site/PublicFooter.tsx
 small-text	1	app/frontend/components/site/Standouts.tsx
-small-text	1	app/frontend/components/site/timelapse/Timelapse.tsx
 bare-button	1	app/frontend/documents/DocumentTile.tsx
 hex-color	2	app/frontend/documents/DocumentTile.tsx
 bare-button	3	app/frontend/documents/DocumentViewer.tsx
