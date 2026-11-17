@@ -1,6 +1,7 @@
 module Relief
-  # Cut and fill of a graded terrace (`graded_terrace`, a level plateau inside
-  # an outline) or of a profile swept along a line (`graded_profile`: a bench
+  # Cut and fill of a graded terrace (`graded_terrace`, or a patio `terrace`
+  # on a slope: a level plateau inside an outline) or of a profile swept
+  # along a line (`graded_profile`: a bench
   # cut into the slope or a raised bank), on the map's terrain grid: the
   # designed surface, its side slopes down or up to the natural ground, and
   # the volumes taken out and brought in.
@@ -11,8 +12,13 @@ module Relief
   #   Relief::Grading.new(terrain).call(feature)
   #   # => { "level_m" => 196.4, "cut_m3" => 12.5, "fill_m3" => 140.2, ... } or nil
   class Grading
-    KINDS = %w[graded_terrace graded_profile].freeze
-    RATIO_DEFAULT = 1.5
+    KINDS = %w[graded_terrace graded_profile terrace].freeze
+    PLATEAU_KINDS = %w[graded_terrace terrace].freeze
+    # Side slopes as a gradient (rise over run, %): 30 to 50 % is how Semisto's
+    # designers build them in the field, 40 % by default. The uphill talus
+    # (cut) and the downhill one (fill) are set apart; `slope_ratio`
+    # (horizontal metres per metre of height) is the older single value.
+    SLOPE_PCT_DEFAULT = 40.0
     BENCH_WIDTH_DEFAULT = 3.0
     BANK_WIDTH_DEFAULT = 1.0
     BANK_HEIGHT_DEFAULT = 0.8
@@ -35,8 +41,8 @@ module Relief
 
     private
       def design_for(kind, props, geometry)
-        ratio = positive(props["slope_ratio"], RATIO_DEFAULT)
-        if kind == "graded_terrace"
+        ratio = { cut: talus_ratio(props, "cut_slope_pct"), fill: talus_ratio(props, "fill_slope_pct") }
+        if PLATEAU_KINDS.include?(kind)
           return nil unless geometry.respond_to?(:exterior_ring)
 
           ring = geometry.exterior_ring.points.map { |p| to_grid(p.x, p.y) }
@@ -123,7 +129,7 @@ module Relief
                   distance <= half_width ? base : talus(base, g, beyond, design[:ratio])
                 else
                   crest = design[:level] && !design[:grade] ? design[:level] : base + design[:height]
-                  [ g, crest - beyond / design[:ratio] ].max
+                  [ g, crest - beyond / design[:ratio][:fill] ].max
                 end
               end
             delta = target - g
@@ -151,8 +157,18 @@ module Relief
         }.compact
       end
 
+      # Horizontal metres per metre of height of one talus.
+      def talus_ratio(props, key)
+        pct = number(props[key])
+        return 100.0 / pct.clamp(5.0, 200.0) if pct&.positive?
+
+        legacy = number(props["slope_ratio"])
+        legacy&.positive? ? legacy : 100.0 / SLOPE_PCT_DEFAULT
+      end
+
+      # A cut talus climbs to the ground above the level, a fill talus falls to it.
       def talus(level, g, distance, ratio)
-        g > level ? [ g, level + distance / ratio ].min : [ g, level - distance / ratio ].max
+        g > level ? [ g, level + distance / ratio[:cut] ].min : [ g, level - distance / ratio[:fill] ].max
       end
 
       def inside?(x, y, ring)

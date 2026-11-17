@@ -175,3 +175,9 @@ test('a graded terrace sends what its own fill cannot take, or asks for what it 
   // Without volumes (no relief yet), nothing to count.
   assert.equal(excavation('graded_terrace', {}, surface(100)), null)
 })
+
+test('a patio on a slope counts its cut and fill like a graded terrace', () => {
+  const balance = earthworksBalance([{ id: 1, kind: 'terrace', properties: { surface: 'wood', grading: { cut_m3: 6, fill_m3: 4 } }, measure: surface(30) }])
+  close(balance.digs[0].excavation.volume, 2)
+  assert.equal(excavation('terrace', { surface: 'wood' }, surface(30)), null)
+})

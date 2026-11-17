@@ -39,7 +39,7 @@ test('a bench along the contour cuts uphill and fills downhill; a bank is all fi
   assert.ok(bench.cut > 5)
   const bank = grade(base, N, N, 1, { id: 2, type: 'grade', shape: 'bank', points: line, width: 2, height: 1 })
   assert.equal(bank.cut, 0)
-  near(bank.fill, 40 * 2 + 40 * 1.5, 25)
+  near(bank.fill, 40 * 2 + 40 * 2.5 + 25, 30, 'crest 2 m × 1 m, two talus of ½ × 2.5 × 1 (40 %), on 40 m, its ends and a longer foot downhill')
   near(bank.maxFill, 1, 0.15)
 })
 
@@ -47,6 +47,13 @@ test('a bench at a grade starts from the ground at its first point', () => {
   const ramp = grade(base, N, N, 1, { id: 1, type: 'grade', shape: 'bench', points: [{ x: C, y: C + 20 }, { x: C, y: C - 20 }], width: 3, grade: -5 })
   near(ramp.level!, 198, 0.1)
   assert.ok(ramp.cut > ramp.fill)
+})
+
+test('the uphill and downhill talus are set apart: a gentler fill talus brings more soil', () => {
+  const steep = grade(base, N, N, 1, { id: 1, type: 'grade', shape: 'plateau', ring: square(20), cutRatio: 2.5, fillRatio: 1 })
+  const gentle = grade(base, N, N, 1, { id: 1, type: 'grade', shape: 'plateau', ring: square(20), cutRatio: 2.5, fillRatio: 100 / 30 })
+  near(steep.cut, gentle.cut, 0.01, 'the cut side does not change')
+  assert.ok(gentle.fill > steep.fill + 5)
 })
 
 test('nothing to grade without a shape', () => {

@@ -65,7 +65,8 @@ export function gradingOf(p: Properties): { cut: number; fill: number; level: nu
   return { cut, fill, level: num(r.level_m), maxCut: num(r.max_cut_m) ?? 0, maxFill: num(r.max_fill_m) ?? 0, cutArea: num(r.cut_area_m2) ?? 0, fillArea: num(r.fill_area_m2) ?? 0 }
 }
 
-export const GRADED_KINDS = ['graded_terrace', 'graded_profile']
+/** A patio `terrace` on a slope is levelled like a graded terrace (Relief::Grading). */
+export const GRADED_KINDS = ['graded_terrace', 'graded_profile', 'terrace']
 
 function gradedCut(p: Properties): Cut | null {
   const g = gradingOf(p)
@@ -84,6 +85,7 @@ const CUTS: Record<string, (p: Properties, m: Measure) => Cut | null> = {
   track: (p, m) => lineCut(p, m, 1, 'dug_depth_m'),
   graded_terrace: (p) => gradedCut(p),
   graded_profile: (p) => gradedCut(p),
+  terrace: (p) => gradedCut(p),
 }
 
 function surfaceCut(p: Properties, m: Measure, profile: 1 | 0.5): Cut | null {
@@ -123,6 +125,7 @@ const CAPACITIES: Record<string, (p: Properties, m: Measure) => number | null> =
   zone: () => null,
   graded_terrace: (p) => gradedRoom(p),
   graded_profile: (p) => gradedRoom(p),
+  terrace: (p) => gradedRoom(p),
 }
 
 function gradedRoom(p: Properties): number | null {
