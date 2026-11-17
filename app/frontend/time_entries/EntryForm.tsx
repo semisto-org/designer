@@ -120,7 +120,7 @@ export function EntryForm({ projects, catalog, billToSuggestions, today, entry, 
           <Input type="date" value={workedOn} max={today} onChange={(e) => setWorkedOn(e.target.value)} required />
         </Field>
         <Field label={t('time_entries.form.duration')} error={errors.minutes} hint={minutes ? formatDuration(minutes) : t('time_entries.form.duration_hint')}>
-          <Input inputMode="decimal" value={duration} onChange={(e) => setDuration(e.target.value)} placeholder="2,5" required autoFocus={autoFocus && !entry} />
+          <Input inputMode="decimal" value={duration} onChange={(e) => setDuration(e.target.value)} required autoFocus={autoFocus && !entry} />
         </Field>
       </div>
 
