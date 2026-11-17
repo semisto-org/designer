@@ -7,6 +7,11 @@
 # rather than one by one. Any message can point at the map: elements cited
 # with « # » (`feature_ids`), a pinned spot (`location`), a photo and a
 # document of any kind (kept out of the library until someone adds it).
+#
+# Messages brought in from elsewhere (Imports::MySemisto::ChatImporter) are
+# saved inside `Comment.importing { }`: they keep their original text and
+# dates, follow nobody, mention nobody (person or colleague), e-mail nobody,
+# ring no bell or phone, wake no colleague and are not relayed live.
 class Comment < ApplicationRecord
   include PointLocation
 
@@ -32,13 +37,29 @@ class Comment < ApplicationRecord
   validate :photo_in_map
   validate :document_in_map
   before_save :keep_features_of_map, if: -> { new_record? || will_save_change_to_feature_ids? }
-  before_save :resolve_mentions, if: -> { new_record? || will_save_change_to_body? }
+  before_validation :mark_imported, on: :create
+  before_save :resolve_mentions, if: -> { !imported? && (new_record? || will_save_change_to_body?) }
   before_update :stamp_edit, if: :will_save_change_to_body?
-  after_save :subscribe_participants
-  after_create_commit :notify_later
-  after_create_commit :wake_colleague, if: -> { mentioned_agent_ids.any? }
-  after_update_commit :notify_new_mentions, if: :saved_change_to_body?
-  after_commit :relay_live, if: :chat?
+  after_save :subscribe_participants, unless: :imported?
+  after_create_commit :notify_later, unless: :imported?
+  after_create_commit :wake_colleague, if: -> { mentioned_agent_ids.any? && !imported? }
+  after_update_commit :notify_new_mentions, if: -> { saved_change_to_body? && !imported? }
+  after_commit :relay_live, if: -> { chat? && !imported? }
+
+  thread_mattr_accessor :importing_messages, instance_accessor: false
+
+  # Saves the comments created in the block quietly (see above). The mark
+  # stays on each record, so callbacks that run at commit, after the block,
+  # stay quiet too.
+  def self.importing
+    previous = importing_messages
+    self.importing_messages = true
+    yield
+  ensure
+    self.importing_messages = previous
+  end
+
+  def self.importing? = importing_messages == true
 
   scope :visible, -> { where(deleted_at: nil) }
   scope :chronological, -> { order(:created_at, :id) }
@@ -55,6 +76,7 @@ class Comment < ApplicationRecord
   def deleted? = deleted_at.present?
   def chat? = commentable_type == "Map"
   def edited? = edited_at.present?
+  def imported? = @imported == true || Comment.importing?
   # A document joined only to this message goes with it; one added to the
   # library stays there.
   def soft_delete!
@@ -97,6 +119,10 @@ class Comment < ApplicationRecord
   end
 
   private
+    def mark_imported
+      @imported = true if Comment.importing?
+    end
+
     def set_map
       self.map ||= commentable&.comment_map
     end
