@@ -10,6 +10,7 @@ import { DocumentTile } from '@/documents/DocumentTile'
 import { DocumentViewer } from '@/documents/DocumentViewer'
 import { usePdfConversionRefresh } from '@/documents/pdfConversion'
 import { NewDocumentDialog } from '@/documents/markdown/NewDocumentDialog'
+import { TagHeading } from '@/documents/TagHeading'
 import { UploadList } from '@/documents/ProjectDocuments'
 import { useDocumentUploads } from '@/documents/upload'
 import { api, ApiError } from '@/lib/api'
@@ -103,6 +104,19 @@ export default function MapDocuments({ map, documents, canEdit, limits }: Props)
       setDocs((list) => list.map((d) => (d.id === saved.id ? saved : d)))
     } catch (e) {
       setError(e instanceof ApiError ? e.message : t('documents.errors.generic'))
+    }
+  }
+
+  // Renames a shelf on every document carrying it; the field stays open on a failure.
+  async function renameTag(from: string, to: string) {
+    setError(null)
+    try {
+      const result = await api<{ documents: MapDocumentData[] }>(`${endpoint}/tags`, { method: 'PATCH', body: { from, to } })
+      setDocs(result.documents)
+      setShelf((current) => (current != null && current.toLowerCase() === from.toLowerCase() ? to : current))
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : t('documents.errors.generic'))
+      throw e
     }
   }
 
@@ -209,9 +223,12 @@ export default function MapDocuments({ map, documents, canEdit, limits }: Props)
             {visible.length === 0 && <p className="mt-6 text-loam-500">{t('documents.none_found')}</p>}
             {groups.map((group) => (group.docs.length > 0 && (
               <section key={group.tag ?? 'all'} className="mt-5">
-                {group.tag !== undefined && (
+                {typeof group.tag === 'string' && (
+                  <TagHeading tag={group.tag} count={group.docs.length} canRename={canEdit} onRename={(to) => renameTag(group.tag as string, to)} />
+                )}
+                {group.tag === null && (
                   <h2 className="mb-3 flex items-baseline gap-2 font-serif text-xl text-loam-900">
-                    {group.tag ?? t('tags.untagged')}
+                    {t('tags.untagged')}
                     <span className="font-sans text-sm text-loam-500">{group.docs.length}</span>
                   </h2>
                 )}

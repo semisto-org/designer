@@ -10,7 +10,7 @@ module Mcp
         ProposeFeatures, ProposeSectors, ProposeZones, ProposeFeatureUpdates, ProposeDeletions, ProposePalette, ProposeProjectSheet, ProposePhases, ProposePresentationSlides, ProposeBioindicators, ProposeSoilResults, ProposeOfferLetter, ProposeDocumentTheme, WithdrawDraft,
         ProposeTerritoryItems, ProposeTerritoryUpdates, ProposeTerritoryDeletions, WithdrawTerritoryDrafts,
         CreateTasks, UpdateTasks, RecordTimeEntries, RecordProjectExpenses, RecordHarvests, RecordPlantObservations, RecordStorageReadings, AddDocument, UpdateDocument, ConvertDocumentToPdf, AddPhoto, UpdatePhotos, DeletePhotos, UpdatePaletteBudget,
-        CreateUpload, AttachPhotos, AttachDocuments, ImportFromUrl, DeleteDocuments, PrepareOfflineSite
+        CreateUpload, AttachPhotos, AttachDocuments, ImportFromUrl, DeleteDocuments, RenameDocumentTag, PrepareOfflineSite
       ]
     end
   end

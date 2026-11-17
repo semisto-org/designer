@@ -428,6 +428,8 @@ Rails.application.routes.draw do
       end
       resources :photo_albums, only: %i[create update destroy]
       resources :documents, only: %i[index show create update destroy] do
+        # Renames a tag (a shelf of the library) on every document carrying it.
+        patch :tags, action: :rename_tag, on: :collection
         member do
           get :file
           # The text of a Markdown document, read and saved by its editor.
