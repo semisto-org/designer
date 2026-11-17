@@ -34,6 +34,27 @@ module MapFeature::Tags
       counts = rows.group_by(&:downcase).to_h { |_, spellings| [ spellings.first, spellings.size ] }
       counts.sort_by { |tag, _| I18n.transliterate(tag).downcase }.to_h
     end
+
+    # Renames a tag on every record of the scope that carries it, whatever
+    # its case: « analyse » becomes « Analyses de sol » on each document of
+    # the shelf. When the new name is already used, the two shelves merge
+    # (a record keeps one of them). Raises ActiveRecord::RecordInvalid when
+    # the new name is too long. Returns how many records changed.
+    #
+    #   map.documents.rename_tag!("analyse", "Analyses de sol") # => 2
+    def rename_tag!(from, to)
+      from = normalize_tag(from)
+      to = normalize_tag(to)
+      raise ArgumentError, "blank tag" if from.blank? || to.blank?
+      return 0 if from == to
+
+      transaction do
+        tagged(from).to_a.count do |record|
+          record.tags = record.tags.map { |tag| tag.downcase == from.downcase ? to : tag }
+          record.save!
+        end
+      end
+    end
   end
 
   def tags=(values)

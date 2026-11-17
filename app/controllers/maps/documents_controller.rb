@@ -98,6 +98,18 @@ module Maps
       @document.save ? render(json: as_json(@document)) : render_document_errors(@document)
     end
 
+    # { from: "analyse", to: "Analyses de sol" }: every document of the map
+    # tagged « analyse » now carries « Analyses de sol » (the shelves merge
+    # when that name is already used). Answers the whole library again.
+    def rename_tag
+      from, to = params.values_at(:from, :to).map { MapDocument.normalize_tag(_1) }
+      return render json: { message: t("documents.errors.tag_blank") }, status: :unprocessable_entity if from.blank? || to.blank?
+      renamed = @map.all_documents.rename_tag!(from, to)
+      render json: { renamed:, documents: documents_json }
+    rescue ActiveRecord::RecordInvalid => e
+      render json: { message: e.record.errors.full_messages.to_sentence }, status: :unprocessable_entity
+    end
+
     def destroy
       @document.destroy!
       head :no_content

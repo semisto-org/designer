@@ -349,6 +349,22 @@ class McpTasksDocumentsTest < ActionDispatch::IntegrationTest
     assert error
   end
 
+  test "rename_document_tag renames a tag on every document of the library, for editors only" do
+    ids = 2.times.map { |i| call_tool(@owner, "add_document", { map_id: @map.id, title: "Analyse #{i}", content: "x", tags: [ i.zero? ? "analyse" : "Analyse", "pré-projet" ] }).first["id"] }
+    _, error = call_tool(@viewer, "rename_document_tag", { map_id: @map.id, from: "analyse", to: "Analyses de sol" })
+    assert error
+
+    data, error = call_tool(@owner, "rename_document_tag", { map_id: @map.id, from: "analyse", to: "Analyses de sol" })
+    refute error
+    assert_equal 2, data["renamed"]
+    assert_equal({ "Analyses de sol" => 2, "pré-projet" => 2 }, data["tags"])
+    assert_equal [ [ "Analyses de sol", "pré-projet" ] ] * 2, @map.documents.where(id: ids).order(:id).map(&:tags)
+    assert_equal({ "renamed" => 2 }, AiAction.last.result)
+
+    text, error = call_tool(@owner, "rename_document_tag", { map_id: @map.id, from: "pré-projet", to: "x" * 41 })
+    assert error, text
+  end
+
   test "update_document rewrites the text of a Markdown document, never of another file" do
     data, error = call_tool(@owner, "add_document", { map_id: @map.id, title: "Journal", content: "# Journal\n\n- Gelée" })
     refute error
