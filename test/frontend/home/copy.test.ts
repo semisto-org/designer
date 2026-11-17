@@ -6,10 +6,17 @@ import { parse } from 'yaml'
 const home = parse(readFileSync(new URL('../../../config/locales/site.fr.yml', import.meta.url), 'utf8')).fr.site.home
 const year = readFileSync(new URL('../../../app/frontend/components/site/home/Year.tsx', import.meta.url), 'utf8')
 
-test('the home page opens on the address: the hero asks where the place is and names its button', () => {
-  assert.equal(home.hero.title, 'Où est ton terrain ?')
+test('the first screen names what Terranova is for, with « jardin-forêt » as its key word, and keeps the address as the way in', () => {
+  assert.ok(home.hero.title.includes('jardin-forêt'), 'the title must contain the keyword as written')
+  assert.match(home.hero.title, /^Conçois/)
+  assert.match(home.hero.title, /suis/)
+  assert.ok(home.hero.what.body.includes('arbustes'))
   assert.ok(home.hero.submit)
-  assert.ok(home.hero.appears.length >= 2)
+  assert.ok(home.hero.label.includes('adresse'))
+})
+
+test('the example photo names the layers of a forest garden', () => {
+  for (const key of ['trees', 'shrubs', 'herbs', 'pond', 'garden']) assert.ok(home.hero.photo[key], `missing note ${key}`)
 })
 
 test('every moment of the first year has an icon the component knows, and at least one goes outdoors', () => {

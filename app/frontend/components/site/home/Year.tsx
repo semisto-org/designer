@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react'
 import { ArrowRight, Footprints, Lamp, PencilLine, Sprout, type LucideIcon } from 'lucide-react'
 import { buttonClass } from '@/components/ui/Button'
 import { content, tf } from '@/lib/content'
+import { KeepHyphenated } from './Hero'
 
 type Moment = { when: string; where: string; icon: string; title: string; items: string[] }
 
@@ -19,7 +20,7 @@ export function Year() {
       <div className="mx-auto max-w-6xl px-4 py-16 sm:py-24">
         <p className="font-hand text-2xl text-leaf-600">{tf('site.home.year.kicker')}</p>
         <h2 id="year-title" className="mt-1 max-w-3xl text-balance font-serif text-3xl font-medium leading-tight text-prune-900 sm:text-[2.75rem]">
-          {tf('site.home.year.title')}
+          <KeepHyphenated text={tf('site.home.year.title')} />
         </h2>
         <p className="mt-4 max-w-2xl text-pretty text-lg leading-relaxed text-loam-500">{tf('site.home.year.intro')}</p>
 
