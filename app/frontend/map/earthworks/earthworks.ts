@@ -55,14 +55,14 @@ type Cut = { volume: number; depth: number; profile: 1 | 0.5; noTopsoil?: boolea
  * soil to send elsewhere (subsoil: the topsoil is stripped and spread back on
  * the new surface), what is missing is room for soil from elsewhere.
  */
-export function gradingOf(p: Properties): { cut: number; fill: number; level: number | null; maxCut: number; maxFill: number; cutArea: number; fillArea: number } | null {
+export function gradingOf(p: Properties): { cut: number; fill: number; level: number | null; maxCut: number; maxFill: number; cutArea: number; fillArea: number; hasDaylight: boolean } | null {
   const g = p.grading
   if (!g || typeof g !== 'object') return null
   const r = g as Record<string, unknown>
   const cut = num(r.cut_m3)
   const fill = num(r.fill_m3)
   if (cut == null || fill == null) return null
-  return { cut, fill, level: num(r.level_m), maxCut: num(r.max_cut_m) ?? 0, maxFill: num(r.max_fill_m) ?? 0, cutArea: num(r.cut_area_m2) ?? 0, fillArea: num(r.fill_area_m2) ?? 0 }
+  return { cut, fill, level: num(r.level_m), maxCut: num(r.max_cut_m) ?? 0, maxFill: num(r.max_fill_m) ?? 0, cutArea: num(r.cut_area_m2) ?? 0, fillArea: num(r.fill_area_m2) ?? 0, hasDaylight: !!r.daylight }
 }
 
 /** A patio `terrace` on a slope is levelled like a graded terrace (Relief::Grading). */

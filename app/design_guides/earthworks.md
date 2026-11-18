@@ -49,6 +49,18 @@ On a slope, level ground is made by cutting uphill and filling downhill. Two ele
 
 The field method, as a designer stakes it out: trace the contour that runs through the middle of the work, cut above it and fill below, so that cut and fill balance. The slope and the width of the terrace then give the depth of the cut and the height of the fill (about width × slope ÷ 2 each, before the talus). That is `hinge: middle` on a plateau, or a `bench` drawn on that contour with `level_mode: follow`: start from it, then move the level only for a reason.
 
+`grading.daylight` gives the two lines to stake out, where the talus meet the natural ground: `cut_top` (the top of the uphill talus) and `fill_toe` (the foot of the downhill talus), each a list of lines in [lng, lat]. The editor draws them dashed on the map and the plan at scale prints them.
+
+### A landscaped terrace, as a designer lays it out (Eric's method)
+
+When the terrace follows the landscape rather than a straight line:
+
+1. Trace the **base contour**, the one through the middle of the work (`trace_contour` from a point in the middle of the slope where the terrace goes): above it is cut, below it is fill.
+2. Draw the terrace's own edges as one `graded_terrace` polygon: its uphill side is the **foot of the uphill talus**, its downhill side the **crest of the fill**. Free curves, wider where the slope allows, narrower where a tree or a path is in the way.
+3. Set the plateau on the base contour: `hinge: level`, `level_m` = the contour's `elevation_m`. (In the editor, « Caler sur la courbe de base » does it with one click and stores `base_contour`.)
+4. Choose the angle of each talus (`cut_slope_pct`, `fill_slope_pct`).
+5. Read back `grading`: the volumes, and the two last lines (`daylight`). Adjust the width, the level or the talus until the soil balances and the lines sit well in the landscape (clear of trees, paths and the boundary); compare two or three variants when the choice is open, and say why you keep one.
+
 A terrace's own cut fills its own fill first. A surplus is subsoil to send (`subsoil_to`, like a pond's); a shortfall makes it a receiver for other digs. The topsoil of the whole footprint is stripped first and spread back on the finished surface.
 
 To propose one: draw it as a draft with a rationale, read its volumes with `get_feature`, and adjust the level (or the hinge) until the balance suits the place, then say in the rationale why that level (door sill, access, view, the water's path). Never send fill across a natural water path, and give every terrace a way for the water to leave (a slight crossfall, a swale at the foot of the cut).

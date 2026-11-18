@@ -99,6 +99,24 @@ class Relief::GradingTest < ActiveSupport::TestCase
     assert_in_delta 0.5, g["max_cut_m"], 0.15, "10 m on a 10 % slope: half a metre each side"
   end
 
+  test "the talus meet the ground on two lines to stake out: the top of the cut uphill, the toe of the fill downhill" do
+    terrace = graded("graded_terrace", plateau(20), { "hinge" => "middle" })
+    daylight = terrace.grading["daylight"]
+    assert_equal 1, daylight["cut_top"].size, "one line around the uphill side"
+    assert_equal 1, daylight["fill_toe"].size, "one line around the downhill side"
+
+    # 10 m above the plateau's middle the ground is 1 m higher; a 40 % talus
+    # climbs 0.4 m per metre while the ground rises 0.1: it meets it 3.3 m out.
+    north = daylight["cut_top"].first.max_by(&:last)
+    assert_in_delta 10 + 1 / 0.3, (north.last - @centre.y) / M_LAT, 0.3
+    south = daylight["fill_toe"].first.min_by(&:last)
+    assert_in_delta(-(10 + 1 / 0.3), (south.last - @centre.y) / M_LAT, 0.3)
+
+    bank = graded("graded_profile", line(-20, 20), { "shape" => "bank", "width_m" => 2, "height_m" => 1 }).grading["daylight"]
+    assert_nil bank["cut_top"], "a bank is all fill"
+    assert_equal 2, bank["fill_toe"].size, "a toe on each side"
+  end
+
   test "the volumes are the server's: a client value is replaced, and without relief there is none" do
     terrace = graded("graded_terrace", plateau(10), { "grading" => { "cut_m3" => 9999 } })
     assert_not_equal 9999, terrace.grading["cut_m3"]

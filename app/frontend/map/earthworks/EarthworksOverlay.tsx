@@ -3,8 +3,10 @@ import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl'
 import { useEffect, useMemo } from 'react'
 import { useDrawingState } from '@/map/drawing/store'
 import { useEditor } from '@/map/editor/EditorContext'
+import { t } from '@/lib/i18n'
 import { arrowsToGeoJSON, type ArrowInput } from '@/map/earthworks/arrows'
-import { SOIL_PARTS } from '@/map/earthworks/earthworks'
+import { DAYLIGHT_COLORS, daylightToGeoJSON } from '@/map/earthworks/daylight'
+import { GRADED_KINDS, SOIL_PARTS } from '@/map/earthworks/earthworks'
 import { m3, useArrowsShown, useEarthworks } from '@/map/earthworks/model'
 import { displayGeometry } from '@/map/zones/zones'
 import type { MapFeature } from '@/types'
@@ -12,6 +14,10 @@ import type { MapFeature } from '@/types'
 const SOURCE = 'earthworks-arrows'
 const LAYERS = ['earthworks-arrows-line', 'earthworks-arrows-head', 'earthworks-arrows-label'] as const
 const HEAD_IMAGE = 'earthworks-arrow-head'
+// The talus lines of the graded terraces: part of the design, so they stay
+// on the plan while presenting (not an « earthworks-arrows » working layer).
+const DAYLIGHT_SOURCE = 'earthworks-daylight'
+const DAYLIGHT_LAYERS = ['earthworks-daylight-line', 'earthworks-daylight-label'] as const
 const EARTH = '#8b5e3c'
 const PIXEL_RATIO = 2
 
@@ -72,6 +78,34 @@ function install(map: MapLibreMap, data: ReturnType<typeof arrowsToGeoJSON>) {
   })
 }
 
+/** The lines where the talus meet the ground: top of the cut (darker), toe of the fill, each named along its length. */
+function installDaylight(map: MapLibreMap, data: ReturnType<typeof daylightToGeoJSON>) {
+  const source = map.getSource(DAYLIGHT_SOURCE) as GeoJSONSource | undefined
+  if (source) {
+    source.setData(data)
+    DAYLIGHT_LAYERS.forEach((id) => map.getLayer(id) && map.moveLayer(id))
+    return
+  }
+  map.addSource(DAYLIGHT_SOURCE, { type: 'geojson', data })
+  map.addLayer({
+    id: DAYLIGHT_LAYERS[0], type: 'line', source: DAYLIGHT_SOURCE,
+    layout: { 'line-cap': 'round', 'line-join': 'round' },
+    paint: {
+      'line-color': ['match', ['get', 'role'], 'cut_top', DAYLIGHT_COLORS.cut_top, 'base', DAYLIGHT_COLORS.base, DAYLIGHT_COLORS.fill_toe],
+      'line-width': 2, 'line-dasharray': [3, 2], 'line-opacity': 0.95,
+    },
+  })
+  map.addLayer({
+    id: DAYLIGHT_LAYERS[1], type: 'symbol', source: DAYLIGHT_SOURCE, minzoom: 17,
+    layout: {
+      'symbol-placement': 'line', 'symbol-spacing': 220,
+      'text-field': ['match', ['get', 'role'], 'cut_top', t('earthworks.daylight.cut_top'), 'base', t('earthworks.daylight.base'), t('earthworks.daylight.fill_toe')],
+      'text-size': 12, 'text-font': ['Noto Sans Regular'], 'text-offset': [0, -0.8],
+    },
+    paint: { 'text-color': DAYLIGHT_COLORS.label, 'text-halo-color': DAYLIGHT_COLORS.halo, 'text-halo-width': 1.6 },
+  })
+}
+
 function anchor(feature: MapFeature): [number, number] {
   return pointOnFeature({ type: 'Feature', geometry: displayGeometry(feature), properties: {} }).geometry.coordinates as [number, number]
 }
@@ -112,6 +146,24 @@ export default function EarthworksOverlay() {
     return arrowsToGeoJSON(arrows)
   }, [balance, byId, shown, arrival, hiddenLayers])
 
+  // Where each talus meets the ground, for every graded element shown on the map.
+  const daylight = useMemo(() => {
+    if (arrival) return daylightToGeoJSON([])
+    return daylightToGeoJSON(editor.features
+      .filter((f) => GRADED_KINDS.includes(f.properties.kind) && f.properties.status !== 'rejected' && !hiddenLayers.includes(f.properties.layer))
+      .map((f) => ({ id: f.properties.id, properties: f.properties as Record<string, unknown> })))
+  }, [editor.features, arrival, hiddenLayers])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => installDaylight(map, daylight), 0)
+    const reinstall = () => { if (!map.getSource(DAYLIGHT_SOURCE)) installDaylight(map, daylight) }
+    map.on('styledata', reinstall)
+    return () => {
+      window.clearTimeout(timer)
+      map.off('styledata', reinstall)
+    }
+  }, [map, daylight])
+
   useEffect(() => {
     // After the editor's own layers, so the arrows sit on top of the shapes.
     const timer = window.setTimeout(() => install(map, data), 0)
@@ -124,8 +176,9 @@ export default function EarthworksOverlay() {
   }, [map, data])
 
   useEffect(() => () => {
-    LAYERS.forEach((id) => map.getLayer(id) && map.removeLayer(id))
+    [...LAYERS, ...DAYLIGHT_LAYERS].forEach((id) => map.getLayer(id) && map.removeLayer(id))
     if (map.getSource(SOURCE)) map.removeSource(SOURCE)
+    if (map.getSource(DAYLIGHT_SOURCE)) map.removeSource(DAYLIGHT_SOURCE)
   }, [map])
 
   return null

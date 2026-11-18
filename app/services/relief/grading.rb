@@ -147,14 +147,158 @@ module Relief
           end
         end
 
+        daylight = daylight_lines(design, level, half_width, line_level)
         level = design[:grade] || design[:level] ? (design[:level] || start) : nil if design[:shape] == "bench"
         {
           "level_m" => level&.round(2),
           "cut_m3" => out[:cut].round(1), "fill_m3" => out[:fill].round(1),
           "cut_area_m2" => out[:cut_area].round, "fill_area_m2" => out[:fill_area].round,
           "max_cut_m" => out[:max_cut].round(2), "max_fill_m" => out[:max_fill].round(2),
-          "cell_size_m" => cs.round(2)
+          "cell_size_m" => cs.round(2),
+          "daylight" => daylight
         }.compact
+      end
+
+      DAYLIGHT_SPACING_M = 1.0
+      DAYLIGHT_STEP_M = 0.2
+
+      # Where the talus meet the natural ground, to stake out in the field:
+      # the top of the cut talus uphill (`cut_top`) and the toe of the fill
+      # talus downhill (`fill_toe`), each a list of lines in [lng, lat]. The
+      # designed edges themselves are the drawn shape (plateau) or the strip
+      # on each side of the line (bench, bank). Walked outward from the edge,
+      # every metre, along its normal: a sketch for stakes, not a survey.
+      def daylight_lines(design, level, half_width, line_level)
+        samples = edge_samples(design, half_width, line_level, level)
+        return nil if samples.empty?
+
+        runs = { "cut" => [], "fill" => [] }
+        kind_now = nil
+        line = []
+        flush = lambda do
+          runs[kind_now] << line if kind_now && line.size >= 2
+          kind_now = nil
+          line = []
+        end
+        results = samples.map { |sample| sample && daylight_at(*sample, design) }
+        # Around a closed outline, start where the kind changes, so a talus
+        # that runs across the first corner stays one line.
+        if design[:shape] == "plateau"
+          turn = results.each_index.find { |i| results[i]&.first != results[0]&.first }
+          results = results.rotate(turn) if turn
+        end
+        results.each do |result|
+          kind, point = result
+          # A gap (between two sides, nodata, the hinge where the edge meets the ground) ends the line.
+          next flush.() unless kind
+
+          flush.() if kind != kind_now
+          kind_now = kind
+          line << point
+        end
+        flush.()
+        lines = runs.transform_values { |list| list.map { |line| line.map { |x, y| to_lnglat(x, y) } } }
+        { "cut_top" => lines["cut"], "fill_toe" => lines["fill"] }.reject { |_, v| v.empty? }.presence
+      end
+
+      # [x, y, nx, ny, level, kind] along each designed edge, the normal
+      # pointing away from the work; nil between two separate edges.
+      def edge_samples(design, half_width, line_level, level)
+        outline = design[:outline]
+        if design[:shape] == "plateau"
+          plateau_samples(outline, level)
+        else
+          centre = densify(outline)
+          [ 1, -1 ].flat_map do |side|
+            centre.filter_map do |x, y, tx, ty, along|
+              base = line_level.(along, x, y)
+              next unless base
+
+              nx = -ty * side
+              ny = tx * side
+              crest = design[:shape] == "bank" ? (design[:level] && !design[:grade] ? design[:level] : base + design[:height]) : base
+              [ x + nx * half_width, y + ny * half_width, nx, ny, crest, design[:shape] == "bank" ? :crest : :edge ]
+            end + [ nil ]
+          end
+        end
+      end
+
+      # Each side of the outline with its outward normal and, around a convex
+      # corner, a fan of normals: the talus turns the corner like a cone.
+      def plateau_samples(outline, level)
+        ring = outline + [ outline.first ]
+        sides = ring.each_cons(2).filter_map do |(ax, ay), (bx, by)|
+          length = Math.hypot(bx - ax, by - ay)
+          next if length.zero?
+
+          tx = (bx - ax) / length
+          ty = (by - ay) / length
+          nx, ny = ty, -tx
+          mx = (ax + bx) / 2
+          my = (ay + by) / 2
+          nx, ny = -nx, -ny if inside?(mx + nx * 0.05, my + ny * 0.05, outline)
+          [ ax, ay, tx, ty, nx, ny, length ]
+        end
+        sides.each_with_index.flat_map do |(ax, ay, tx, ty, nx, ny, length), k|
+          steps = [ (length / DAYLIGHT_SPACING_M).ceil, 1 ].max
+          along = (0...steps).map { |i| d = length * i / steps; [ ax + tx * d, ay + ty * d, nx, ny, level, :edge ] }
+          _, _, tx2, ty2, nx2, ny2, = sides[(k + 1) % sides.size]
+          turn = Math.atan2(nx * ny2 - ny * nx2, nx * nx2 + ny * ny2)
+          # Convex when the next side turns away from this side's outward normal.
+          convex = tx2 * nx + ty2 * ny < -1e-6 && turn.abs > 0.05
+          bx = ax + tx * length
+          by = ay + ty * length
+          fan = convex ? (0..4).map { |i| a = turn * i / 4.0; [ bx, by, nx * Math.cos(a) - ny * Math.sin(a), nx * Math.sin(a) + ny * Math.cos(a), level, :edge ] } : []
+          along + fan
+        end
+      end
+
+      # Points every DAYLIGHT_SPACING_M along a polyline: [x, y, tx, ty, along].
+      def densify(points)
+        out = []
+        walked = 0.0
+        points.each_cons(2) do |(ax, ay), (bx, by)|
+          length = Math.hypot(bx - ax, by - ay)
+          next if length.zero?
+
+          tx = (bx - ax) / length
+          ty = (by - ay) / length
+          steps = [ (length / DAYLIGHT_SPACING_M).ceil, 1 ].max
+          steps.times { |k| d = length * k / steps; out << [ ax + tx * d, ay + ty * d, tx, ty, walked + d ] }
+          walked += length
+        end
+        last = points.last
+        out << [ last[0], last[1], *out.last[2, 2], walked ] if out.any?
+        out
+      end
+
+      # ["cut" | "fill", [x, y]] where the talus leaving this edge point meets the ground.
+      def daylight_at(x, y, nx, ny, level, kind, design)
+        g0 = bilinear(x, y)
+        return nil unless g0 && level
+        return nil if kind == :edge && (g0 - level).abs < 0.05
+
+        cut = kind == :edge && g0 > level
+        ratio = cut ? design[:ratio][:cut] : design[:ratio][:fill]
+        d = 0.0
+        while d <= MAX_TALUS_M
+          px = x + nx * d
+          py = y + ny * d
+          g = bilinear(px, py)
+          return nil unless g
+
+          surface = cut ? level + d / ratio : level - d / ratio
+          return [ cut ? "cut" : "fill", [ px, py ] ] if cut ? surface >= g : surface <= g
+
+          d += DAYLIGHT_STEP_M
+        end
+        nil
+      end
+
+      def to_lnglat(x, y)
+        mx = @terrain.west + x / @cell * @terrain.step
+        my = @terrain.north - y / @cell * @terrain.step
+        Mercator.inverse(mx, my).map { |v| v.round(7) }
       end
 
       # Horizontal metres per metre of height of one talus.
