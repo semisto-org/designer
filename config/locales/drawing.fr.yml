@@ -96,6 +96,8 @@ fr:
       hinge: "Niveau du plateau"
       level_m: "Cote (altitude)"
       slope_ratio: "Talus (m à l'horizontale par m de haut)"
+      cut_slope_pct: "Talus amont, en déblai (pente)"
+      fill_slope_pct: "Talus aval, en remblai (pente)"
       shape: "Profil"
       level_mode: "Niveau le long de la ligne"
       grade_pct: "Pente en long"

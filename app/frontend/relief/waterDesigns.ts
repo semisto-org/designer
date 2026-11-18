@@ -6,6 +6,7 @@
 // the same axes.
 import type { Feature, Geometry } from 'geojson'
 import { pointsAlong, type Design, type GridPoint } from './design.ts'
+import { GRADE_RATIO_DEFAULT } from './grading.ts'
 import { toGrid, type GridMeta } from './grid.ts'
 
 const POND_KINDS = new Set(['pond'])
@@ -43,6 +44,13 @@ const SOIL_EFFECTS: Record<string, SoilEffect> = {
 function numberProp(value: unknown, fallback: number): number {
   const n = typeof value === 'string' ? Number(value) : value
   return typeof n === 'number' && Number.isFinite(n) && n > 0 ? n : fallback
+}
+
+/** Horizontal metres per metre of height of a talus, from its gradient (%) or the older `slope_ratio`. */
+function talusRatio(props: Record<string, unknown>, key: 'cut_slope_pct' | 'fill_slope_pct'): number {
+  const pct = levelProp(props[key])
+  if (pct != null && pct > 0) return 100 / Math.min(200, Math.max(5, pct))
+  return numberProp(props.slope_ratio, GRADE_RATIO_DEFAULT)
 }
 
 function levelProp(value: unknown): number | null {
@@ -120,13 +128,14 @@ export function waterDesigns(meta: GridMeta, features: readonly WaterFeature[]):
         id, type: 'mound', ring: geometry.coordinates[0].map((p) => toGrid(meta, p)),
         height: numberProp(props.height_m, defaults.height), profile: defaults.profile,
       })
-    } else if (kind === 'graded_terrace' && geometry?.type === 'Polygon') {
+    } else if ((kind === 'graded_terrace' || kind === 'terrace') && geometry?.type === 'Polygon') {
+      // A patio on a slope is levelled the same way, hung in the middle by default.
       designs.push({
         id, type: 'grade', shape: 'plateau', ring: geometry.coordinates[0].map((p) => toGrid(meta, p)),
         // The server's level, read on the finer grid, unless the person set one.
         level: props.hinge === 'level' ? levelProp(props.level_m) : levelProp((props.grading as Record<string, unknown> | undefined)?.level_m),
         hinge: props.hinge === 'upper' || props.hinge === 'lower' ? props.hinge : 'middle',
-        ratio: numberProp(props.slope_ratio, 1.5),
+        cutRatio: talusRatio(props, 'cut_slope_pct'), fillRatio: talusRatio(props, 'fill_slope_pct'),
       })
     } else if (kind === 'graded_profile' && geometry?.type === 'LineString') {
       const mode = String(props.level_mode ?? 'follow')
@@ -135,7 +144,7 @@ export function waterDesigns(meta: GridMeta, features: readonly WaterFeature[]):
         width: numberProp(props.width_m, props.shape === 'bank' ? 1 : 3), height: numberProp(props.height_m, 0.8),
         level: mode === 'follow' ? null : levelProp(props.level_m),
         grade: mode === 'grade' ? levelProp(props.grade_pct) ?? 0 : null,
-        ratio: numberProp(props.slope_ratio, 1.5),
+        cutRatio: talusRatio(props, 'cut_slope_pct'), fillRatio: talusRatio(props, 'fill_slope_pct'),
       })
     } else if (kind === 'water_tank' && geometry?.type === 'Point') {
       tanks.push({ id, capacity: numberProp(props.capacity_l, 5000) / 1000, roofArea: 0 })

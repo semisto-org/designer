@@ -486,20 +486,22 @@ layers:
           - { key: purpose, type: select, options: [growing, hedge_bank, windbreak, noise, play] }
       # Cut and fill to a designed surface, on the map's relief (Relief::Grading,
       # relief/grading.ts): a level plateau inside the outline, its level
-      # hung on the ground (hinge) or given (level_m); side slopes of
-      # `slope_ratio` horizontal metres per metre of height. The volumes are
-      # computed on save into properties.grading.
+      # hung on the ground (hinge) or given (level_m); an uphill talus in cut
+      # and a downhill one in fill, each a gradient in % (cut_slope_pct,
+      # fill_slope_pct, 30 to 50 % in the field; the older `slope_ratio` is
+      # still read). The volumes are computed on save into properties.grading.
       graded_terrace:
         geometry: Polygon
         functions: [food, soil_protection, microclimate]
         icon: layers
         color: "#8b6a3c"
         fill: { opacity: 0.35, pattern: hatch }
-        defaults: { hinge: middle, slope_ratio: 1.5 }
+        defaults: { hinge: middle, cut_slope_pct: 40, fill_slope_pct: 40 }
         fields:
           - { key: hinge, type: select, options: [upper, middle, lower, level] }
           - { key: level_m, type: number, unit: m, min: -500, max: 5000, step: 0.05 }
-          - { key: slope_ratio, type: number, min: 0.5, max: 5, step: 0.1 }
+          - { key: cut_slope_pct, type: number, unit: "%", min: 10, max: 150, step: 5 }
+          - { key: fill_slope_pct, type: number, unit: "%", min: 10, max: 150, step: 5 }
       # A cross-section swept along a line: a bench cut into the slope (its
       # level follows the ground at the line, stays level, or falls at
       # grade_pct) or a raised bank.
@@ -510,7 +512,7 @@ layers:
         icon: spline
         color: "#8b6a3c"
         line: { width: 6, opacity: 0.8 }
-        defaults: { shape: bench, width_m: 3, level_mode: follow, slope_ratio: 1.5 }
+        defaults: { shape: bench, width_m: 3, level_mode: follow, cut_slope_pct: 40, fill_slope_pct: 40 }
         fields:
           - { key: shape, type: select, options: [bench, bank] }
           - { key: width_m, type: number, unit: m, min: 0.3, max: 30, step: 0.1 }
@@ -518,7 +520,10 @@ layers:
           - { key: level_mode, type: select, options: [follow, level, grade] }
           - { key: level_m, type: number, unit: m, min: -500, max: 5000, step: 0.05 }
           - { key: grade_pct, type: number, unit: "%", min: -30, max: 30, step: 0.5 }
-          - { key: slope_ratio, type: number, min: 0.5, max: 5, step: 0.1 }
+          - { key: cut_slope_pct, type: number, unit: "%", min: 10, max: 150, step: 5 }
+          - { key: fill_slope_pct, type: number, unit: "%", min: 10, max: 150, step: 5 }
+      # A patio. On a slope it is levelled like a graded terrace (hung in the
+      # middle: cut uphill, fill downhill), with the same fields.
       terrace:
         geometry: Polygon
         functions: [soil_protection, food, microclimate]
@@ -526,8 +531,13 @@ layers:
         icon: armchair
         color: "#726b9f"
         fill: { opacity: 0.3, pattern: dots }
+        defaults: { hinge: middle, cut_slope_pct: 40, fill_slope_pct: 40 }
         fields:
           - { key: surface, type: select, options: [wood, stone, gravel, paved, grass] }
+          - { key: hinge, type: select, options: [upper, middle, lower, level] }
+          - { key: level_m, type: number, unit: m, min: -500, max: 5000, step: 0.05 }
+          - { key: cut_slope_pct, type: number, unit: "%", min: 10, max: 150, step: 5 }
+          - { key: fill_slope_pct, type: number, unit: "%", min: 10, max: 150, step: 5 }
       playground:
         geometry: Polygon
         icon: toy-brick

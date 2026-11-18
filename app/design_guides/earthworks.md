@@ -44,7 +44,22 @@ On a slope, level ground is made by cutting uphill and filling downhill. Two ele
 
 - **`graded_terrace`** (polygon): a level plateau. `hinge` hangs its level on the ground: `upper` (the uphill edge: all fill), `middle` (cut and fill balance, the usual choice: no soil moved in or out), `lower` (the downhill edge: all cut), or `level` with `level_m` (a given altitude, for a building pad or a terrace that must meet a door sill).
 - **`graded_profile`** (line): a cross-section swept along the line. `shape: bench` is a level strip `width_m` wide cut into the slope (along a contour for a walkable terrace or a row of trees); `shape: bank` a raised strip `height_m` high (a levee, a bank to sit a hedge on). `level_mode`: `follow` (the ground at the line), `level` (at `level_m`), or `grade` (a ramp falling `grade_pct` % from the first point; negative to rise).
-- `slope_ratio`: horizontal metres per metre of height of the side slopes, 1.5 by default. Steeper than 1 needs a dry stone wall or a gabion; flatter than 2 is easy to mow and plant.
+- **`terrace`** (polygon, a patio): on a slope it is levelled like a `graded_terrace`, with the same `hinge` (`middle` by default), `level_m` and talus, and gets the same `grading`.
+- `cut_slope_pct` (the uphill talus, in cut) and `fill_slope_pct` (the downhill talus, in fill): their gradient in %, 40 by default. In the field, Semisto's designers build them at 30 to 50 %: easy to mow, plant and walk. Steeper than about 70 % needs a dry stone wall or a gabion; a fill talus holds less well than a cut one, so keep it gentler on a loose soil. (Older elements may carry `slope_ratio`, horizontal metres per metre of height, read when the gradients are absent.)
+
+The field method, as a designer stakes it out: trace the contour that runs through the middle of the work, cut above it and fill below, so that cut and fill balance. The slope and the width of the terrace then give the depth of the cut and the height of the fill (about width × slope ÷ 2 each, before the talus). That is `hinge: middle` on a plateau, or a `bench` drawn on that contour with `level_mode: follow`: start from it, then move the level only for a reason.
+
+`grading.daylight` gives the two lines to stake out, where the talus meet the natural ground: `cut_top` (the top of the uphill talus) and `fill_toe` (the foot of the downhill talus), each a list of lines in [lng, lat]. The editor draws them dashed on the map and the plan at scale prints them.
+
+### A landscaped terrace, as a designer lays it out (Eric's method)
+
+When the terrace follows the landscape rather than a straight line:
+
+1. Trace the **base contour**, the one through the middle of the work (`trace_contour` from a point in the middle of the slope where the terrace goes): above it is cut, below it is fill.
+2. Draw the terrace's own edges as one `graded_terrace` polygon: its uphill side is the **foot of the uphill talus**, its downhill side the **crest of the fill**. Free curves, wider where the slope allows, narrower where a tree or a path is in the way.
+3. Set the plateau on the base contour: `hinge: level`, `level_m` = the contour's `elevation_m`. (In the editor, « Caler sur la courbe de base » does it with one click and stores `base_contour`.)
+4. Choose the angle of each talus (`cut_slope_pct`, `fill_slope_pct`).
+5. Read back `grading`: the volumes, and the two last lines (`daylight`). Adjust the width, the level or the talus until the soil balances and the lines sit well in the landscape (clear of trees, paths and the boundary); compare two or three variants when the choice is open, and say why you keep one.
 
 A terrace's own cut fills its own fill first. A surplus is subsoil to send (`subsoil_to`, like a pond's); a shortfall makes it a receiver for other digs. The topsoil of the whole footprint is stripped first and spread back on the finished surface.
 

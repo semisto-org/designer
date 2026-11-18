@@ -36,8 +36,9 @@ export type GradeDesign = {
   height?: number
   /** Bench or bank: falls this much (%) along the line from its start, from `level` or the ground there. */
   grade?: number | null
-  /** Side slopes: horizontal metres per metre of height (1.5 = 2 in 3). */
-  ratio?: number
+  /** Side slopes: horizontal metres per metre of height (2.5 = 40 %), uphill (cut) and downhill (fill). */
+  cutRatio?: number
+  fillRatio?: number
 }
 
 export type GradeResult = {
@@ -56,7 +57,9 @@ export type GradeResult = {
   heights: number[]
 }
 
-export const GRADE_RATIO_DEFAULT = 1.5
+/** 40 %: the middle of the 30 to 50 % Semisto's designers build in the field. */
+export const GRADE_SLOPE_PCT_DEFAULT = 40
+export const GRADE_RATIO_DEFAULT = 100 / GRADE_SLOPE_PCT_DEFAULT
 const BENCH_WIDTH_DEFAULT = 3
 const BANK_WIDTH_DEFAULT = 1
 const BANK_HEIGHT_DEFAULT = 0.8
@@ -108,9 +111,9 @@ function nearest(points: GradePoint[], x: number, y: number, closed: boolean): {
   return best
 }
 
-/** A slope that leaves `level` at distance `d` beyond the edge and meets the ground `g`. */
-function talus(level: number, g: number, d: number, ratio: number): number {
-  return g > level ? Math.min(g, level + d / ratio) : Math.max(g, level - d / ratio)
+/** A slope that leaves `level` at distance `d` beyond the edge and meets the ground `g`: climbing in cut, falling in fill. */
+function talus(level: number, g: number, d: number, cutRatio: number, fillRatio: number): number {
+  return g > level ? Math.min(g, level + d / cutRatio) : Math.max(g, level - d / fillRatio)
 }
 
 function positive(value: number | null | undefined, fallback: number): number {
@@ -123,7 +126,8 @@ function positive(value: number | null | undefined, fallback: number): number {
  * counted); nodata must already be filled in `base`.
  */
 export function grade(base: ArrayLike<number>, cols: number, rows: number, cellSize: number, design: GradeDesign): GradeResult {
-  const ratio = positive(design.ratio, GRADE_RATIO_DEFAULT)
+  const cutRatio = positive(design.cutRatio, GRADE_RATIO_DEFAULT)
+  const fillRatio = positive(design.fillRatio, GRADE_RATIO_DEFAULT)
   const empty: GradeResult = { cut: 0, fill: 0, cutArea: 0, fillArea: 0, maxCut: 0, maxFill: 0, level: null, cells: [], heights: [] }
   const shape = design.shape
   const outline = shape === 'plateau' ? design.ring ?? [] : design.points ?? []
@@ -182,17 +186,17 @@ export function grade(base: ArrayLike<number>, cols: number, rows: number, cellS
       let target: number
       if (shape === 'plateau') {
         const near = nearest(outline, x, y, true)
-        target = inside(x, y, outline) ? plateau! : talus(plateau!, g, near.distance, ratio)
+        target = inside(x, y, outline) ? plateau! : talus(plateau!, g, near.distance, cutRatio, fillRatio)
       } else {
         const near = nearest(outline, x, y, false)
         const beyond = Math.max(0, near.distance - halfWidth)
         if (beyond > MAX_TALUS_M) continue
         const base0 = lineLevel(near.along, near.px, near.py)
-        if (shape === 'bench') target = near.distance <= halfWidth ? base0 : talus(base0, g, beyond, ratio)
+        if (shape === 'bench') target = near.distance <= halfWidth ? base0 : talus(base0, g, beyond, cutRatio, fillRatio)
         else {
           // A bank's crest: a height above the ground at its line, or an absolute level.
           const crest = level != null && gradePct == null ? level : base0 + bankHeight
-          target = Math.max(g, crest - beyond / ratio)
+          target = Math.max(g, crest - beyond / fillRatio)
         }
       }
       const delta = target - g

@@ -44,7 +44,15 @@ Sur une pente, une terrasse se fait en creusant en amont et en remblayant en ava
 - **Terrasse en déblai-remblai** : dessine le contour du plateau, puis choisis son **Niveau du plateau** : au bord amont (tout en remblai), au milieu (le déblai remplit le remblai), au bord aval (tout en déblai), ou à une **Cote** que tu donnes ;
 - **Profil le long d'une ligne** : trace la ligne, puis choisis une **Banquette** (une bande plate entaillée dans la pente, par exemple le long d'une courbe de niveau) ou un **Talus ou levée** (une bande de terre rapportée, avec sa hauteur), sa largeur, et si son niveau suit le terrain, reste de niveau à une cote, ou descend en pente régulière (une rampe).
 
-Le **Talus** dit combien de mètres à l'horizontale il faut pour un mètre de haut (1,5 par défaut). Une fois le relief téléchargé, la section **Déblai et remblai** de la fiche donne le niveau, les volumes, la plus grande profondeur et la plus grande hauteur. Ce qui reste du déblai se place comme la terre d'une mare ; ce qui manque au remblai se reçoit comme dans une butte. La vue 3D montre la terrasse et ses talus sur ton vrai terrain.
+Les deux talus se règlent à part, en pente : le **Talus amont, en déblai** et le **Talus aval, en remblai** (40 % par défaut ; sur le terrain, on les fait entre 30 et 50 %, faciles à tondre et à planter). Une fois le relief téléchargé, la section **Déblai et remblai** de la fiche donne le niveau, les volumes, la plus grande profondeur et la plus grande hauteur. Ce qui reste du déblai se place comme la terre d'une mare ; ce qui manque au remblai se reçoit comme dans une butte. La vue 3D montre la terrasse et ses talus sur ton vrai terrain.
+
+Sur la carte, deux lignes en pointillé montrent où les talus rejoignent le terrain : le **haut du talus** en amont et le **pied du talus** en aval. Ce sont les deux dernières lignes à piqueter ; elles s'impriment aussi sur le plan à l'échelle.
+
+Pour une terrasse qui suit le paysage, dessine son contour librement : le bord amont est le pied du talus amont, le bord aval la crête du remblai. Puis, dans sa fiche, **Caler sur la courbe de base** : clique au milieu de la terrasse, le plateau prend l'altitude de la courbe de niveau qui passe là, et la courbe apparaît en vert. On creuse au-dessus, on remblaie en dessous.
+
+Une **terrasse** de la bibliothèque (le coin où l'on s'assied) se met de niveau de la même façon quand le terrain penche : calée au milieu par défaut, avec ses deux talus.
+
+La méthode de terrain : trace la courbe de niveau qui passe au milieu de l'ouvrage, creuse au-dessus, remblaie en dessous. Déblai et remblai s'équilibrent, et la pente et la largeur donnent la profondeur à creuser et la hauteur à remblayer. C'est le choix **Au milieu** de Terranova : pars de là.
 
 Avant de commencer, va planter un piquet à chaque coin et marque le niveau au cordeau : tu verras sur place la terre à enlever et celle à apporter.
 

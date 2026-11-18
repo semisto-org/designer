@@ -46,7 +46,7 @@ class Relief::GradingTest < ActiveSupport::TestCase
     terrace = graded("graded_terrace", plateau(20), { "hinge" => "upper" })
     g = terrace.grading
     assert_in_delta 201, g["level_m"], 0.1
-    assert_equal 0, g["cut_m3"], "a 10 % slope never rises above a 1.5 talus"
+    assert_equal 0, g["cut_m3"], "a 10 % slope never rises above a 40 % talus"
     assert_operator g["fill_m3"], :>, 400
 
     terrace.update!(properties: terrace.properties.merge("hinge" => "level", "level_m" => 199))
@@ -66,7 +66,7 @@ class Relief::GradingTest < ActiveSupport::TestCase
     bank = graded("graded_profile", line(-20, 20), { "shape" => "bank", "width_m" => 2, "height_m" => 1 })
     g = bank.grading
     assert_equal 0, g["cut_m3"]
-    assert_in_delta 40 * 2 + 40 * 1.5, g["fill_m3"], 25, "crest 2 m × 1 m, two talus of ½ × 1.5 × 1, on 40 m"
+    assert_in_delta 40 * 2 + 40 * 2.5 + 25, g["fill_m3"], 30, "crest 2 m × 1 m, two talus of ½ × 2.5 × 1 (40 %), on 40 m, its ends and a longer foot downhill"
     assert_in_delta 1, g["max_fill_m"], 0.15
   end
 
@@ -76,6 +76,45 @@ class Relief::GradingTest < ActiveSupport::TestCase
     # From 198 m at its southern end, rising 5 % over 40 m to 200 m, while the ground rises to 202 m: cut at the top.
     assert_in_delta 198, ramp.grading["level_m"], 0.1
     assert_operator ramp.grading["cut_m3"], :>, ramp.grading["fill_m3"]
+  end
+
+  test "the uphill and downhill talus are set apart, in %, and the older slope_ratio still counts" do
+    steep = graded("graded_terrace", plateau(20), { "hinge" => "middle", "cut_slope_pct" => 40, "fill_slope_pct" => 100 }).grading
+    gentle = graded("graded_terrace", plateau(20), { "hinge" => "middle", "cut_slope_pct" => 40, "fill_slope_pct" => 30 }).grading
+    assert_in_delta steep["cut_m3"], gentle["cut_m3"], 0.5, "the cut side does not change"
+    assert_operator gentle["fill_m3"], :>, steep["fill_m3"] + 5
+
+    # An element saved before the gradients (no defaults applied on update).
+    legacy = graded("graded_terrace", plateau(20), {})
+    legacy.update!(properties: { "hinge" => "middle", "slope_ratio" => 1 })
+    both = graded("graded_terrace", plateau(20), { "hinge" => "middle", "cut_slope_pct" => 100, "fill_slope_pct" => 100 }).grading
+    assert_in_delta both["fill_m3"], legacy.grading["fill_m3"], 0.5, "slope_ratio 1 = 100 %"
+  end
+
+  test "a patio on a slope is levelled in the middle, like a graded terrace" do
+    patio = graded("terrace", plateau(10), { "surface" => "wood" })
+    g = patio.grading
+    assert_in_delta 200, g["level_m"], 0.1
+    assert_in_delta g["cut_m3"], g["fill_m3"], g["cut_m3"] * 0.25, "balanced, to a 1 m grid"
+    assert_in_delta 0.5, g["max_cut_m"], 0.15, "10 m on a 10 % slope: half a metre each side"
+  end
+
+  test "the talus meet the ground on two lines to stake out: the top of the cut uphill, the toe of the fill downhill" do
+    terrace = graded("graded_terrace", plateau(20), { "hinge" => "middle" })
+    daylight = terrace.grading["daylight"]
+    assert_equal 1, daylight["cut_top"].size, "one line around the uphill side"
+    assert_equal 1, daylight["fill_toe"].size, "one line around the downhill side"
+
+    # 10 m above the plateau's middle the ground is 1 m higher; a 40 % talus
+    # climbs 0.4 m per metre while the ground rises 0.1: it meets it 3.3 m out.
+    north = daylight["cut_top"].first.max_by(&:last)
+    assert_in_delta 10 + 1 / 0.3, (north.last - @centre.y) / M_LAT, 0.3
+    south = daylight["fill_toe"].first.min_by(&:last)
+    assert_in_delta(-(10 + 1 / 0.3), (south.last - @centre.y) / M_LAT, 0.3)
+
+    bank = graded("graded_profile", line(-20, 20), { "shape" => "bank", "width_m" => 2, "height_m" => 1 }).grading["daylight"]
+    assert_nil bank["cut_top"], "a bank is all fill"
+    assert_equal 2, bank["fill_toe"].size, "a toe on each side"
   end
 
   test "the volumes are the server's: a client value is replaced, and without relief there is none" do

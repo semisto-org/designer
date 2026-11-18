@@ -1,11 +1,14 @@
-import { Lightbulb, Plus, Shovel, X } from 'lucide-react'
+import { Lightbulb, Plus, Shovel, Spline, X } from 'lucide-react'
+import type { Polygon } from 'geojson'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Field, Input, Select } from '@/components/ui/Field'
 import { IconButton } from '@/components/ui/IconButton'
 import { formatNumber, t } from '@/lib/i18n'
 import { elementFor, storedProperties } from '@/map/drawing/catalog'
+import { traceContour } from '@/map/drawing/contour'
 import { saveFeature } from '@/map/drawing/save'
+import { activeBaseContour, baseContour } from '@/map/earthworks/daylight'
 import { useEditor } from '@/map/editor/EditorContext'
 import {
   DESTINATION_KEY, DESTINATIONS, destinationsOf, excavation, GRADED_KINDS, gradingOf, isDiggable, isDone, receiverGap, SOIL_PARTS, storedDestinations, topsoilCm,
@@ -79,9 +82,54 @@ function GradingSummary({ feature }: { feature: MapFeature }) {
             {t('earthworks.grading.tip_stakes')}
           </p>
           <p className="text-loam-500">{t('earthworks.grading.hint')}</p>
+          {g.hasDaylight && <p className="text-loam-700">{t('earthworks.grading.daylight_hint')}</p>}
         </>
       )}
+      <BaseContourControl feature={feature} />
     </section>
+  )
+}
+
+/**
+ * « Caler sur la courbe de base » (Eric's field method): the person clicks
+ * the contour through the middle of the terrace, the plateau takes its
+ * level, and the contour is drawn across the terrace to stake out.
+ */
+function BaseContourControl({ feature }: { feature: MapFeature }) {
+  const editor = useEditor()
+  const [busy, setBusy] = useState(false)
+  const p = feature.properties
+  if (feature.geometry.type !== 'Polygon') return null
+  const active = activeBaseContour(p as Record<string, unknown>).length > 0
+
+  async function pick() {
+    setBusy(true)
+    try {
+      editor.notify(t('earthworks.grading.base_pick'))
+      const point = await editor.draw('point')
+      if (!point || point.type !== 'Point') return
+      const contour = await traceContour(editor.map.id, point.coordinates)
+      const base = baseContour(contour.geometry, contour.elevationM, feature.geometry as Polygon)
+      await saveFeature(editor, p.id, { properties: { ...storedProperties(feature), hinge: 'level', level_m: base.level_m, base_contour: base } })
+      editor.notify(t('earthworks.grading.base_done', { level: levelText(base.level_m) }))
+    } catch (error) {
+      editor.notify((error as Error).message, 'error')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="space-y-1.5">
+      {active && <p className="text-loam-700">{t('earthworks.grading.base_active')}</p>}
+      {editor.canEdit && (
+        <Button variant="secondary" size="sm" onClick={pick} disabled={busy}>
+          <Spline className="h-4 w-4" />
+          {active ? t('earthworks.grading.base_again') : t('earthworks.grading.base_button')}
+        </Button>
+      )}
+      {editor.canEdit && !active && <p className="text-loam-500">{t('earthworks.grading.base_hint')}</p>}
+    </div>
   )
 }
 
