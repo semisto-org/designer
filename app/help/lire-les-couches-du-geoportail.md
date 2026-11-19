@@ -47,7 +47,7 @@ Ton IA peut aussi regarder ces photos, année par année, avec le contour de ton
 - **Pentes** : la même idée en couleurs, utile pour savoir où l'on peut circuler, tondre, planter en rangs.
 - **Ruissellement et cours d'eau** : les axes où l'eau descend, les cuvettes où elle s'accumule. C'est la base pour placer des baissières, des mares et des haies qui freinent l'eau.
 - **Carte des sols** : la nature du sol (texture, drainage). Elle est à lire avec prudence : c'est une carte régionale, pas une analyse de ton jardin.
-- **Fichier écologique des essences** : pour chaque station, les niveaux d'humidité et de richesse du sol, et les essences qui s'y plaisent. Précieux pour choisir des arbres adaptés.
+- **Niveaux hydriques du sol (FEE)** : la sous-couche « Niveaux hydriques » du Fichier écologique des essences, l'eau que le sol garde pour les racines, de −4 (marécageux) à 5 (très sec). Sur le Géoportail, la même série s'ouvre sur « Apports d'eau » : ce n'est pas la même carte. Un clic sur ton terrain donne aussi sa richesse (niveau trophique), son sous-secteur et ses apports d'eau. Précieux pour choisir des arbres adaptés.
 
 ## Milieux et règles
 

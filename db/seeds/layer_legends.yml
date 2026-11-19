@@ -133,7 +133,7 @@ wallonia:
       - { label: "Faiblement (−1)", color: "#ffbee8" }
       - { label: "Moyennement (−2)", color: "#c500ff" }
       - { label: "Fortement (−3)", color: "#4c0073" }
-    note: "Le niveau hydrique du sol, du plus humide au plus sec. Touche la carte pour lire aussi sa richesse et le climat local."
+    note: "La sous-couche « Niveaux hydriques » du Fichier écologique des essences (le Géoportail ouvre, lui, sur « Apports d'eau »). Deux niveaux voisins peuvent porter le même nom, comme chez le SPW : c'est le chiffre qui compte. Touche la carte pour lire aussi la richesse du sol, le sous-secteur et les apports d'eau."
   cadastre:
     items:
       - { label: "Limite de parcelle", color: "#730000", shape: outline }

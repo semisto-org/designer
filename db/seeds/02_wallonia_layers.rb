@@ -143,10 +143,14 @@ catalogue = [
            service: "SOL_SOUS_SOL/CNSW", layers: "1,2", opacity: 1.0, position: 100, max_zoom: 15,
            info_layers: "1,2",
            description: "Le type de sol, son drainage et sa charge caillouteuse (Carte numérique des sols de Wallonie)."),
-  overlay.("essences", "Fichier écologique des essences", "terrain", 5,
+  # The Géoportail's « Fichier écologique des essences » is a series of four
+  # rasters (WMS 0 apports d'eau, 1 sous-secteurs, 2 niveaux hydriques,
+  # 3 niveaux trophiques) and opens on « Apports d'eau ». We draw the hydric
+  # levels, so the name says it, to avoid reading it as the Géoportail default.
+  overlay.("essences", "Niveaux hydriques du sol (FEE)", "terrain", 5,
            service: "FAUNE_FLORE/FEE", layers: "2", opacity: 0.55, position: 60,
            info_layers: "4,5,6,7",
-           description: "Richesse et humidité du sol, climat local : pour choisir des arbres adaptés au lieu."),
+           description: "L'eau que le sol garde pour les racines, du marécageux au très sec (Fichier écologique des essences) : pour choisir des arbres adaptés au lieu."),
 
   # -- Milieux et règles -------------------------------------------------
   overlay.("cadastre", "Plan cadastral", "milieux", 1,
