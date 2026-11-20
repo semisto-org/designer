@@ -23,10 +23,10 @@ module Mcp
           map_id: { type: "integer", minimum: 1, description: :map_id },
           lng: { type: "number", minimum: -180, maximum: 180, description: :lng },
           lat: { type: "number", minimum: -90, maximum: 90, description: :lat },
-          heading: { type: "number", minimum: 0, maximum: 360 },
-          field_of_view: { type: "number", minimum: 10, maximum: 180 },
-          year: { type: "integer", minimum: 0, maximum: 40 },
-          radius_m: { type: "number", minimum: 5, maximum: MAX_RADIUS_M }
+          heading: { type: "number", minimum: 0, maximum: 360, description: :heading },
+          field_of_view: { type: "number", minimum: 10, maximum: 180, description: :field_of_view },
+          year: { type: "integer", minimum: 0, maximum: 40, description: :year },
+          radius_m: { type: "number", minimum: 5, maximum: MAX_RADIUS_M, description: :radius_m }
         },
         required: %w[map_id lng lat]
       )
