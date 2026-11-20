@@ -47,6 +47,7 @@ Ton IA peut aussi regarder ces photos, année par année, avec le contour de ton
 - **Pentes** : la même idée en couleurs, utile pour savoir où l'on peut circuler, tondre, planter en rangs.
 - **Ruissellement et cours d'eau** : les axes où l'eau descend, les cuvettes où elle s'accumule. C'est la base pour placer des baissières, des mares et des haies qui freinent l'eau.
 - **Carte des sols** : la nature du sol (texture, drainage). Elle est à lire avec prudence : c'est une carte régionale, pas une analyse de ton jardin.
+- **Textures du sol** : limon, sable ou argile en surface. Vérifie-la toi-même avec le test du boudin : une poignée de terre humide roulée entre les mains.
 
 ## Choisir ses arbres (Fichier écologique des essences)
 
@@ -60,9 +61,19 @@ Le Fichier écologique des essences du SPW dit quels arbres se plaisent à un en
 
 Touche la carte avec une de ces couches allumée pour lire son niveau exact à cet endroit. Ce sont des modèles régionaux, au carré de 10 m : va vérifier sur place (flaques, coins humides, plantes bio-indicatrices) avant d'écarter un arbre.
 
+## Risques : eau, feu, érosion, sous-sol
+
+- **Aléa d'inondation** : là où l'eau peut monter, par débordement d'un cours d'eau ou par ruissellement, de très faible à élevé.
+- **Zones inondées en juillet 2021** : ce que l'eau a vraiment recouvert lors des crues de 2021.
+- **Probabilité d'incendie** : le modèle de l'AWAC, au kilomètre. Si elle est élevée près de chez toi, dessine un secteur « incendie » et pense aux haies coupe-feu.
+- **Sensibilité à l'érosion** et **Érosion diffuse** : où le sol part avec la pluie, si on le laisse nu. L'érosion diffuse ne couvre que les terres agricoles, et se lit de près.
+- **Cadmium dans le sol** : la teneur probable dans les terres agricoles. Avant un potager sur une ancienne zone industrielle, fais analyser ta terre.
+- **Zone de consultation DRIGM** : anciennes mines, carrières, puits et karst. Avant de creuser une mare ou de construire, consulte le SPW.
+
 ## Milieux et règles
 
 - **Natura 2000**, **Forêts anciennes** : milieux à protéger, qui peuvent encadrer ce que tu as le droit de faire.
+- **Arbres et haies remarquables** : les arbres, alignements et haies protégés. Un clic donne l'espèce, le tour du tronc et la hauteur. On ne les abat pas sans permis.
 - **Plan de secteur** : l'affectation légale du sol (zone agricole, forestière, d'habitat…). À consulter avant tout projet de construction.
 - **Plan cadastral** et **Parcellaire agricole** : voir [Choisir ses parcelles](/help/choisir-ses-parcelles).
 

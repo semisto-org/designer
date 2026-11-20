@@ -487,7 +487,7 @@ fr:
         params:
           summary: "Résumé de l'analyse dans son ensemble, montré à l'humain au-dessus des brouillons, par exemple « Secteurs d'après le climat observé et la visite du 12 octobre »."
           sectors: "Les secteurs proposés, de 1 à 30."
-          sector_type: "Type de secteur : wind (vent dominant), cold_wind (vent froid), fire (incendie), flood (inondation, ruissellement), frost (gel, air froid), noise (bruit), dust (poussière), pollution, good_view (belle vue), bad_view (vue à masquer), privacy (vis-à-vis), wildlife (faune), predators (prédateurs), other (autre)."
+          sector_type: "Type de secteur : wind (vent dominant), cold_wind (vent froid), fire (incendie), flood (inondation, ruissellement), frost (gel, air froid), noise (bruit), dust (poussière), pollution, good_view (belle vue), bad_view (vue à masquer), privacy (vis-à-vis), wildlife (faune), predators (prédateurs), other (autre). Avant fire ou flood, lis les couches de risques de la région quand elle en a (get_region_layers, groupe « Risques » ; en Wallonie alea_incendie, alea_inondation, zones_inondees_2021) avec identify_at_point sur le terrain et autour, et cite leur classe dans la justification."
           from_deg: "Direction où commence le secteur, en degrés depuis le nord dans le sens des aiguilles d'une montre (0 = nord, 90 = est, 180 = sud, 270 = ouest), de 0 à 360."
           to_deg: "Direction où finit le secteur, en tournant dans le sens des aiguilles d'une montre depuis from_deg (300 → 40 passe par le nord). Égale à from_deg : tout autour du terrain."
           season: "Saison où le secteur compte : all_year (toute l'année, par défaut), winter (hiver) ou summer (été)."
