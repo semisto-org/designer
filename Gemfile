@@ -32,7 +32,7 @@ gem "stripe", "~> 20.0"
 gem "mcp", "~> 1.6"
 
 # Markdown help center
-gem "commonmarker", "~> 2.0"
+gem "commonmarker", "~> 2.10"
 
 # HTTP client for external providers (Géoportail, cadastre, climate)
 gem "faraday", "~> 2.12"
