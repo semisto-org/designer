@@ -83,6 +83,8 @@ export type GrowingPlantData = GrowthInputs & {
   plantedOn: string | null
   /** In the ground since a date nobody knows: shown grown from year 0. */
   plantedLongAgo?: boolean
+  /** A tree already on the land (« Arbre existant »), drawn at the size noted on it. */
+  existing?: boolean
 }
 
 export type GrowingPatchData = {

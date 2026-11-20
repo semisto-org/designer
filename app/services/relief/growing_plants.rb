@@ -16,7 +16,7 @@ module Relief
     end
 
     def as_json(*)
-      plants = plant_rows
+      plants = plant_rows + existing_tree_rows
       patches = patch_rows
       dates = plants.filter_map { |p| p[:plantedOn] }
       {
@@ -53,6 +53,41 @@ module Relief
         end
       end
 
+      # The trees already on the land (« Arbre existant »), alive and not
+      # taken away: drawn at the size noted on them (height, crown), grown
+      # already. Their species comes from the name typed on them when the
+      # catalogue knows it; otherwise their crown says how tall a tree to draw.
+      def existing_tree_rows
+        trees = @map.features.in_design.where(kind: PlantPalette::EXISTING_KIND, status: "active").order(:id).to_a
+                    .reject { |f| f.removed? || f.properties["health"] == "dead" || !f.geometry.respond_to?(:x) }
+        ids = PlantSpecies.ids_for_names(trees.map { |f| f.properties["species"].to_s })
+        trees.map do |feature|
+          props = feature.properties
+          species_id = ids[PlantSpecies.normalize_name(props["species"])]
+          height = positive(props["height_m"])
+          crown = positive(props["crown_diameter_m"])
+          strata = species_id ? nil : existing_strata(height, crown)
+          growth([ species_id, nil ], strata:).merge(
+            id: feature.id, lng: feature.geometry.x.round(7), lat: feature.geometry.y.round(7),
+            number: nil, ownName: feature.name.presence, existing: true,
+            training: nil, support: false, supportUntil: nil, graft: nil,
+            measures: (height || crown) ? { height:, crown:, girth: nil, on: nil } : nil,
+            plantedOn: nil, plantedLongAgo: true
+          )
+        end
+      end
+
+      def positive(value)
+        number = Float(value, exception: false)
+        number if number&.positive?
+      end
+
+      # A tree the catalogue does not know: its strata from its size.
+      def existing_strata(height, crown)
+        size = [ height.to_f, crown.to_f ].max
+        size >= 10 ? "canopy" : size >= 4 ? "sub_canopy" : "shrub"
+      end
+
       def patch_rows
         @quantities.patches.filter_map do |patch|
           ring = patch.feature.geometry_geojson&.dig("coordinates", 0)
@@ -74,7 +109,7 @@ module Relief
         @growth[[ key, strata ]] ||= begin
           species = @quantities.species_index[key.first] || (key.first && PlantSpecies.find_by(id: key.first))
           variety = key.last && (@quantities.variety_index[key.last] || PlantVariety.find_by(id: key.last))
-          strata ||= (species && @quantities.strata_for(key)) || "shrub"
+          strata ||= (species && (@quantities.strata_for(key) || species.default_strata)) || "shrub"
           {
             speciesId: species&.id, varietyId: variety&.id, strata:,
             name: [ species&.common_name || species&.latin_name, variety && "'#{variety.name}'" ].compact.join(" ").presence,

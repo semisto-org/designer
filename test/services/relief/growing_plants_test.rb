@@ -80,6 +80,31 @@ class Relief::GrowingPlantsTest < ActiveSupport::TestCase
     assert_equal PlantCrownForm.for(plant_species(:alder))&.dig(:form), plant[:crownForm]
   end
 
+  test "the trees already on the land grow in 3D at the size noted on them" do
+    lime = @map.features.create!(layer: "existing", kind: "existing_tree", name: "Grand tilleul", geometry: point(lng: 4.9002, lat: 50.3401),
+                                 properties: { "species" => "alnus glutinosa", "height_m" => 18, "crown_diameter_m" => 18, "keep" => true })
+    oak = @map.features.create!(layer: "existing", kind: "existing_tree", name: "Chêne", geometry: point(lng: 4.9003, lat: 50.3402),
+                                properties: { "crown_diameter_m" => 16 })
+    @map.features.create!(layer: "existing", kind: "existing_tree", geometry: point(lng: 4.9004, lat: 50.3402), properties: { "health" => "dead" })
+    @map.features.create!(layer: "existing", kind: "existing_tree", geometry: point(lng: 4.9005, lat: 50.3402), properties: { "removed_on" => "2026-01-01" })
+
+    data = Relief::GrowingPlants.new(@map).as_json
+    assert_equal [ lime.id, oak.id ], data[:plants].map { |p| p[:id] }, "dead or removed trees are not drawn"
+    assert_equal Date.current.iso8601, data[:origin], "an old tree moves no year 0"
+
+    first = data[:plants].first
+    assert first[:existing]
+    assert first[:plantedLongAgo]
+    assert_equal plant_species(:alder).id, first[:speciesId], "the species typed on the tree, without case"
+    assert_equal({ height: 18.0, crown: 18.0, girth: nil, on: nil }, first[:measures])
+    assert_equal "Grand tilleul", first[:ownName]
+
+    unknown = data[:plants].last
+    assert_nil unknown[:speciesId]
+    assert_equal "canopy", unknown[:strata], "a 16 m crown is a tall tree"
+    assert_equal({ height: nil, crown: 16.0, girth: nil, on: nil }, unknown[:measures])
+  end
+
   test "nothing planted yet: year 0 is today" do
     @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.9002, lat: 50.3401),
                           properties: { "species_id" => plant_species(:comfrey).id })
