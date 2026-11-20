@@ -25,6 +25,7 @@ import { RoofCard } from '@/relief/RoofCard'
 import { PresentationTimeControl } from '@/relief/PresentationTimeControl'
 import { GROWTH_YEARS, yearsBetween, type GrowingPlantsData } from '@/relief/growth'
 import type { WalkKey } from '@/relief/scene'
+import { useFlyKeys } from '@/relief/useFlyKeys'
 import { STRATA_COLORS } from '@/map/plants/strataColors'
 import {
   formatClock, formatDepth, formatDuration, formatHours, formatMinutes, formatNumber, formatSurface, formatVolume,
@@ -563,6 +564,8 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
   // ---- « Présenter »: a step with a 3D view is shown here; the others,
   // and the end of a presentation, go back to the map.
   const presenting = usePresentation((s) => s.presenting && s.mapId === map.id)
+  // Arrows slide over the terrain in the overview, Shift + arrows turn and come closer.
+  useFlyKeys(controller, ready && !presenting && !nivaActive && walk === 'off')
   const presentationToken = usePresentation((s) => s.token)
   const presentationRestore = usePresentation((s) => s.restore)
   const presentationStep = usePresentation((s) => (s.mapId === map.id ? s.presentation?.steps.find((step) => step.id === s.currentId) ?? null : null))

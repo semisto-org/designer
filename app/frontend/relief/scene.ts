@@ -22,6 +22,7 @@ import type { BuildingVolume } from './buildings.ts'
 import { waterColor } from './colors.ts'
 import { NIVA, type NivaState } from './niva.ts'
 import { headingOf } from './heading.ts'
+import { anyFlyKey, flyStep, noFlyKeys, type FlyKey } from './flyKeys.ts'
 import { buildNivaModel, nivaParts, setNivaLights, type NivaLights } from './nivaModel.ts'
 import type { ColdAirField } from './coldAir.ts'
 import type { PlantStrata, ScenePlant } from './growth.ts'
@@ -201,6 +202,8 @@ export class ReliefScene {
     saved: { position: THREE.Vector3; target: THREE.Vector3; near: number; fov: number }
     drag: { id: number; x: number; y: number } | null
   } | null = null
+  /** Arrows held in the overview (flyKeys.ts). */
+  private fly = noFlyKeys()
   private lastFrame = performance.now()
   private walkPointer: { down: (e: PointerEvent) => void; move: (e: PointerEvent) => void; up: (e: PointerEvent) => void } | null = null
 
@@ -635,6 +638,15 @@ ${OVERLAY_MIX}`)
 
   resetWalkKeys() {
     if (this.walk) for (const key of Object.keys(this.walk.keys) as WalkKey[]) this.walk.keys[key] = false
+  }
+
+  /** An arrow (or Shift) pressed or released in the overview: slide, turn, come closer. */
+  setFlyKey(key: FlyKey, down: boolean) {
+    this.fly[key] = down
+  }
+
+  resetFlyKeys() {
+    this.fly = noFlyKeys()
   }
 
   /** Where the walker stands and looks: metres from the north-west corner, heading clockwise from north. */
@@ -1440,7 +1452,21 @@ ${OVERLAY_MIX}`)
       this.updateWalk(dt)
       moving = true
     } else {
-      moving = this.controls.update()
+      if (anyFlyKey(this.fly) && this.controls.enabled) {
+        const { width, depth } = this.size
+        const next = flyStep(this.camera.position, this.controls.target, this.fly, dt, {
+          minDistance: this.controls.minDistance,
+          maxDistance: this.controls.maxDistance,
+          halfWidth: width / 2,
+          halfDepth: depth / 2,
+        })
+        this.camera.position.set(next.camera.x, next.camera.y, next.camera.z)
+        this.controls.target.set(next.target.x, next.target.y, next.target.z)
+        this.controls.update()
+        moving = true
+      } else {
+        moving = this.controls.update()
+      }
     }
     this.renderer.render(this.scene, this.camera)
     return moving

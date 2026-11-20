@@ -90,7 +90,7 @@ fr:
         blocks: "Construction des blocs…"
         failed: "Le relief n'a pas pu être chargé. Recharge la page pour réessayer."
         webgl: "Ce navigateur n'affiche pas la 3D (WebGL indisponible)."
-      hint: "Glisser pour tourner · clic droit pour déplacer · molette pour zoomer · un clic sonde le terrain"
+      hint: "Glisser pour tourner · flèches pour se déplacer, Maj + flèches pour tourner et zoomer · molette pour zoomer · un clic sonde le terrain"
       hint_touch: "Un doigt pour tourner, deux pour zoomer · touche le terrain pour le sonder"
       tabs:
         view: "Vue"
