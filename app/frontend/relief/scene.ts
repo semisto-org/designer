@@ -17,6 +17,9 @@
 
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+import { Line2 } from 'three/addons/lines/Line2.js'
+import { LineGeometry } from 'three/addons/lines/LineGeometry.js'
+import { LineMaterial } from 'three/addons/lines/LineMaterial.js'
 import { ATLAS_COLUMNS, ATLAS_ROWS, blockAtlas, buildBlocks, type BlocksInput } from './blocks.ts'
 import type { BuildingVolume } from './buildings.ts'
 import { waterColor } from './colors.ts'
@@ -36,7 +39,7 @@ export const OVERLAY_SCALE = 2
 const OVERLAY_MAX_PX = 4096
 /** Methods that only read the scene (or draw it): they ask for no new image. */
 const SCENE_READS = new Set([
-  'constructor', 'frame', 'dispose', 'pick', 'pickBuilding', 'pickPlant', 'heightAt',
+  'constructor', 'frame', 'dispose', 'pick', 'pickBuilding', 'pickPlant', 'heightAt', 'groundAt',
   'cameraView', 'heading', 'walkPosition', 'loadImageTexture', 'canvasTexture',
 ])
 const PARTICLES = 5000
@@ -205,6 +208,9 @@ export class ReliefScene {
   /** Arrows held in the overview (flyKeys.ts). */
   private fly = noFlyKeys()
   private lastFrame = performance.now()
+  /** Lines drawn over the terrain while tracing a work (« Tracer l'eau »), by name. */
+  private sketch: THREE.Group | null = null
+  private sketchMaterials: LineMaterial[] = []
   private walkPointer: { down: (e: PointerEvent) => void; move: (e: PointerEvent) => void; up: (e: PointerEvent) => void } | null = null
 
   constructor(container: HTMLElement, grid: SceneGrid) {
@@ -942,6 +948,7 @@ ${OVERLAY_MIX}`)
     const { clientWidth, clientHeight } = this.container
     if (!clientWidth || !clientHeight) return
     this.renderer.setSize(clientWidth, clientHeight, false)
+    for (const material of this.sketchMaterials) material.resolution.set(clientWidth, clientHeight)
     this.camera.aspect = clientWidth / clientHeight
     this.camera.updateProjectionMatrix()
   }
@@ -1423,6 +1430,116 @@ ${OVERLAY_MIX}`)
     this.lastNivaTarget = target
   }
 
+  // ---- Tracing a work over the terrain ----------------------------------------
+
+  /**
+   * Lines over the terrain (x east and z south from the north-west corner, in
+   * metres, `y` the altitude), a few pixels wide whatever the distance: the
+   * level line under the cursor, the swale or the pond being traced. Drawn
+   * over the relief, so a crest never hides the trace. Null clears them.
+   */
+  setSketch(lines: Array<{ points: Array<{ x: number; y: number; z: number }>; color: string; width: number; opacity?: number; dashed?: boolean }> | null) {
+    if (this.sketch) {
+      this.world.remove(this.sketch)
+      for (const child of this.sketch.children) (child as Line2).geometry.dispose()
+      for (const material of this.sketchMaterials) material.dispose()
+      this.sketch = null
+      this.sketchMaterials = []
+    }
+    if (!lines?.length) return
+    const g = this.grid
+    const x0 = ((g.cols - 1) * g.cellSize) / 2
+    const z0 = ((g.rows - 1) * g.cellSize) / 2
+    const group = new THREE.Group()
+    group.renderOrder = 10
+    const { clientWidth, clientHeight } = this.container
+    for (const line of lines) {
+      if (line.points.length < 2) continue
+      const positions: number[] = []
+      for (const p of line.points) positions.push(p.x - x0, p.y - g.zBase + 0.15, p.z - z0)
+      const geometry = new LineGeometry()
+      geometry.setPositions(positions)
+      const material = new LineMaterial({
+        color: line.color, linewidth: line.width, transparent: true, opacity: line.opacity ?? 1,
+        depthTest: false, depthWrite: false, dashed: !!line.dashed, dashSize: 1.2, gapSize: 0.8, worldUnits: false,
+      })
+      material.resolution.set(clientWidth || 1, clientHeight || 1)
+      const mesh = new Line2(geometry, material)
+      if (line.dashed) mesh.computeLineDistances()
+      mesh.renderOrder = 10
+      group.add(mesh)
+      this.sketchMaterials.push(material)
+    }
+    this.sketch = group
+    this.world.add(group)
+  }
+
+  /**
+   * The terrain point under a pointer, as fractional { col, row } of the mesh
+   * grid, or null off the terrain. A march along the ray over the mesh's
+   * current heights (dug works and all), cheap enough for every move of
+   * the mouse, where a raycast through a million triangles is not.
+   */
+  groundAt(event: { clientX: number; clientY: number }): { col: number; row: number } | null {
+    const raycaster = new THREE.Raycaster()
+    raycaster.setFromCamera(this.pointer(event), this.camera)
+    const g = this.grid
+    const positions = this.terrain.geometry.attributes.position.array as Float32Array
+    const x0 = ((g.cols - 1) * g.cellSize) / 2
+    const z0 = ((g.rows - 1) * g.cellSize) / 2
+    const scale = this.world.scale.y
+    // World → mesh frame: the world group only scales y.
+    const origin = raycaster.ray.origin.clone()
+    const direction = raycaster.ray.direction.clone()
+    origin.y /= scale
+    direction.y /= scale
+    direction.normalize()
+    const surface = (x: number, z: number): number | null => {
+      const fc = (x + x0) / g.cellSize
+      const fr = (z + z0) / g.cellSize
+      if (fc < 0 || fr < 0 || fc > g.cols - 1 || fr > g.rows - 1) return null
+      const c = Math.min(g.cols - 2, Math.floor(fc))
+      const r = Math.min(g.rows - 2, Math.floor(fr))
+      const u = fc - c
+      const v = fr - r
+      const at = (cc: number, rr: number) => positions[(rr * g.cols + cc) * 3 + 1]
+      const top = at(c, r) + (at(c + 1, r) - at(c, r)) * u
+      const bottom = at(c, r + 1) + (at(c + 1, r + 1) - at(c, r + 1)) * u
+      return top + (bottom - top) * v
+    }
+    const step = g.cellSize * 0.75
+    const maxDistance = Math.max(this.size.width, this.size.depth) * 8
+    let previous = 0
+    let entered = false
+    for (let t = 0; t < maxDistance; t += step) {
+      const x = origin.x + direction.x * t
+      const z = origin.z + direction.z * t
+      const ground = surface(x, z)
+      if (ground == null) {
+        if (entered) return null
+        previous = t
+        continue
+      }
+      entered = true
+      if (origin.y + direction.y * t <= ground) {
+        // Between the last step above and this one below: halve the interval.
+        let low = previous
+        let high = t
+        for (let k = 0; k < 12; k++) {
+          const mid = (low + high) / 2
+          const h = surface(origin.x + direction.x * mid, origin.z + direction.z * mid)
+          if (h != null && origin.y + direction.y * mid <= h) high = mid
+          else low = mid
+        }
+        const x1 = origin.x + direction.x * high
+        const z1 = origin.z + direction.z * high
+        return { col: (x1 + x0) / g.cellSize, row: (z1 + z0) / g.cellSize }
+      }
+      previous = t
+    }
+    return null
+  }
+
   /** Height (m) under a point of the local frame (x east, z south, origin north-west), nearest vertex. */
   heightAt(x: number, z: number): number {
     const g = this.grid
@@ -1488,6 +1605,7 @@ ${OVERLAY_MIX}`)
     this.setBuildings(null)
     this.stopWalk()
     this.setPlants(null)
+    this.setSketch(null)
     this.stars?.geometry.dispose()
     this.terrain.geometry.dispose()
     this.material.map?.dispose()

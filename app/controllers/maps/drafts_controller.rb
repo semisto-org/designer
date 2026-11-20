@@ -22,6 +22,7 @@ module Maps
     def accept
       feature = @map.features.drafts.find(params[:id])
       feature.update!(status: "active", updated_by: Current.user)
+      Earthworks::RainCheck.add!(feature, by: Current.user)
       render json: feature.as_geojson
     end
 
@@ -33,6 +34,7 @@ module Maps
 
     def accept_all
       features = review_all("active")
+      Earthworks::RainCheck.add_all!(features, by: Current.user)
       render json: { features: features.map(&:as_geojson) }
     end
 

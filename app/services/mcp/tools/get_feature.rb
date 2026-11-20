@@ -22,7 +22,8 @@ module Mcp
           **plant_journal(feature),
           **plant_growth(feature),
           **height_from_above(map, feature),
-          **water_links(map, feature)
+          **water_links(map, feature),
+          **rain_check(feature)
         )
       end
 
@@ -64,6 +65,13 @@ module Mcp
         def water_links(map, feature)
           return {} unless WaterLinks::Report.applies?(feature, map)
           { water_links: WaterLinks::Report.new(map, feature, editor: editor?).as_json.deep_transform_keys { _1.to_s.underscore } }
+        end
+
+        # For a swale, a pond, a mound…: its check under real rain
+        # (Earthworks::RainCheck), the task and the downpours noted since.
+        def rain_check(feature)
+          summary = Earthworks::RainCheck.summary(feature)
+          summary ? { rain_check: summary } : {}
         end
 
         def summarize_result(data) = { feature_id: data[:id], layer: data.dig(:properties, "layer") }
