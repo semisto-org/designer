@@ -29,6 +29,8 @@ class Relief::GrowingPlantsTest < ActiveSupport::TestCase
     assert_equal "2025-11-20", apple[:plantedOn]
     assert_equal "Le grand", apple[:ownName]
     assert_nil apple[:training]
+    assert_kind_of Array, apple[:flowering], "its months in flower and fruit dress it for the season"
+    assert_kind_of Array, apple[:fruiting]
 
     alder = data[:plants].last
     assert_equal "canopy", alder[:strata]

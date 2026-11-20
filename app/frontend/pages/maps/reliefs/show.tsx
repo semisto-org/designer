@@ -20,7 +20,7 @@ import {
 import { NIGHT_LENGTH, nightClock } from '@/relief/coldAir'
 import { Compass } from '@/relief/Compass'
 import { NivaDashboard, NivaPad, NivaSection, type NivaSettings } from '@/relief/NivaControls'
-import { GrowthBar, GrowthSection, PlantCard, WalkPad, useGrowthYear } from '@/relief/GrowthControls'
+import { GrowthBar, GrowthSection, PlantCard, WalkPad, useGrowthYear, useSeason } from '@/relief/GrowthControls'
 import { RoofCard } from '@/relief/RoofCard'
 import { PresentationTimeControl } from '@/relief/PresentationTimeControl'
 import { GROWTH_YEARS, yearsBetween, type GrowingPlantsData } from '@/relief/growth'
@@ -214,6 +214,7 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
     [growingPlants.origin, growingPlants.today],
   )
   const growth = useGrowthYear(Math.round(plantToday), (year) => controller.current?.setPlantYear(year))
+  const season = useSeason(growth, (month) => controller.current?.setPlantMonth(month))
   const pointer = useRef<[number, number] | null>(null)
   const touch = useMemo(() => typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches, [])
 
@@ -918,6 +919,8 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
           origin={growingPlants.origin}
           onYear={growth.set}
           onToggle={growth.toggle}
+          season={season.season}
+          onSeason={season.setSeason}
           className={clsx(
             'absolute sm:bottom-3 sm:left-1/2 sm:right-auto sm:top-auto sm:w-[34rem] sm:-translate-x-1/2',
             // On a phone, above the settings sheet when it is open.

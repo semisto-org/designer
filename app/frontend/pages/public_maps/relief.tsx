@@ -13,7 +13,7 @@ import {
   ReliefController, type LoadingStep, type NivaInfo, type NivaKey, type PlantInfo, type RainStats, type SunDate, type SunInfo, type WalkMode,
 } from '@/relief/controller'
 import { formatClock, formatDepth, formatDuration, formatNumber, formatVolume } from '@/relief/format'
-import { GrowthBar, PlantCard, WalkPad, useGrowthYear } from '@/relief/GrowthControls'
+import { GrowthBar, PlantCard, WalkPad, useGrowthYear, useSeason } from '@/relief/GrowthControls'
 import { GROWTH_YEARS, yearsBetween, type GrowingPlantsData } from '@/relief/growth'
 import { NivaDashboard, NivaPad } from '@/relief/NivaControls'
 import type { OverlayFeature } from '@/relief/overlay'
@@ -98,6 +98,7 @@ export default function PublicRelief(props: Props) {
     [growingPlants.origin, growingPlants.today],
   )
   const growth = useGrowthYear(Math.round(plantToday), (year) => controller.current?.setPlantYear(year))
+  const season = useSeason(growth, (month) => controller.current?.setPlantMonth(month))
 
   useEffect(() => {
     track('public_map_3d', {})
@@ -575,6 +576,8 @@ export default function PublicRelief(props: Props) {
           origin={growingPlants.origin}
           onYear={growth.set}
           onToggle={growth.toggle}
+          season={season.season}
+          onSeason={season.setSeason}
           className="absolute left-3 right-[5.25rem] top-16 sm:left-auto sm:right-28 sm:top-3 sm:w-[28rem]"
         />
       )}

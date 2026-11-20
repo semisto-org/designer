@@ -24,6 +24,8 @@ Sélectionne l'arbre sur la carte : dans sa fiche, une fois l'arbre marqué comm
 
 Une application d'inclinomètre sur le téléphone fait le même travail.
 
+Pour un **arbre existant**, Terranova peut aussi la lire vu d'en haut : quand le relief du terrain est importé avec un modèle de surface fin (en Wallonie, le LiDAR du SPW), la fiche de l'arbre dit sa hauteur sous « Vu d'en haut ». Un clic la garde, pour cet arbre ou pour tous ceux qui n'en ont pas encore. Un arbre planté après le relevé n'y est pas encore : là, le bâton reste le meilleur outil.
+
 ## La largeur de la couronne, en pas
 
 Marche sous l'arbre, d'un bord de la couronne à l'autre, dans le sens où elle est la plus large, en suivant le bout des branches. Un pas fait à peu près 0,75 m : compte-les, ou prends un mètre ruban.

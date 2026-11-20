@@ -360,6 +360,17 @@ export class ReliefController {
     this.scene.setPlantYear(this.plantYear)
     this.scene.showPlants(this.plantsView.on)
     if (this.plantsView.strataColors && this.options.strataColors) this.scene.setPlantColors(this.options.strataColors)
+    if (this.plantMonth != null) this.scene.setPlantMonth(this.plantMonth)
+  }
+
+  /** The month the plants are dressed for (1 = 1 January … 13 = 31 December); null: today's. */
+  private plantMonth: number | null = null
+
+  setPlantMonth(month: number) {
+    this.plantMonth = month
+    if (!this.scene) return
+    this.scene.setPlantMonth(month)
+    this.scene.loop.invalidate()
   }
 
   setPlantYear(year: number) {

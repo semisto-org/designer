@@ -6,10 +6,11 @@ import clsx from 'clsx'
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Footprints, Pause, Sprout, X } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Button } from '@/components/ui/Button'
+import { Segmented } from '@/components/ui/Segmented'
 import { t } from '@/lib/i18n'
 import type { PlantInfo, WalkMode } from './controller.ts'
 import { formatNumber } from './format.ts'
-import { GROWTH_YEARS, calendarYear } from './growth.ts'
+import { GROWTH_YEARS, SEASONS, SEASON_MONTH, calendarYear, seasonOfMonth, type Season } from './growth.ts'
 import type { WalkKey } from './scene.ts'
 import { SectionTitle, Toggle } from './ui.tsx'
 
@@ -82,8 +83,22 @@ export function useGrowthYear(initial: number, apply: (year: number) => void) {
   return { target: playing ? Math.floor(shown) : target, shown, playing, set, toggle }
 }
 
+/**
+ * The season the plants are dressed for: today's at first, then the one
+ * chosen. While « Laisser pousser » runs, every year goes through its
+ * twelve months, from winter to winter.
+ */
+export function useSeason(growth: { shown: number; playing: boolean }, apply: (month: number) => void) {
+  const [season, setSeason] = useState<Season>(() => seasonOfMonth(new Date().getMonth() + 1))
+  const applyRef = useRef(apply)
+  applyRef.current = apply
+  const month = growth.playing ? 1 + (growth.shown % 1) * 12 : SEASON_MONTH[season]
+  useEffect(() => { applyRef.current(month) }, [month])
+  return { season: growth.playing ? seasonOfMonth(month) : season, setSeason }
+}
+
 /** The years bar over the scene. */
-export function GrowthBar({ year, shown, playing, today, origin, onYear, onToggle, className }: {
+export function GrowthBar({ year, shown, playing, today, origin, onYear, onToggle, season, onSeason, className }: {
   year: number
   shown: number
   playing: boolean
@@ -92,12 +107,16 @@ export function GrowthBar({ year, shown, playing, today, origin, onYear, onToggl
   origin: string
   onYear: (year: number) => void
   onToggle: () => void
+  /** The season the plants are dressed for, and its picker. */
+  season?: Season
+  onSeason?: (season: Season) => void
   className?: string
 }) {
   const label = playing ? Math.floor(shown + 0.001) : year
   const todayPct = (Math.min(GROWTH_YEARS, today) / GROWTH_YEARS) * 100
   return (
-    <div className={clsx('z-20 flex items-center gap-3 rounded-2xl border border-loam-200 bg-white/95 px-3 py-2 shadow-lg backdrop-blur', className)}>
+    <div className={clsx('z-20 flex flex-col gap-2 rounded-2xl border border-loam-200 bg-white/95 px-3 py-2 shadow-lg backdrop-blur', className)}>
+    <div className="flex items-center gap-3">
       <button
         type="button"
         onClick={onToggle}
@@ -140,6 +159,16 @@ export function GrowthBar({ year, shown, playing, today, origin, onYear, onToggl
           />
         )}
       </div>
+    </div>
+    {season && onSeason && (
+      <Segmented
+        value={season}
+        onChange={onSeason}
+        label={t('relief.page.growth.season.label')}
+        className="w-full"
+        options={SEASONS.map((value) => ({ value, label: t(`relief.page.growth.season.${value}`) }))}
+      />
+    )}
     </div>
   )
 }

@@ -26,6 +26,10 @@ export type GrowthInputs = {
   indicative: boolean
   /** Its silhouette in the open (the species', else its genus'), or null: drawn round. */
   crownForm?: CrownForm | null
+  /** Months (1–12) it flowers in, from its sheet. */
+  flowering?: number[]
+  /** Months (1–12) it bears fruit (or is harvested), from its sheet. */
+  fruiting?: number[]
 }
 
 /**
@@ -210,6 +214,11 @@ export type ScenePlant = {
   patch: [number, number] | null
   /** A stable number per plant: its tint and the turn of its crown. */
   seed: number
+  /** Deciduous, evergreen, semi-evergreen or marcescent, from its sheet (null: unknown). */
+  foliage?: string | null
+  /** Months (1–12) it flowers and bears fruit in. */
+  flowering?: number[]
+  fruiting?: number[]
 }
 
 /** The last year the slider reaches. */
@@ -609,6 +618,7 @@ export function scenePlants(meta: GridMeta, data: GrowingPlantsData): ScenePlant
       x, y, form, strata: p.strata, heightM: p.heightM, spreadM: p.spreadM,
       maturityYears: p.maturityYears, training, graft: training === 'free' ? graftOf(form, p.graft) : null, start: p.plantedLongAgo ? -p.maturityYears : startOf(p.plantedOn), plant: index, patch: null, seed: p.id * 7919,
       crownForm: crownFormOf(p.crownForm), measured: measuredOf(p.measures, p.plantedOn, !!p.plantedLongAgo),
+      foliage: p.foliage, flowering: p.flowering ?? [], fruiting: p.fruiting ?? [],
       support: !!p.support, until: p.support && !p.plantedLongAgo ? p.supportUntil ?? null : null,
     })
   })
@@ -623,6 +633,7 @@ export function scenePlants(meta: GridMeta, data: GrowingPlantsData): ScenePlant
         plants.push({
           ...point, form: plantForm(line.strata, line.plantType), strata: line.strata, heightM: line.heightM,
           spreadM: line.spreadM, maturityYears: line.maturityYears, training: 'free', start: patchStart, plant: null, crownForm: crownFormOf(line.crownForm),
+          foliage: line.foliage, flowering: line.flowering ?? [], fruiting: line.fruiting ?? [],
           patch: [patchIndex, lineIndex], seed: Math.round(point.x * 1000 + point.y * 7),
         })
       }
@@ -634,4 +645,72 @@ export function scenePlants(meta: GridMeta, data: GrowingPlantsData): ScenePlant
 /** The calendar year of a year on the slider. */
 export function calendarYear(origin: string, year: number): number {
   return new Date(origin).getUTCFullYear() + Math.floor(year)
+}
+
+// ---- Seasons ------------------------------------------------------------------
+
+/**
+ * How a plant looks in a month of the year: its leaves (1 in full leaf, 0
+ * bare), how far they have turned (autumn colour), and whether it is in
+ * flower or in fruit. `month` runs from 1 (1 January) to 13 (31 December),
+ * fractions moving through the month. Western and central Europe: leaves
+ * open through April, turn in October, fall in November.
+ */
+export type SeasonLook = { leaf: number; autumn: number; blossom: boolean; fruit: boolean }
+
+/** The foliage a plant keeps in winter: its sheet's, else what its form usually does. */
+export function foliageOf(plant: Pick<ScenePlant, 'foliage' | 'form' | 'strata' | 'crownForm'>): 'deciduous' | 'evergreen' | 'semi-evergreen' | 'marcescent' {
+  const known = plant.foliage
+  if (known === 'deciduous' || known === 'evergreen' || known === 'semi-evergreen' || known === 'marcescent') return known
+  // Unknown: a conifer keeps its needles, a ground cover its mat; the rest of
+  // a temperate garden loses its leaves (or dies back to the ground).
+  if (plant.crownForm === 'conical' || plant.crownForm === 'columnar') return 'evergreen'
+  if (plant.strata === 'ground_cover') return 'evergreen'
+  return 'deciduous'
+}
+
+const ramp = (value: number, from: number, to: number) => Math.min(1, Math.max(0, (value - from) / (to - from)))
+
+export function seasonLook(plant: Pick<ScenePlant, 'foliage' | 'form' | 'strata' | 'crownForm' | 'flowering' | 'fruiting'>, month: number): SeasonLook {
+  const m = ((((month - 1) % 12) + 12) % 12) + 1
+  const whole = Math.floor(m)
+  const blossom = !!plant.flowering?.includes(whole)
+  const fruit = !blossom && !!plant.fruiting?.includes(whole)
+  // Budburst from early April to mid-May; turning from late September; bare by late November.
+  const growing = ramp(m, 4, 5.5) * (1 - ramp(m, 10.6, 11.8))
+  const autumn = ramp(m, 9.7, 10.8)
+  switch (foliageOf(plant)) {
+    case 'evergreen': return { leaf: 1, autumn: 0, blossom, fruit }
+    case 'semi-evergreen': return { leaf: 0.55 + 0.45 * growing, autumn: autumn * 0.5 * (m < 12 ? 1 : 0), blossom, fruit }
+    // A young oak or beech keeps its dry leaves through winter.
+    case 'marcescent': return { leaf: m >= 4 && m < 5.5 ? Math.max(0.6, growing) : 1, autumn: m >= 4 && m < 5.5 ? 1 - growing : autumn || (m < 4 ? 1 : 0), blossom, fruit }
+    default: return { leaf: growing, autumn: m >= 4 && m < 9 ? 0 : autumn, blossom, fruit }
+  }
+}
+
+/**
+ * A plant a little taller or smaller than its neighbours of the same kind
+ * (±8 %), so a row does not look cloned. What someone measured stays exact.
+ */
+export function sizeJitter(plant: Pick<ScenePlant, 'seed' | 'measured'>): number {
+  if (plant.measured) return 1
+  return 0.92 + ((Math.imul(plant.seed | 0, 2654435761) >>> 0) % 1000) / 1000 * 0.16
+}
+
+/** The seasons the 3D view can show. */
+export type Season = 'winter' | 'spring' | 'summer' | 'autumn'
+export const SEASONS: readonly Season[] = ['winter', 'spring', 'summer', 'autumn']
+
+/** The month each season shows (1 = 1 January): mid-January, late April, mid-July, late October. */
+export const SEASON_MONTH: Record<Season, number> = { winter: 1.5, spring: 4.8, summer: 7.5, autumn: 10.6 }
+
+/** The season of a month (1 = 1 January … 13 = 31 December). */
+export function seasonOfMonth(month: number): Season {
+  const m = Math.floor(month)
+  return m <= 2 || m === 12 ? 'winter' : m <= 5 ? 'spring' : m <= 8 ? 'summer' : 'autumn'
+}
+
+/** The month the 3D shows first: the middle of today's season. */
+export function todaysSeasonMonth(now = new Date()): number {
+  return SEASON_MONTH[seasonOfMonth(now.getMonth() + 1)]
 }

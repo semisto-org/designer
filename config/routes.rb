@@ -380,6 +380,7 @@ Rails.application.routes.draw do
   resources :maps, only: [] do
     scope module: :maps do
       resource :canopy, only: :show
+      resource :tree_heights, only: :show
     end
   end
   # --- end canopy ---
