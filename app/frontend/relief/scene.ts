@@ -541,6 +541,11 @@ ${OVERLAY_MIX}`)
     this.plants?.setColors(colors)
   }
 
+  /** The plants as they look in `month` (1 = 1 January … 13 = 31 December). */
+  setPlantMonth(month: number) {
+    this.plants?.setMonth(month)
+  }
+
   showPlants(on: boolean) {
     this.plantsOn = on
     if (this.plants) this.plants.group.visible = on

@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  CHOP_MATURITY, CLEAR_TRUNK, GRAFT_CROWN, GRAFT_TRUNK, MANAGED_MATURITY, crownFormOf, measuredOf, trunkRadius, MANAGED_SIZE, PLANTING_SIZE, VIGOR_SIZE, calendarYear, graftOf, growthShare, insideRing, managedSize, plantForm, plantShade, plantShape, scatter, scenePlants, sizeAt, trainingOf, yearsBetween,
+  CHOP_MATURITY, CLEAR_TRUNK, GRAFT_CROWN, GRAFT_TRUNK, MANAGED_MATURITY, crownFormOf, foliageOf, measuredOf, seasonLook, seasonOfMonth, sizeJitter, todaysSeasonMonth, SEASON_MONTH, trunkRadius, MANAGED_SIZE, PLANTING_SIZE, VIGOR_SIZE, calendarYear, graftOf, growthShare, insideRing, managedSize, plantForm, plantShade, plantShape, scatter, scenePlants, sizeAt, trainingOf, yearsBetween,
   type GrowingPlantsData, type GrowthInputs, type ScenePlant,
 } from '../../../app/frontend/relief/growth.ts'
 import type { GridMeta } from '../../../app/frontend/relief/grid.ts'
@@ -347,4 +347,44 @@ test('a trunk is as thick as its measured girth, then thickens 2.5 cm a year', (
   assert.ok(trunkRadius({ training: 'free', crownForm: 'spreading', measured }, size, 20) > radius)
   // Without a girth, a spreading tree carries a stouter trunk than a cone.
   assert.ok(trunkRadius({ training: 'free', crownForm: 'spreading' }, size, 10) > trunkRadius({ training: 'free', crownForm: 'conical' }, size, 10))
+})
+
+test('a deciduous tree opens its leaves in spring, turns in autumn and stands bare in winter', () => {
+  const oak = { foliage: 'deciduous', form: 'tree' as const, strata: 'canopy' as const, crownForm: null, flowering: [5], fruiting: [9, 10] }
+  assert.equal(seasonLook(oak, SEASON_MONTH.winter).leaf, 0)
+  assert.equal(seasonLook(oak, SEASON_MONTH.summer).leaf, 1)
+  assert.equal(seasonLook(oak, SEASON_MONTH.summer).autumn, 0)
+  const spring = seasonLook(oak, SEASON_MONTH.spring)
+  assert.ok(spring.leaf > 0.2 && spring.leaf < 1, String(spring.leaf))
+  const autumn = seasonLook(oak, SEASON_MONTH.autumn)
+  assert.ok(autumn.leaf > 0.9 && autumn.autumn > 0.5, JSON.stringify(autumn))
+  assert.ok(autumn.fruit && !autumn.blossom)
+  assert.ok(seasonLook(oak, 5.5).blossom)
+  // Months wrap: 13.5 is mid-January again.
+  assert.deepEqual(seasonLook(oak, 13.5), seasonLook(oak, 1.5))
+})
+
+test('evergreens keep their leaves; unknown foliage follows the form', () => {
+  const pine = { foliage: null, form: 'tree' as const, strata: 'canopy' as const, crownForm: 'conical' as const }
+  assert.equal(foliageOf(pine), 'evergreen')
+  assert.equal(seasonLook(pine, SEASON_MONTH.winter).leaf, 1)
+  assert.equal(foliageOf({ foliage: null, form: 'cover' as never, strata: 'ground_cover', crownForm: null }), 'evergreen')
+  assert.equal(foliageOf({ foliage: null, form: 'tree', strata: 'canopy', crownForm: 'round' }), 'deciduous')
+  const beech = seasonLook({ foliage: 'marcescent', form: 'tree', strata: 'canopy', crownForm: null }, SEASON_MONTH.winter)
+  assert.equal(beech.leaf, 1, 'a marcescent tree keeps its dry leaves')
+  assert.equal(beech.autumn, 1)
+})
+
+test('neighbours differ a little in size, measured trees stay exact', () => {
+  const sizes = [1, 2, 3, 4, 5, 6, 7, 8].map((seed) => sizeJitter({ seed, measured: null }))
+  assert.ok(sizes.every((s) => s >= 0.92 && s <= 1.08))
+  assert.ok(new Set(sizes).size > 4)
+  assert.equal(sizeJitter({ seed: 3, measured: { height: 10, spread: null, girth: null, age: null } }), 1)
+})
+
+test('the 3D opens on the season of today', () => {
+  assert.equal(seasonOfMonth(12.4), 'winter')
+  assert.equal(seasonOfMonth(4), 'spring')
+  assert.equal(todaysSeasonMonth(new Date(2026, 10, 20)), SEASON_MONTH.autumn)
+  assert.equal(todaysSeasonMonth(new Date(2026, 6, 1)), SEASON_MONTH.summer)
 })

@@ -115,6 +115,9 @@ module Relief
             name: [ species&.common_name || species&.latin_name, variety && "'#{variety.name}'" ].compact.join(" ").presence,
             latinName: variety&.full_latin_name || species&.latin_name,
             foliage: species&.foliage_type, plantType: species&.plant_type,
+            # Its months in flower and in fruit, for the seasons of the 3D view.
+            flowering: species&.flowering_months.presence || [],
+            fruiting: species&.fruiting_months.presence || species&.harvest_months.presence || [],
             **PlantGrowth.inputs(strata:, species:, variety:)
           }
         end

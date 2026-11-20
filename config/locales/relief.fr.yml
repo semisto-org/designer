@@ -237,7 +237,7 @@ fr:
           brake: "Frein à main"
       growth:
         title: "Les plantes du design"
-        intro: "Les plantes de la carte en volume, à la taille qu'elles auront l'année choisie : hauteur et envergure adultes du catalogue, atteintes au bout du temps propre à chaque espèce. Leurs ombres suivent l'année dans le mode Soleil."
+        intro: "Les plantes de la carte en volume, à la taille qu'elles auront l'année choisie : hauteur et envergure adultes du catalogue, atteintes au bout du temps propre à chaque espèce. Leurs ombres suivent l'année dans le mode Soleil. Choisis la saison : les arbres caducs perdent leurs feuilles en hiver, les fleurs et les fruits paraissent en leur mois, d'après la fiche de chaque plante."
         show: "Montrer les plantes"
         strata_colors: "Couleurs des strates"
         strata_colors_hint: "Les couleurs de la légende de la carte, au lieu du vert du feuillage."
@@ -248,6 +248,12 @@ fr:
         slider: "Années après la plantation"
         play: "Laisser pousser"
         pause: "Mettre en pause"
+        season:
+          label: "Saison des plantes"
+          winter: "Hiver"
+          spring: "Printemps"
+          summer: "Été"
+          autumn: "Automne"
         count:
           one: "%{count} plante"
           other: "%{count} plantes"
