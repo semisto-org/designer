@@ -41,6 +41,28 @@ class RegionLayerTest < ActiveSupport::TestCase
     assert_equal "https://tiles.openfreemap.org/styles/positron", wallonia_layer("plan").tile_url
   end
 
+  test "the cadastre asks HiDPI tiles so its parcel numbers stay sharp" do
+    seed_wallonia_layers
+    cadastre = wallonia_layer("cadastre")
+    assert_equal 2, cadastre.pixel_ratio
+    assert_equal 512, cadastre.tile_size
+    url = cadastre.upstream_tile_url(18, 134_000, 88_000)
+    assert_includes url, "WIDTH=1024"
+    assert_includes url, "HEIGHT=1024"
+    assert_includes url, "DPI=192"
+
+    sols = wallonia_layer("sols")
+    assert_equal 1, sols.pixel_ratio
+    assert_includes sols.upstream_tile_url(18, 134_000, 88_000), "WIDTH=512"
+    assert_not_includes sols.upstream_tile_url(18, 134_000, 88_000), "DPI="
+
+    cadastre.update!(kind: "arcgis_rest")
+    assert_includes cadastre.upstream_tile_url(18, 134_000, 88_000), "dpi=192"
+    assert_includes cadastre.upstream_tile_url(18, 134_000, 88_000), "size=1024%2C1024"
+    # A one-off image keeps the size and DPI it is asked for.
+    assert_not_includes cadastre.upstream_image_url([ 0, 0, 1, 1 ], width: 800, height: 600), "dpi="
+  end
+
   test "identify settings and inertia payload" do
     seed_wallonia_layers
     courbes = wallonia_layer("courbes")

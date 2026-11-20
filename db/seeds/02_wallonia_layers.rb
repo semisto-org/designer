@@ -18,6 +18,9 @@
 #   are MapLibre zooms for 512 px tiles, i.e. Claudy's Leaflet maxNativeZoom - 1.
 # - Clicking reads exact altitude from the LiDAR DTM, not from the contour
 #   layer (`courbes` identifies on RELIEF/WALLONIE_MNT_2021_2022).
+# - The SPW draws the cadastre's parcel numbers into its images at 96 DPI,
+#   without anti-aliasing: stretched on a HiDPI screen they could not be
+#   read. The cadastre asks twice the pixels at DPI=192 (`pixel_ratio`).
 wallonia = Region.find_by!(key: "wallonia")
 
 spw = "https://geoservices.wallonie.be/arcgis"
@@ -26,9 +29,11 @@ wms = ->(service) { "#{spw}/services/#{service}/MapServer/WMSServer" }
 identify = ->(service) { "#{spw}/rest/services/#{service}/MapServer/identify" }
 
 overlay = lambda do |key, name, group, order, service:, layers:, opacity:, position:, info_service: service,
-                     info_layers:, description:, min_zoom: nil, max_zoom: 19, tolerance: 3, role: nil, formatter: key|
+                     info_layers:, description:, min_zoom: nil, max_zoom: 19, tolerance: 3, role: nil, formatter: key,
+                     pixel_ratio: nil|
   options = { "identify" => { "layers" => info_layers, "formatter" => formatter, "tolerance" => tolerance }, "order" => order }
   options["role"] = role if role
+  options["pixel_ratio"] = pixel_ratio if pixel_ratio
   {
     key:, name:, group_name: group, category: "overlay", kind: "wms", url: wms.(service), layers:,
     identify_url: identify.(info_service), attribution: spw_attribution, opacity:, position:,
@@ -173,7 +178,7 @@ catalogue = [
   # -- Milieux et règles -------------------------------------------------
   overlay.("cadastre", "Plan cadastral", "milieux", 1,
            service: "PLAN_REGLEMENT/CADMAP_PARCELLES", layers: "0", opacity: 1.0, position: 140, min_zoom: 13,
-           info_layers: "0", role: "cadastre",
+           info_layers: "0", role: "cadastre", pixel_ratio: 2,
            description: "Les limites et numéros des parcelles cadastrales."),
   overlay.("plan_secteur", "Plan de secteur", "milieux", 2,
            service: "AMENAGEMENT_TERRITOIRE/PDS", layers: "2,21,20,10,9,8,7,6", opacity: 0.5, position: 80,
