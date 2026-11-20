@@ -11,7 +11,7 @@ class PlantSpecies < ApplicationRecord
   include FieldProvenance
   include CommonNamed
 
-  SINGLE_FACETS = %i[plant_type strata foliage_type life_cycle growth_rate root_system fertility soil_richness].freeze
+  SINGLE_FACETS = %i[plant_type strata foliage_type life_cycle growth_rate root_system fertility soil_richness crown_form].freeze
   LIST_FACETS = %i[exposures soil_moisture soil_types soil_ph edible_parts eco_services toxic_for].freeze
   MONTH_FIELDS = %i[flowering_months fruiting_months harvest_months pruning_months].freeze
   SIZE_FIELDS = %i[height_min_m height_max_m spread_min_m spread_max_m].freeze
@@ -136,6 +136,10 @@ class PlantSpecies < ApplicationRecord
   # The main photo with its credit (PlantPhoto#as_json), or nil.
   def photo_json = photos.first&.as_json
 
+  # The silhouette the 3D view gives it (PlantCrownForm): its own, else the
+  # usual one of its genus, flagged as indicative.
+  def resolved_crown_form = PlantCrownForm.for(self)
+
   # Adult crown and height (m), with the strata default when unknown.
   def adult_spread(strata = default_strata) = PlantGrowth.spread(strata:, species: self)
   def adult_height(strata = default_strata) = PlantGrowth.height(strata:, species: self)
@@ -161,6 +165,7 @@ class PlantSpecies < ApplicationRecord
       genus: genus&.latin_name,
       commonNames: common_names.select { |n| n.language == "fr" }.map(&:name),
       lifeCycle: life_cycle, growthRate: growth_rate, rootSystem: root_system, fertility:,
+      crownForm: resolved_crown_form&.dig(:form), crownFormIndicative: resolved_crown_form&.dig(:indicative),
       heightMinM: height_min_m&.to_f, spreadMinM: spread_min_m&.to_f,
       soilTypes: soil_types, soilPh: soil_ph, soilRichness: soil_richness,
       wateringNeed: watering_need, medicinalRating: medicinal_rating,

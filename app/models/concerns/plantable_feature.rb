@@ -6,7 +6,9 @@
 #     (optional: the year after planting when a support plant gives way and is removed), and for
 #     a grafted fruit tree graft_form
 #     (standard | half_standard | bush), trunk_height (m), rootstock_vigor
-#     (ROOTSTOCK_VIGORS) and rootstock (free text, « MM106 »), all optional;
+#     (ROOTSTOCK_VIGORS) and rootstock (free text, « MM106 »), all optional; and what someone
+#     measured on the tree itself: measured_height (m), crown_width (m), trunk_girth (cm, round
+#     the trunk at 1.30 m) and measured_on (the day, today when not given), all optional;
 #   - kind "patch": a Polygon whose composition lives in `patch_items`,
 #     properties { exposure } (sun | partial-shade | shade, optional).
 # A plant without species is allowed (drawn, never counted).
@@ -34,6 +36,14 @@ module PlantableFeature
   TRUNK_HEIGHTS = (0.2..3.0)
   ROOTSTOCK_LENGTH = 40
   GRAFT_KEYS = %w[graft_form trunk_height rootstock_vigor rootstock].freeze
+  # What someone measured on the plant itself, which the 3D view and the time
+  # strip draw instead of the catalogue's size: height and crown width (m),
+  # trunk girth at 1.30 m (cm, a string round the trunk), and the day.
+  MEASURE_RANGES = {
+    "measured_height" => (0.05..80.0), "crown_width" => (0.05..60.0), "trunk_girth" => (1..2000)
+  }.freeze
+  MEASURE_KEYS = (MEASURE_RANGES.keys + %w[measured_on]).freeze
+
   # How much of `planted_on` is known: the exact day (no key), only the year
   # (the date is the 1st of January), or nothing at all, for a plant that was
   # in the ground before anyone noted it (the date is then the day it was
@@ -76,6 +86,15 @@ module PlantableFeature
     graft = properties.slice(*GRAFT_KEYS).compact_blank
     return nil if graft.empty?
     { form: graft["graft_form"], trunkHeight: graft["trunk_height"]&.to_f, vigor: graft["rootstock_vigor"], rootstock: graft["rootstock"] }
+  end
+
+  # What was measured on the plant (height and crown in m, girth in cm, the
+  # day), or nil when nobody measured it.
+  def plant_measures
+    values = MEASURE_RANGES.keys.to_h { |key| [ key, properties[key] ] }.compact
+    return nil if values.empty?
+    { height: values["measured_height"]&.to_f, crown: values["crown_width"]&.to_f,
+      girth: values["trunk_girth"]&.to_i, on: properties["measured_on"].presence }
   end
 
   def planted_on
@@ -135,7 +154,25 @@ module PlantableFeature
       elsif props["trunk_height"].to_s.tr(",", ".").match?(/\A\d+(\.\d+)?\z/)
         props["trunk_height"] = props["trunk_height"].to_s.tr(",", ".").to_f.round(2)
       end
+      normalize_measures(props)
       self.properties = props
+    end
+
+    # Decimal commas accepted; girth in whole centimetres; the day defaults to
+    # today, and goes away with the last measure.
+    def normalize_measures(props)
+      MEASURE_RANGES.each_key do |key|
+        raw = props[key]
+        if raw.blank? then props.delete(key)
+        elsif raw.to_s.tr(",", ".").match?(/\A\d+(\.\d+)?\z/)
+          value = raw.to_s.tr(",", ".").to_f
+          props[key] = key == "trunk_girth" ? value.round : value.round(2)
+        end
+      end
+      if MEASURE_RANGES.keys.none? { |key| props.key?(key) } then props.delete("measured_on")
+      elsif props["measured_on"].blank? then props["measured_on"] = Date.current.iso8601
+      else props["measured_on"] = (Date.iso8601(props["measured_on"].to_s).iso8601 rescue props["measured_on"])
+      end
     end
 
     def validate_plant
@@ -156,6 +193,14 @@ module PlantableFeature
       errors.add(:properties, :invalid) if properties["rootstock"].to_s.length > ROOTSTOCK_LENGTH
       if properties.key?("trunk_height")
         errors.add(:properties, :invalid) unless properties["trunk_height"].is_a?(Numeric) && TRUNK_HEIGHTS.cover?(properties["trunk_height"])
+      end
+      MEASURE_RANGES.each do |key, range|
+        next unless properties.key?(key)
+        errors.add(:properties, :invalid) unless properties[key].is_a?(Numeric) && range.cover?(properties[key])
+      end
+      if properties["measured_on"].present?
+        day = (Date.iso8601(properties["measured_on"].to_s) rescue nil)
+        errors.add(:properties, :invalid) if day.nil? || day > PlantableFeature.latest_today
       end
       if properties["planted_on"].present?
         date = planted_on

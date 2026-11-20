@@ -83,8 +83,10 @@ module PlantGrowth
     end
 
     # Height and spread (m) `age` years after planting, or nil before it is
-    # planted and once a support plant gave way (`until_years`).
-    def size_at(strata:, height:, spread:, maturity:, age:, training: "free", graft: nil, until_years: nil)
+    # planted and once a support plant gave way (`until_years`). `measured`:
+    # what someone measured on the plant ({ height:, spread:, age: }, age at
+    # the measure in years, nil when its planting date is unknown).
+    def size_at(strata:, height:, spread:, maturity:, age:, training: "free", graft: nil, until_years: nil, measured: nil)
       return nil if age.negative?
       return nil if until_years && age >= until_years
       graft = nil unless training == "free"
@@ -94,8 +96,41 @@ module PlantGrowth
       adult_spread = [ 0.05, adult_spread ].max
       h0 = [ start[0], adult_height ].min
       s0 = [ start[1], adult_spread ].min
-      grown = share(age, years)
-      { height: h0 + (adult_height - h0) * grown, spread: s0 + (adult_spread - s0) * grown }
+      curve = ->(a) { grown = share(a, years); [ h0 + (adult_height - h0) * grown, s0 + (adult_spread - s0) * grown ] }
+      h, sp = curve.(age)
+      if measured
+        m_age = measured[:age]
+        at_measure = curve.(m_age.nil? ? MEASURED_LONG_AGO : [ m_age, 0 ].max)
+        h = from_measure(h, at_measure[0], measured[:height], age, m_age)
+        sp = from_measure(sp, at_measure[1], measured[:spread], age, m_age)
+      end
+      { height: h, spread: sp }
+    end
+
+    # The age a measure is counted at when the planting date is unknown: grown.
+    MEASURED_LONG_AGO = 1_000_000
+
+    # A size from the curve, through what was measured: before the measure,
+    # the curve scaled to it; after, the measure plus what the curve still
+    # grows. Without a measure, the curve.
+    def from_measure(value, at_measure, measure, age, measure_age)
+      return value unless measure.is_a?(Numeric) && measure.positive?
+      before = measure_age.nil? || age < measure_age
+      return value * measure / at_measure if before && at_measure.positive?
+      measure + [ 0, value - at_measure ].max
+    end
+
+    # What was measured on a plant (PlantableFeature#plant_measures) as
+    # size_at reads it, or nil: the age at the measure from the planting
+    # date, nil when that date is unknown (the plant was already there).
+    def measured(measures, planted_on: nil)
+      return nil unless measures
+      height = measures[:height]
+      spread = measures[:crown]
+      return nil unless height || spread
+      on = (Date.iso8601(measures[:on].to_s) rescue nil)
+      age = planted_on && on ? [ (on - planted_on) / 365.25, 0 ].max.to_f : nil
+      { height:, spread:, age: }
     end
   end
 end

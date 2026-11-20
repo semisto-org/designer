@@ -87,6 +87,19 @@ module PlantVocabulary
         "dioecious" => %w[dioique]
       }
     },
+    # The silhouette of a tree or a shrub grown in the open, as the 3D view
+    # draws it (PlantCrownForm, relief/growth.ts).
+    crown_form: {
+      multi: false,
+      values: {
+        "round" => %w[rond arrondi globuleux ovoide],
+        "spreading" => %w[etale evase],
+        "columnar" => %w[colonnaire fastigie],
+        "conical" => %w[conique pyramidal],
+        "weeping" => %w[pleureur retombant],
+        "multi_stem" => [ "multi-troncs", "multitronc", "cepee naturelle", "buissonnant" ]
+      }
+    },
     exposures: {
       multi: true,
       values: {

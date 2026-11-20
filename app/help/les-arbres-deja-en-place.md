@@ -27,6 +27,6 @@ C'est la carte mondiale de hauteur de canopée de Meta et du World Resources Ins
 Garde deux choses en tête :
 
 1. **Ce sont des images d'il y a quelques années**, prises entre 2016 et 2020 environ selon l'endroit. Le panneau te dit quand. Les arbres abattus ou plantés depuis n'y figurent pas, et ceux qui restent ont grandi.
-2. **C'est une estimation**, pas un relevé arbre par arbre : un ordre de grandeur de quelques mètres. Pour un arbre qui compte vraiment dans ton design, va le voir, mesure-le, et dessine-le dans **Cartographier** comme un élément existant (voir [Dessiner l'existant](/help/dessiner-l-existant)).
+2. **C'est une estimation**, pas un relevé arbre par arbre : un ordre de grandeur de quelques mètres. Pour un arbre qui compte vraiment dans ton design, va le voir, mesure-le, et dessine-le dans **Cartographier** comme un élément existant (voir [Dessiner l'existant](/help/dessiner-l-existant)). Posé comme une plante, avec son espèce, il reçoit aussi ses mesures (tour du tronc, hauteur, couronne) et apparaît à sa vraie taille dans la 3D : voir [Mesurer un arbre](/help/mesurer-un-arbre).
 
 Si ta région a son propre modèle de surface (LiDAR), la [vue 3D du terrain](/help/la-vue-3d-du-terrain) montre aussi les arbres en volume.

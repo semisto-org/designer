@@ -99,6 +99,10 @@ export type SpeciesSheet = SpeciesSummary & {
   growthRate: string | null
   rootSystem: string | null
   fertility: string | null
+  /** Silhouette in the open (round, spreading, columnar, conical, weeping, multi_stem), or null. */
+  crownForm: string | null
+  /** True when the silhouette is the usual one of its genus, not the species' own. */
+  crownFormIndicative: boolean | null
   heightMinM: number | null
   spreadMinM: number | null
   soilTypes: string[]

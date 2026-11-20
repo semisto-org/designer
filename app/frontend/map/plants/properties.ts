@@ -1,4 +1,4 @@
-import { graftOf, MANAGED_SIZE, managedSize, type Graft, type GraftData, type PlantTraining } from '@/relief/growth'
+import { graftOf, MANAGED_SIZE, managedSize, type Graft, type GraftData, type PlantMeasures, type PlantTraining } from '@/relief/growth'
 import type { MapFeature } from '@/types'
 
 // Keys MapFeature#as_geojson merges into properties: not part of the
@@ -54,6 +54,15 @@ export function graftProperties(feature: MapFeature): GraftData {
     vigor: typeof p.rootstock_vigor === 'string' ? p.rootstock_vigor : null,
     rootstock: typeof p.rootstock === 'string' ? p.rootstock : null,
   }
+}
+
+/** What was measured on the plant (height and crown in m, girth in cm, the day), or null. */
+export function measuresProperty(feature: MapFeature): PlantMeasures | null {
+  const p = feature.properties
+  const num = (v: unknown) => (typeof v === 'number' ? v : typeof v === 'string' && v.trim() !== '' ? Number(v) : NaN)
+  const value = (v: unknown) => (Number.isFinite(num(v)) && num(v) > 0 ? num(v) : null)
+  const measures = { height: value(p.measured_height), crown: value(p.crown_width), girth: value(p.trunk_girth), on: typeof p.measured_on === 'string' ? p.measured_on : null }
+  return measures.height == null && measures.crown == null && measures.girth == null ? null : measures
 }
 
 /** The grafted tree a plant is, or null when its sheet says nothing of a graft or it is not a tree. */

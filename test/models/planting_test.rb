@@ -114,6 +114,25 @@ class PlantingTest < ActiveSupport::TestCase
     end
   end
 
+  test "measures taken on the plant: decimal commas, girth in whole cm, the day defaults to today" do
+    plant = plant!(plant_species(:apple))
+    assert_nil plant.plant_measures
+    plant.update!(properties: plant.properties.merge("measured_height" => "5,4", "crown_width" => "6", "trunk_girth" => "112.6"))
+    plant.reload
+    assert_equal 5.4, plant.properties["measured_height"]
+    assert_equal 113, plant.properties["trunk_girth"]
+    assert_equal Date.current.iso8601, plant.properties["measured_on"]
+    assert_equal({ height: 5.4, crown: 6.0, girth: 113, on: Date.current.iso8601 }, plant.plant_measures)
+    plant.update!(properties: plant.properties.merge("measured_height" => nil, "crown_width" => "", "trunk_girth" => nil))
+    assert_nil plant.reload.plant_measures
+    assert_not plant.properties.key?("measured_on"), "the day goes away with the last measure"
+    [ { "measured_height" => 120 }, { "trunk_girth" => "huge" }, { "crown_width" => 0 }, { "measured_height" => 3, "measured_on" => (Date.current + 5).iso8601 } ].each do |bad|
+      plant.properties = plant.properties.merge(bad)
+      assert_not plant.valid?, bad.inspect
+      plant.reload
+    end
+  end
+
   test "patch quantities: density × PostGIS area, count, strata default" do
     @patch.patch_items.create!(species: plant_species(:comfrey), density: 1)
     @patch.patch_items.create!(species: plant_species(:strawberry))

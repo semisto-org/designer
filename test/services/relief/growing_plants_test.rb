@@ -71,6 +71,15 @@ class Relief::GrowingPlantsTest < ActiveSupport::TestCase
     assert_equal({ form: "half_standard", trunkHeight: nil, vigor: nil, rootstock: "MM106" }, graft)
   end
 
+  test "a measured tree says its measures, and every plant its silhouette" do
+    @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.9002, lat: 50.3401),
+                          properties: { "species_id" => plant_species(:alder).id, "planted_on" => "2026-10-18", "planted_on_precision" => "unknown",
+                                        "measured_height" => 18, "crown_width" => 17, "trunk_girth" => 470, "measured_on" => "2026-11-20" })
+    plant = Relief::GrowingPlants.new(@map).as_json[:plants].sole
+    assert_equal({ height: 18.0, crown: 17.0, girth: 470, on: "2026-11-20" }, plant[:measures])
+    assert_equal PlantCrownForm.for(plant_species(:alder))&.dig(:form), plant[:crownForm]
+  end
+
   test "nothing planted yet: year 0 is today" do
     @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.9002, lat: 50.3401),
                           properties: { "species_id" => plant_species(:comfrey).id })

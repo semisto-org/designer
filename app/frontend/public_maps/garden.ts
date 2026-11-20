@@ -9,8 +9,8 @@ import type { FeatureCollection, Point, Position } from 'geojson'
 import { LOOKS, SMALL_SPRITE, SPRITE, spriteRect, type SpriteKey } from '../components/site/timelapse/paint.ts'
 import { seasonAt, type SpeciesKey } from '../components/site/timelapse/model.ts'
 import {
-  graftOf, insideRing, plantForm, scatter, sizeAt, trainingOf, yearsBetween,
-  type GrowingPatchData, type GrowingPlantData, type Graft, type PlantStrata, type PlantTraining,
+  graftOf, insideRing, measuredOf, plantForm, scatter, sizeAt, trainingOf, yearsBetween,
+  type GrowingPatchData, type GrowingPlantData, type Graft, type Measured, type PlantStrata, type PlantTraining,
 } from '../relief/growth.ts'
 
 /** The last year the public slider reaches: a forest garden is designed over thirty years. */
@@ -35,6 +35,8 @@ export type GardenPlant = {
   maturityYears: number
   training: PlantTraining
   graft: Graft | null
+  /** What someone measured on it, or null. */
+  measured?: Measured | null
   /** Years after year 0 when it goes into the ground (negative: grown already). */
   start: number
   seed: number
@@ -143,6 +145,7 @@ export function gardenPlants(growth: PublicGrowth): GardenPlant[] {
       lng: p.lng, lat: p.lat, look: lookOf(p, seed), strata: p.strata, heightM: p.heightM, spreadM: p.spreadM,
       maturityYears: p.maturityYears, training, graft: training === 'free' ? graftOf(form, p.graft) : null,
       start: p.plantedLongAgo ? -p.maturityYears : startOf(p.plantedOn), seed,
+      measured: measuredOf(p.measures, p.plantedOn, !!p.plantedLongAgo),
     }
   })
   const points = growth.plants.map((p) => ({ p, ...frame.to([p.lng, p.lat]) }))

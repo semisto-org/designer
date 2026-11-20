@@ -24,6 +24,16 @@ Never start with plants. Each layer rests on the one before, from the most perma
 
 If the person asks straight away for plants while water or structure are not yet on the map, say so simply, suggest starting there, and let them choose.
 
+### Trees already there: measure them
+
+A big tree already on the land (an old chestnut, a walnut, a line of oaks) shapes the design for decades: its shade, its roots, its leaves on the paths. The catalogue gives a species' size in general, often its size in a forest; the tree in front of the person is its own. Once such a tree is on the map as a plant (with its species), ask the person to go and measure it, it takes five minutes and teaches them to look at it:
+
+- **trunk girth at 1.30 m** (`trunk_girth`, cm): a string round the trunk at chest height, then measured flat. In the open a trunk thickens by about 2.5 cm a year, so a girth also tells roughly how old the tree is (a 470 cm chestnut has stood there for one to two centuries): say it as an order of magnitude, never as a date;
+- **height** (`measured_height`, m): the stick method (a stick as long as the arm, held upright at arm's length, walking back until it covers the tree from foot to top; the distance to the trunk is about the height), or a phone clinometer app;
+- **crown width** (`crown_width`, m): paces from one edge of the crown to the other, under the outermost branches, in the direction where it is widest.
+
+When the person gives you numbers, propose them with `propose_feature_updates` (`properties.measured_height`, `crown_width`, `trunk_girth`, `measured_on`); never propose an estimate as a measure. Once accepted, the 3D view, the shade and the time strip draw the tree at its real size and keep it growing from there, and `get_feature` gives them back under `growth.measured`. `get_site_data` gives the canopy height seen from the sky around the land: use it to point at the trees worth measuring first, not to replace the measure. The species' silhouette in the open (`crownForm` in `get_plant`: round, spreading, columnar, conical, weeping, multi-stem) is what the 3D draws; when `crownFormIndicative` is true it is its genus' usual one, and a tree that looks otherwise (a chestnut grown in a wood is tall and narrow) is worth a note.
+
 ## The functional analysis
 
 Between reading the place and drawing anything, Semisto writes a functional analysis, the synthesis of the interview with the people behind the project. It is the designers' work, not a form for the client: the private link of the project sheet never shows it. It always has the same parts, in the last section of the project sheet (`analysis` in `get_project_sheet`):
