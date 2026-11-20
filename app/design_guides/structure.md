@@ -18,6 +18,7 @@ Lawton starts no plan without the zone map: it places every element by how often
 - Zone 5 is never computed: ask where the person wants to keep a wild part, even a corner of hedge, and propose it with `propose_features`. A design without zone 5 has lost its teacher.
 - Once zones exist, `list_features` gives each element's `permaculture_zone`. Check it against what the element needs: vegetable beds, greenhouse, compost, hen house, fruit store and play area in zones 1–2; tool shed in 1–3; beehives and paddocks in 2–4, away from daily paths. Say which elements stand too far or too near, and why.
 - Read the zones together with the sectors: the windbreak goes in zones 3–4 on the side of the prevailing and cold winds; on the side the fire can come from, keep green, watered zones 1–2, a pond or a path between the house and the dry land; the winter sun side of zone 1 is where a sun trap, a greenhouse or a terrace pays.
+- Before drawing a fire or flood sector, read the region's risk layers at the place and around it (`get_region_layers`, group « Risques »; in Wallonia `alea_incendie`, `alea_inondation`, `zones_inondees_2021`, plus `sensibilite_erosion` and `drigm` before digging a pond) with `identify_at_point`, and quote their class in the rationale. A model at 1 km says where to look; what the person saw on the land (water marks, the July 2021 flood line, dry slopes) comes first.
 
 ## Hedges and windbreaks
 

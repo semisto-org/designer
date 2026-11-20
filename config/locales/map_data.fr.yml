@@ -16,6 +16,7 @@ fr:
       photos: "Photos aériennes"
       terrain: "Relief, sol et eau"
       essences: "Choisir ses arbres (Fichier écologique des essences)"
+      risques: "Risques : eau, feu, érosion, sous-sol"
       milieux: "Milieux et règles"
       other: "Autres couches"
     layers:
@@ -121,6 +122,38 @@ fr:
         zones_bioclimatiques:
           title: "Zone bioclimatique : %{name}"
           detail: "Fichier écologique des essences"
+        alea_incendie:
+          title: "Probabilité d'incendie : %{value}"
+          detail: "Modèle régional de l'AWAC, mailles de 1 km"
+          classes:
+            low: "faible"
+            medium_low: "moyenne à faible"
+            medium_high: "moyenne à élevée"
+            high: "élevée"
+        alea_inondation:
+          title_kind: "%{value} par %{kind}"
+          detail: "Cartographie officielle de l'aléa d'inondation"
+        zones_inondees_2021:
+          title: "Inondé en juillet 2021"
+        sensibilite_erosion:
+          title: "Sensibilité du sol à l'érosion : %{value}"
+        erosion_diffuse:
+          title: "Risque d'érosion diffuse : %{value}"
+          detail: "Si la parcelle était en prairie (modèle ERRUISSOL)"
+          unmapped: "Érosion diffuse : non cartographiée ici (hors terres agricoles)"
+        textures_sol:
+          title: "Texture du sol : %{value}"
+          detail: "En surface, carte régionale de référence"
+        cadmium:
+          title: "Cadmium probable : %{value}"
+          detail: "Au plus %{value} (moins d'une chance sur 20 d'être dépassé)"
+        drigm:
+          detail: "Zone de consultation de la DRIGM (risques géologiques et miniers)"
+          link: "Fiche du SPW"
+        arbres_remarquables:
+          zone: "Zone de haies remarquables"
+          circumference: "%{value} cm de tour"
+          height: "%{value} m de haut"
         forets_anciennes:
           ferraris: "Vers 1777 (carte de Ferraris)"
         plan_secteur:

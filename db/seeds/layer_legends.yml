@@ -169,6 +169,80 @@ wallonia:
       - { label: "Haute Lorraine", color: "#99297e" }
       - { label: "Basse Lorraine", color: "#dcc4df" }
     note: "Les dix zones climatiques du Fichier écologique des essences (données IRM sur 20 ans) : la première question à se poser pour un arbre."
+  textures_sol:
+    items:
+      - { label: "Limon", color: "#ff5c33" }
+      - { label: "Limon sableux", color: "#ffad33" }
+      - { label: "Limon sableux léger", color: "#ffcd33" }
+      - { label: "Sable limoneux", color: "#ffffad" }
+      - { label: "Sable", color: "#ffff33" }
+      - { label: "Argile", color: "#a8d973" }
+      - { label: "Argile lourde", color: "#33c073" }
+    note: "La texture de surface, en pixels de 100 m : un repère régional. Le test du boudin, une poignée de terre humide roulée dans la main, dit la vérité de ton sol."
+  alea_inondation:
+    items:
+      - { label: "Aléa très faible", color: "#d2ffbe" }
+      - { label: "Aléa faible", color: "#ffff00" }
+      - { label: "Aléa moyen", color: "#ffaa00" }
+      - { label: "Aléa élevé", color: "#ff0000" }
+    note: "Par débordement d'un cours d'eau ou par ruissellement. En zone d'aléa, un permis peut être refusé ou encadré : touche la carte pour lire l'aléa exact."
+  zones_inondees_2021:
+    items:
+      - { label: "Zones relevées (digitalisation)", color: "#c500ff" }
+      - { label: "Zones relevées par enquête", color: "#73b273" }
+      - { label: "Zones relevées par la Ville de Verviers", color: "#ffaa00" }
+    note: "Ce que l'eau a vraiment couvert en juillet 2021. Ailleurs, l'absence de couleur ne veut pas dire « jamais inondé »."
+  alea_incendie:
+    items:
+      - { label: "Faible", color: "#38a800" }
+      - { label: "Moyenne à faible", color: "#b0e000" }
+      - { label: "Moyenne à élevée", color: "#ffaa00" }
+      - { label: "Élevée", color: "#ff0000" }
+    note: "Un modèle régional par mailles de 1 km. Il dit d'où le feu peut venir : dessine-le en secteur « incendie » et place haies humides, mares et essences peu inflammables de ce côté."
+  sensibilite_erosion:
+    items:
+      - { label: "Très faible", color: "#76943c" }
+      - { label: "Faible", color: "#ffff99" }
+      - { label: "Moyenne", color: "#ffc100" }
+      - { label: "Élevée", color: "#ff0000" }
+      - { label: "Très élevée", color: "#a80085" }
+      - { label: "Extrême", color: "#636363" }
+    note: "La fragilité du sol lui-même face à la pluie, quelle que soit la pente. Un sol fragile ne reste jamais nu : paillage, couvre-sol, haies en travers de la pente."
+  erosion_diffuse:
+    items:
+      - { label: "Très faible à modérément faible", color: "#42ac0d" }
+      - { label: "Faible", color: "#55e70d" }
+      - { label: "Moyen", color: "#ffff0d" }
+      - { label: "Élevé", color: "#ffae0d" }
+      - { label: "Très élevé", color: "#ff0d0d" }
+      - { label: "Non cartographié (hors terres agricoles)", color: "#888888" }
+    note: "La terre que la pluie emporte d'une parcelle agricole si elle était en prairie (10 t/ha/an). Visible de près seulement, comme sur le Géoportail."
+  cadmium:
+    items:
+      - { label: "0,07 à 0,25 mg/kg", color: "#719959" }
+      - { label: "0,25 à 0,5", color: "#97bd74" }
+      - { label: "0,5 à 0,75", color: "#c1e192" }
+      - { label: "0,75 à 1", color: "#dfef96" }
+      - { label: "1 à 1,4", color: "#f1e48c" }
+      - { label: "1,4 à 1,8", color: "#e9c183" }
+      - { label: "1,8 à 3", color: "#cc9a7b" }
+      - { label: "3 à 10,6", color: "#b07b6f" }
+    note: "Une teneur probable, pas une mesure. Au-dessus de 1 mg/kg, fais analyser la terre avant un potager ou des petits fruits."
+  drigm:
+    items:
+      - { label: "Carrières souterraines", color: "#ff5500" }
+      - { label: "Puits de mines", color: "#00a984", shape: point }
+      - { label: "Anciens puits de mines possibles", color: "#00ffc5", shape: point }
+      - { label: "Minières de fer", color: "#8d552a", shape: outline }
+      - { label: "Karst", color: "#73b3ff" }
+    note: "Dans ces zones, on consulte la Direction des risques géologiques et miniers avant de creuser une mare, un étang ou de construire."
+  arbres_remarquables:
+    items:
+      - { label: "Arbre ou groupe d'arbres", color: "#e60000", shape: point }
+      - { label: "Haie", color: "#38a800", shape: line }
+      - { label: "Alignement d'arbres", color: "#ff0000", shape: dashed }
+      - { label: "Zone de haies remarquables", color: "#b3fcc1", stroke: "#707070" }
+    note: "Protégés : les abattre, les élaguer fortement ou abîmer leurs racines demande un permis. Va les voir, ce sont souvent les plus vieux habitants du lieu."
   cadastre:
     items:
       - { label: "Limite de parcelle", color: "#730000", shape: outline }

@@ -95,6 +95,45 @@ class Providers::ArcgisIdentify::FormattersTest < ActiveSupport::TestCase
     assert_empty F.entries_for("zones_bioclimatiques", [ { "attributes" => { "NOM" => "Null" } } ])
   end
 
+  test "risk layers: fire, flood, July 2021, erosion" do
+    fire = F.entries_for("alea_incendie", [ { "attributes" => { "Raster.FIRE_PROBA" => "Medium hi" } } ]).first
+    assert_equal "Probabilité d'incendie : moyenne à élevée", fire[:text]
+    assert_empty F.entries_for("alea_incendie", [ { "attributes" => { "Raster.FIRE_PROBA" => "NoData" } } ])
+
+    flood = F.entries_for("alea_inondation", [ { "attributes" => { "VALEUR" => "Aléa faible", "TYPEALEA" => "Débordement" } } ]).first
+    assert_equal "Aléa faible par débordement", flood[:text]
+
+    flooded = F.entries_for("zones_inondees_2021", [ { "layerName" => "Zones inondées - par digitalisation" } ]).first
+    assert_equal [ "Inondé en juillet 2021", "par digitalisation" ], flooded.values_at(:text, :detail)
+
+    assert_equal "Sensibilité du sol à l'érosion : élevée",
+      F.entries_for("sensibilite_erosion", [ { "attributes" => { "Raster.CLASSE_DES" => "Élevée" } } ]).first[:text]
+    assert_equal "Risque d'érosion diffuse : faible",
+      F.entries_for("erosion_diffuse", [ { "attributes" => { "DESCRIPTION" => "faible" } } ]).first[:text]
+    assert_match "non cartographiée", F.entries_for("erosion_diffuse", [ { "attributes" => { "DESCRIPTION" => "non cartographié" } } ]).first[:text]
+  end
+
+  test "soil texture, cadmium, DRIGM and remarkable trees" do
+    texture = F.entries_for("textures_sol", [ { "attributes" => { "Raster.Libellé de la sous-classe texturale" => "LIMON" } } ]).first
+    assert_equal "Texture du sol : Limon", texture[:text]
+
+    cadmium = F.entries_for("cadmium", [ { "attributes" => { "Teneur probable" => "0,4 mg/kg", "Teneur qui a moins de 5% de chance d'être dépassée" => "0,9 mg/kg" } } ]).first
+    assert_equal "Cadmium probable : 0,4 mg/kg", cadmium[:text]
+    assert_match "0,9 mg/kg", cadmium[:detail]
+
+    drigm = F.entries_for("drigm", [ { "layerName" => "puits de mine" } ]).first
+    assert_equal "Puits de mine", drigm[:text]
+    assert drigm[:href].start_with?("https://geologie.wallonie.be")
+
+    tree = F.entries_for("arbres_remarquables", [ { "attributes" => {
+      "Nom français" => "chêne pédonculé", "Genre" => "Quercus", "Espèce" => "robur", "Cultivar" => "Null", "Circonférence" => "420", "Hauteur" => "25"
+    } } ]).first
+    assert_match "Chêne pédonculé", tree[:text]
+    assert_match "Quercus robur", tree[:text]
+    assert_match "420 cm de tour", tree[:detail]
+    assert_equal "Zone de haies remarquables", F.entries_for("arbres_remarquables", [ { "attributes" => {} } ]).first[:text]
+  end
+
   test "forêts anciennes and plan de secteur" do
     forest = F.entries_for("forets_anciennes", [ { "attributes" => { "Ancienneté de la forêt actuelle" => "forêt ancienne subnaturelle", "Classification de la forêt actuelle" => "Feuillus" } } ]).first
     assert_equal "Forêt ancienne subnaturelle", forest[:text]

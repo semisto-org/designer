@@ -174,6 +174,87 @@ module Providers
         end
       end
 
+      # Raster attribute or vector field, whichever the layer gives.
+      def field(a, name) = a["Raster.#{name}"] || a[name]
+
+      FIRE_CLASSES = { "Low" => "low", "Medium low" => "medium_low", "Medium hi" => "medium_high", "High" => "high" }.freeze
+
+      def format_alea_incendie(results)
+        results.filter_map do |result|
+          key = FIRE_CLASSES[field(attrs(result), "FIRE_PROBA").to_s.strip]
+          entry(t("alea_incendie.title", value: t("alea_incendie.classes.#{key}")), detail: t("alea_incendie.detail")) if key
+        end
+      end
+
+      def format_alea_inondation(results)
+        results.filter_map do |result|
+          a = attrs(result)
+          value = field(a, "VALEUR")
+          next unless present?(value)
+          kind = field(a, "TYPEALEA")
+          entry(present?(kind) ? t("alea_inondation.title_kind", value:, kind: kind.to_s.downcase) : capitalize(value),
+            detail: t("alea_inondation.detail"))
+        end
+      end
+
+      def format_zones_inondees_2021(results)
+        results.map { |result| entry(t("zones_inondees_2021.title"), detail: result["layerName"].to_s.sub(/\AZones? ind?ondées\s*-\s*/i, "")) }
+      end
+
+      def format_sensibilite_erosion(results)
+        results.filter_map do |result|
+          value = field(attrs(result), "CLASSE_DES")
+          entry(t("sensibilite_erosion.title", value: value.to_s.strip.downcase)) if present?(value)
+        end
+      end
+
+      def format_erosion_diffuse(results)
+        results.filter_map do |result|
+          value = field(attrs(result), "DESCRIPTION")
+          next unless present?(value)
+          next entry(t("erosion_diffuse.unmapped")) if value.to_s.strip == "non cartographié"
+          entry(t("erosion_diffuse.title", value: value.to_s.strip), detail: t("erosion_diffuse.detail"))
+        end
+      end
+
+      def format_textures_sol(results)
+        results.filter_map do |result|
+          a = attrs(result)
+          sub = a["Raster.Libellé de la sous-classe texturale"]
+          next unless present?(sub)
+          entry(t("textures_sol.title", value: capitalize(sub.to_s.downcase)), detail: t("textures_sol.detail"))
+        end
+      end
+
+      def format_cadmium(results)
+        results.filter_map do |result|
+          a = attrs(result)
+          value = a["Teneur probable"]
+          next unless present?(value)
+          high = a.find { |k, _| k.start_with?("Teneur qui a moins") }&.last
+          entry(t("cadmium.title", value:), detail: present?(high) ? t("cadmium.detail", value: high) : nil)
+        end
+      end
+
+      def format_drigm(results)
+        results.map do |result|
+          entry(capitalize(result["layerName"]), detail: t("drigm.detail"),
+            href: "https://geologie.wallonie.be/home/infosssol/fiss.html", href_label: t("drigm.link"))
+        end
+      end
+
+      def format_arbres_remarquables(results)
+        results.map do |result|
+          a = attrs(result)
+          name = a["Nom français"]
+          latin = [ a["Genre"], a["Espèce"], (present?(a["Cultivar"]) ? "'#{a["Cultivar"]}'" : nil) ].select { |v| present?(v) }.join(" ")
+          next entry(t("arbres_remarquables.zone"), detail: (a["Commentaire"] if present?(a["Commentaire"]))) unless present?(name)
+          size = [ (t("arbres_remarquables.circumference", value: a["Circonférence"]) if present?(a["Circonférence"])),
+                   (t("arbres_remarquables.height", value: a["Hauteur"]) if present?(a["Hauteur"])) ].compact.join(", ")
+          entry(join(capitalize(name), latin.presence), detail: join(size.presence, (a["Commentaire"] if present?(a["Commentaire"]))))
+        end
+      end
+
       def format_forets_anciennes(results)
         results.map do |result|
           a = attrs(result)
