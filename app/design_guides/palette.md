@@ -27,6 +27,7 @@ Search Semisto's catalogue (`search_plants`, `get_plant`) and check for each spe
 
 - **Hardiness** (`hardinessZone`, `minTemperatureC`) against the site's zone, today and in 2050 (chapter `climate`).
 - **Soil and water**: `soilMoisture`, `wateringNeed`, `soilTypes`, `soilPh`, against the site's soil and its position relative to water.
+- **In Wallonia, the Fichier écologique des essences** gives the forester's reading of the station, layer by layer in `get_region_layers` (group `essences`) and point by point in `identify_at_point`: the bioclimatic zone (`zones_bioclimatiques`), the hydric level (`essences`, −4 waterlogged to 5 very dry), the trophic level (`essences_trophiques`, −3 very poor to 2 calcareous), the extra water a lower slope or valley floor receives (`essences_apports_eau`) and warm or cold slopes (`essences_sous_secteurs`). Quote the numbered levels: two neighbouring levels can share a name. These are regional models at 10 m: check them against what the person sees (puddles, wet spots, bioindicator plants) before ruling a species out.
 - **Light**: `exposures`, against the shade cast by the structure.
 - **Mature size**: `heightMaxM`, `spreadMaxM`, `crownM`, for spacing.
 - **What it brings**: `edibleParts`, `edibleRating`, `ecoServices`, and what matters in the project sheet.

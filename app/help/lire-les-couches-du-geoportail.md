@@ -47,7 +47,18 @@ Ton IA peut aussi regarder ces photos, année par année, avec le contour de ton
 - **Pentes** : la même idée en couleurs, utile pour savoir où l'on peut circuler, tondre, planter en rangs.
 - **Ruissellement et cours d'eau** : les axes où l'eau descend, les cuvettes où elle s'accumule. C'est la base pour placer des baissières, des mares et des haies qui freinent l'eau.
 - **Carte des sols** : la nature du sol (texture, drainage). Elle est à lire avec prudence : c'est une carte régionale, pas une analyse de ton jardin.
-- **Niveaux hydriques du sol (FEE)** : la sous-couche « Niveaux hydriques » du Fichier écologique des essences, l'eau que le sol garde pour les racines, de −4 (marécageux) à 5 (très sec). Sur le Géoportail, la même série s'ouvre sur « Apports d'eau » : ce n'est pas la même carte. Un clic sur ton terrain donne aussi sa richesse (niveau trophique), son sous-secteur et ses apports d'eau. Précieux pour choisir des arbres adaptés.
+
+## Choisir ses arbres (Fichier écologique des essences)
+
+Le Fichier écologique des essences du SPW dit quels arbres se plaisent à un endroit. Il croise trois questions, et Terranova en montre chaque carte, comme le Géoportail :
+
+- **Zones bioclimatiques** : les dix climats de la Wallonie (Condroz, Haute Ardenne…). C'est la première question : un arbre qui ne supporte pas le climat d'ici ne s'y plaira jamais.
+- **Niveaux hydriques du sol** : l'eau que le sol garde pour les racines, de −4 (marécageux) à 5 (très sec). Deux niveaux voisins peuvent porter le même nom (« humide » pour −3 et −2) : c'est le chiffre qui compte.
+- **Niveaux trophiques du sol** : sa richesse, de −3 (très pauvre) à 2 (calcaire).
+- **Apports d'eau** : les bas de pente et fonds de vallée qui reçoivent de l'eau en plus de la pluie. C'est la carte que le Géoportail montre en premier.
+- **Versants chauds et froids** : un versant nord reste frais, un versant sud chauffe et sèche plus vite.
+
+Touche la carte avec une de ces couches allumée pour lire son niveau exact à cet endroit. Ce sont des modèles régionaux, au carré de 10 m : va vérifier sur place (flaques, coins humides, plantes bio-indicatrices) avant d'écarter un arbre.
 
 ## Milieux et règles
 

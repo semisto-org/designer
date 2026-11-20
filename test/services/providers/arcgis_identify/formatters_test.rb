@@ -80,6 +80,21 @@ class Providers::ArcgisIdentify::FormattersTest < ActiveSupport::TestCase
     assert_equal [ "Niveau trophique : Mésotrophe", "Niveau hydrique : Frais" ], entries.pluck(:text)
   end
 
+  test "essences: the numbered level comes with its name, as the Fichier reads it" do
+    hydric = F.entries_for("essences", [ { "attributes" => { "Raster.NIVEAUX_HYDRIQUES" => "-2", "Raster.NH_DESC" => "sols humides" } } ])
+    trophic = F.entries_for("essences", [ { "attributes" => { "Raster.NIVEAUX_TROPHIQUES" => "0", "Raster.NT_DESC" => "sols mésotrophes" } } ])
+    water = F.entries_for("essences", [ { "attributes" => { "Raster.APPORTS_EAU" => "A", "Raster.AE_DESC" => "sans apport d'eau" } } ])
+    assert_equal [ "Niveau hydrique : −2 (sols humides)" ], hydric.pluck(:text)
+    assert_equal [ "Niveau trophique : 0 (sols mésotrophes)" ], trophic.pluck(:text)
+    assert_equal [ "Apports d'eau : sans apport d'eau" ], water.pluck(:text)
+  end
+
+  test "zones bioclimatiques: the zone's name" do
+    zone = F.entries_for("zones_bioclimatiques", [ { "value" => "x", "attributes" => { "NOM" => "Sambre-et-Meuse et Condroz" } } ]).first
+    assert_equal "Zone bioclimatique : Sambre-et-Meuse et Condroz", zone[:text]
+    assert_empty F.entries_for("zones_bioclimatiques", [ { "attributes" => { "NOM" => "Null" } } ])
+  end
+
   test "forêts anciennes and plan de secteur" do
     forest = F.entries_for("forets_anciennes", [ { "attributes" => { "Ancienneté de la forêt actuelle" => "forêt ancienne subnaturelle", "Classification de la forêt actuelle" => "Feuillus" } } ]).first
     assert_equal "Forêt ancienne subnaturelle", forest[:text]
