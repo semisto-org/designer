@@ -33,7 +33,7 @@ module Providers
 
     DATASET = "reanalysis-era5-land-timeseries".freeze
     DEFAULT_URL = "https://cds.climate.copernicus.eu/api".freeze
-    VARIABLES = %w[2m_temperature total_precipitation].freeze
+    VARIABLES = %w[2m_temperature total_precipitation 10m_u_component_of_wind 10m_v_component_of_wind].freeze
     GRID_STEP = 0.1
     MAX_DOWNLOAD_BYTES = 200 * 1024 * 1024
     STATUSES = {
@@ -71,8 +71,8 @@ module Providers
 
     def key = "era5_land"
 
-    # Submits the request for the hourly 2 m temperature and precipitation
-    # of a grid point over whole years; returns the job id.
+    # Submits the request for the hourly 2 m temperature, precipitation and
+    # 10 m wind of a grid point over whole years; returns the job id.
     def submit(lat:, lng:, first_year:, last_year:)
       ensure_configured!
       inputs = {

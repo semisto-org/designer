@@ -52,6 +52,10 @@ class ObservedClimate
           indicators = Indicators.new(series.days).as_json
           return failed("no complete year in the series") if indicators[:years].zero?
 
+          wind = series.wind? ? Wind.new(series.each_wind_hour).as_json : nil
+          # Stored even when missing, so that the cell is not computed again for it.
+          indicators[:wind] = wind || { available: false }
+
           @record.update!(status: "ready", indicators:, computed_at: Time.current, error: nil)
         end
         nil

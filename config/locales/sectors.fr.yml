@@ -12,6 +12,7 @@ fr:
     season:
       all: "Toute l'année"
       winter: "Hiver"
+      spring: "Printemps"
       summer: "Été"
     proposed: "Proposé"
     groups:
@@ -92,6 +93,8 @@ fr:
       winter_sun: "Soleil d'hiver"
       sun_title: "Soleil"
       season_winter: "en hiver"
+      season_spring: "au printemps"
+      wind_rose: "Le vent de la région, sur trente ans : il vient surtout %{from}. Une maille d'environ %{km} km, sans le relief ; les flèches sont les vents mesurés sur le terrain."
       season_summer: "en été"
       sun_summer_sun: "en été, %{range}"
       sun_winter_sun: "en hiver, %{range}"

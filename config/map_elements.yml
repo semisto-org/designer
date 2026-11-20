@@ -714,6 +714,7 @@ layers:
         color: "#8a6d3b"
         fields:
           - { key: sign, type: select, options: [first_frost, frost_pocket, last_frost, snow_melts_first, snow_lingers, morning_mist, puddle, waterlogged, dries_first, winter_sun, summer_shade, wind_exposed, animal_tracks, nest, browsing, pollinators, amphibians, budburst, first_flowers, wild_fruit, leaf_fall] }
+          - { key: wind_from_deg, type: number, unit: °, min: 0, max: 360 }
       sketch:
         geometry: [LineString, MultiLineString]
         icon: signature
@@ -730,7 +731,7 @@ layers:
         defaults: { sector_type: wind, sector_season: all_year }
         fields:
           - { key: sector_type, type: select, options: [wind, cold_wind, fire, flood, frost, noise, dust, pollution, good_view, bad_view, privacy, wildlife, predators, other] }
-          - { key: sector_season, type: select, options: [all_year, winter, summer] }
+          - { key: sector_season, type: select, options: [all_year, winter, spring, summer] }
           - { key: from_deg, type: number, unit: °, min: 0, max: 360 }
           - { key: to_deg, type: number, unit: °, min: 0, max: 360 }
       # Permaculture zones 0 to 5, by how often one goes there, drawn from the « Zones » panel.

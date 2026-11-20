@@ -1,4 +1,4 @@
-import { SIGNS, SIGN_KEYS, missingSeasons, observationYear, observedOn, seenLabel, signFeature, signsOfMonth, signsToLookFor } from '../season'
+import { SIGNS, SIGN_KEYS, missingSeasons, observationYear, observedOn, seenLabel, signFeature, signsOfMonth, signsToLookFor, windPoint } from '../season'
 import type { MapFeature } from '../types'
 
 const feature = (id: number, properties: Record<string, unknown>): MapFeature =>
@@ -70,5 +70,13 @@ describe('seenLabel', () => {
 
   it('keeps quiet on a broken date', () => {
     expect(seenLabel('pas une date', now)).toBe('')
+  })
+
+  it('keeps where the wind came from on « Le vent frappe ici », read on the compass', () => {
+    const f = signFeature({ sign: 'wind_exposed', label: 'Le vent frappe ici', text: '', position: [4.9, 50.3], observedAt: '2026-11-20T10:00:00.000Z', windFromDeg: 251.6 })
+    expect(f.properties).toMatchObject({ sign: 'wind_exposed', wind_from_deg: 252 })
+    expect(signFeature({ sign: 'puddle', label: 'Flaque', text: '', position: [4.9, 50.3], observedAt: '2026-11-20' }).properties).not.toHaveProperty('wind_from_deg')
+    expect(windPoint(251.6)).toBe('oso')
+    expect(windPoint(355)).toBe('n')
   })
 })

@@ -47,4 +47,25 @@ class ObservedClimateTest < ActiveSupport::TestCase
   test "validates its status" do
     assert_not ObservedClimate.new(cell_lat: 1, cell_lng: 1, first_year: 1995, last_year: 2024, status: "done").valid?
   end
+
+  test "a cell computed before the wind is computed again once, its climate still shown meanwhile" do
+    record = ObservedClimate.create!(cell_lat: 50.3, cell_lng: 4.9, first_year: 1995, last_year: 2024, status: "ready",
+                                     indicators: { "years" => 30, "months" => [] }, computed_at: 1.month.ago)
+    assert record.restartable?
+    point = Providers::Climate::Point.new(lat: 50.3, lng: 4.9)
+    assert_enqueued_with(job: ObservedClimateJob) { ObservedClimate.ensure_for(point) }
+    record.reload
+    assert record.pending?
+    assert record.indicators?
+
+    report = ObservedClimate::MapReport.new(maps(:ahinvaux), provider: Providers::Era5Land.new(api_key: "k"))
+    report.instance_variable_set(:@record, record)
+    json = report.as_json
+    assert_equal "ready", json["status"]
+    assert_equal "pending", json["windStatus"]
+    assert_equal 30, json["data"]["years"]
+
+    record.update!(status: "ready", indicators: record.indicators.merge("wind" => { "available" => false }))
+    assert_not record.restartable?
+  end
 end

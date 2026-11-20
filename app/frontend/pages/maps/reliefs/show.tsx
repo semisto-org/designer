@@ -38,6 +38,7 @@ import { cameraFlash } from '@/map/presentation/flash'
 import { PresentationBar } from '@/map/presentation/PresentationBar'
 import { markApplied, presentationStore, requestStep, saveSteps, usePresentation } from '@/map/presentation/store'
 import type { ReliefView } from '@/map/presentation/types'
+import { useWind } from '@/components/wind/useWind'
 
 type Props = {
   map: MapData
@@ -271,6 +272,9 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
   }, [terrain.version])
 
   const compassHeading = useCallback(() => controller.current?.heading() ?? null, [])
+  // The region's wind rose under the compass needle, turning with the view.
+  const wind = useWind(map.id)
+  const windPetals = wind?.available && wind.rose ? wind.rose.year.sectors.map((s) => ({ deg: s.deg, pct: s.pct })) : null
   const updateView = useCallback((patch: Partial<ViewState>) => {
     setView((current) => (current ? { ...current, ...patch } : current))
     const c = controller.current
@@ -896,6 +900,7 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
       {ready && (
         <Compass
           heading={compassHeading}
+          wind={windPetals}
           onFaceNorth={() => controller.current?.faceNorth()}
           className="absolute right-3 top-10 z-10 h-16 w-16 rounded-full focus-visible:outline-2 focus-visible:outline-prune-600 sm:top-3 sm:h-20 sm:w-20"
         />

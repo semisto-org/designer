@@ -4,6 +4,9 @@ import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { Button } from '@/components/ui/Button'
 import { ChipButton } from '@/components/ui/ChipButton'
 import { Field, Input, Select, Textarea } from '@/components/ui/Field'
+import { sectorAround, viewForSeason, type WindView } from '@/components/wind/model'
+import { useWind } from '@/components/wind/useWind'
+import { WindCard } from '@/components/wind/WindCard'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { rangeText } from '@/map/sectors/labels'
@@ -130,6 +133,11 @@ export default function SectorsPanel() {
   const shownSun = sun.filter((s) => season === 'all' || s.type === `${season}_sun`)
   const groups = presentGroups(editor.features, center[1])
   const groupHidden = (type: string) => hiddenGroups.includes(sectorGroup(type))
+  // The region's wind rose (ERA5-Land), on the season the panel looks at.
+  const windSectors = all.filter((f) => f.properties.sector_type === 'wind' || f.properties.sector_type === 'cold_wind')
+  const wind = useWind(editor.map.id, windSectors.map((f) => `${f.properties.id}:${f.properties.status}`).join(','))
+  const [windView, setWindView] = useState<WindView>(viewForSeason(season))
+  useEffect(() => { setWindView(viewForSeason(season)) }, [season])
 
   // The overlay (SectorsOverlay) draws the sector being edited in place of its saved arc.
   useEffect(() => {
@@ -219,8 +227,25 @@ export default function SectorsPanel() {
     }
   }
 
+  // A sector started from the rose: the person checks its directions on the land before saving it.
+  function draftFromWind(kind: 'prevailing' | 'cold') {
+    const roses = wind?.available ? wind.rose : null
+    if (!roses) return
+    const view = kind === 'cold' ? null : windView === 'cold_spring' || windView === 'strong' ? 'year' : windView
+    const rose = view === 'year' || view == null ? roses.year : roses.seasons[view]
+    const deg = kind === 'cold' ? roses.coldSpring?.prevailingDeg : rose?.prevailingDeg
+    if (deg == null) return
+    const { from, to } = sectorAround(deg)
+    const season: SectorSeason = kind === 'cold' ? 'spring' : view === 'winter' || view === 'spring' || view === 'summer' ? view : 'all_year'
+    setDraft({
+      ...EMPTY, type: kind === 'cold' ? 'cold_wind' : 'wind', season, from, to,
+      name: t(kind === 'cold' ? 'wind.card.cold_name' : 'wind.card.prevailing_name'),
+      notes: t(kind === 'cold' ? 'wind.card.cold_notes' : 'wind.card.prevailing_notes'),
+    })
+  }
+
   const ready = draft != null && draft.from != null && draft.to != null
-  const seasons: SeasonFilter[] = ['all', 'winter', 'summer']
+  const seasons: SeasonFilter[] = ['all', 'winter', 'spring', 'summer']
 
   return (
     <div className="space-y-4">
@@ -303,6 +328,22 @@ export default function SectorsPanel() {
 
       {editor.canEdit && !draft && (
         <Button variant="secondary" size="sm" onClick={() => setDraft(EMPTY)}><Plus className="h-4 w-4" />{t('sectors.add')}</Button>
+      )}
+
+      {!draft && wind?.available && (
+        <WindCard
+          report={wind}
+          view={windView}
+          onView={setWindView}
+          actions={editor.canEdit && wind.rose ? (
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" variant="secondary" onClick={() => draftFromWind('prevailing')}><Plus className="h-4 w-4" />{t('wind.card.add_prevailing')}</Button>
+              {wind.rose.coldSpring?.prevailingDeg != null && (
+                <Button size="sm" variant="secondary" onClick={() => draftFromWind('cold')}><Plus className="h-4 w-4" />{t('wind.card.add_cold')}</Button>
+              )}
+            </div>
+          ) : undefined}
+        />
       )}
 
       {draft && (

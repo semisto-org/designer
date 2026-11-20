@@ -6,6 +6,17 @@ release_notes = [
   # Entries sharing a day show the last created first: newest goes at the
   # bottom of its day.
   {
+    key: "vent-de-ton-terrain", published_on: "2026-11-20",
+    title: "D'où vient le vent, et qui abrite tes fruitiers",
+    body: <<~TEXT,
+      Dans « Secteurs » et « Climat », une rose des vents montre trente ans de vent au-dessus de ta région : l'année, chaque saison, les vents forts, et la bise de printemps, ce vent froid qui brûle les fleurs des fruitiers. Un bouton la pose comme secteur sur ta carte.
+
+      La fiche de chaque arbre dit s'il est à l'abri derrière une haie, un brise-vent ou un mur, ou s'il est exposé. Puis va lire le vent sur place : dans l'app, « Le vent frappe ici » lit la boussole de ton téléphone, et ta mesure s'affiche sur la rose. Elle compte plus que le modèle.
+    TEXT
+    link_path: "/help/va-lire-le-vent", link_label: "Lire l'aide",
+    screenshot_alt: "La rose des vents d'un terrain, avec la mesure faite sur place, et la fiche d'un pommier à l'abri d'une haie mais exposé à la bise de printemps."
+  },
+  {
     key: "app-terrain-en-test", published_on: "2026-11-11",
     title: "Bientôt : l'app de terrain, pensée pour dehors",
     body: <<~TEXT

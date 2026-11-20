@@ -24,7 +24,7 @@ class Providers::Era5LandTest < ActiveSupport::TestCase
       body = JSON.parse(request.body)
       request.headers["Private-Token"] == "cds-test-token" &&
         body == { "inputs" => {
-          "variable" => %w[2m_temperature total_precipitation],
+          "variable" => %w[2m_temperature total_precipitation 10m_u_component_of_wind 10m_v_component_of_wind],
           "location" => { "latitude" => 50.3, "longitude" => 4.9 },
           "date" => [ "1995-01-01/2024-12-31" ],
           "data_format" => "csv"

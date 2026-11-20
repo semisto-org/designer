@@ -170,6 +170,7 @@ fr:
       rain_mm: "Pluviomètre"
       muddy: "Eau boueuse"
       sign: "Signe"
+      wind_from_deg: "Le vent vient de (degrés depuis le nord)"
 
     options:
       hinge:
@@ -242,7 +243,7 @@ fr:
         copper: "Cuivre"
         steel: "Acier"
       seasonality: { permanent: "Toute l'année", winter: "En hiver", after_rain: "Après la pluie" }
-      sector_season: { all_year: "Toute l'année", winter: "Surtout en hiver", summer: "Surtout en été" }
+      sector_season: { all_year: "Toute l'année", winter: "Surtout en hiver", spring: "Surtout au printemps (floraison)", summer: "Surtout en été" }
       surface:
         earth: "Terre"
         grass: "Herbe"

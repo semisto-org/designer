@@ -38,4 +38,35 @@ class ObservedClimate::HourlySeriesTest < ActiveSupport::TestCase
     assert_empty series.read_csv(StringIO.new(csv)).days
     assert_raises(Providers::Era5Land::Error) { series.read_csv(StringIO.new("when,t2m\nx,1\n")) }
   end
+
+  test "keeps the 10 m wind hour by hour, met with that hour's temperature across the files of a zip" do
+    Tempfile.create([ "era5", ".zip" ]) do |file|
+      Zip::OutputStream.open(file.path) do |zip|
+        zip.put_next_entry("reanalysis-era5-land-timeseries-2m_temperature.csv")
+        zip.write("valid_time,latitude,longitude,t2m\n1995-03-01T06:00:00,50.3,4.9,275.15\n")
+        zip.put_next_entry("reanalysis-era5-land-timeseries-10m_u_component_of_wind.csv")
+        zip.write("valid_time,latitude,longitude,u10\n1995-03-01T06:00:00,50.3,4.9,5.0\n1995-03-01T07:00:00,50.3,4.9,-3.0\n")
+        zip.put_next_entry("reanalysis-era5-land-timeseries-10m_v_component_of_wind.csv")
+        zip.write("valid_time,latitude,longitude,v10\n1995-03-01T06:00:00,50.3,4.9,0.0\n1995-03-01T07:00:00,50.3,4.9,-4.0\n")
+      end
+      read = series.read_file(file.path)
+      assert read.wind?
+      hours = read.each_wind_hour.to_a
+      assert_equal 2, hours.size
+      # Blowing towards the east: a west wind, at 5 m/s, 2 °C that hour.
+      assert_equal 3, hours.first.month
+      assert_in_delta 270.0, hours.first.from_deg, 0.001
+      assert_in_delta 5.0, hours.first.speed, 0.001
+      assert_in_delta 2.0, hours.first.temp_c, 0.001
+      # Blowing towards the south-west: it comes from the north-east (36.9°).
+      assert_in_delta 36.87, hours.last.from_deg, 0.01
+      assert_nil hours.last.temp_c
+    end
+  end
+
+  test "a file without the wind has none" do
+    read = series.read_file(file_fixture("observed_climate/era5_land_two_days.csv"))
+    assert_not read.wind?
+    assert_empty read.each_wind_hour.to_a
+  end
 end

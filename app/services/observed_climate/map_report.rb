@@ -6,7 +6,8 @@ class ObservedClimate
   #   { available: false, reason: "not_configured" | "no_location" }
   #   { available: true, status: "pending" | "failed" | "ready",
   #     period: { firstYear, lastYear }, gridKm: 9, computedAt,
-  #     data: { years, annual: {...}, zone, months: [...], frost: {...}, trend: {...} },  # when ready
+  #     data: { years, annual: {...}, zone, months: [...], frost: {...}, trend: {...}, wind: {...} },  # when ready
+  #     windStatus: "ready" | "pending" | "failed",
   #     source: { key, publisher, title, licence, url, doi, year } }
   #
   # Output keys are camelCase (JSON for the frontend). Only the grid cell is
@@ -32,11 +33,13 @@ class ObservedClimate
 
       camelize(
         available: true,
-        status: record.status,
+        # A cell being computed again for its wind keeps showing its climate.
+        status: record.indicators? ? "ready" : record.status,
+        wind_status: record.wind? ? "ready" : (record.ready? ? "pending" : record.status),
         period: { first_year: record.first_year, last_year: record.last_year },
         grid_km: GRID_KM,
         computed_at: record.computed_at&.iso8601,
-        data: record.ready? ? record.indicators : nil,
+        data: record.indicators? ? record.indicators : nil,
         source: Providers::Era5Land::ATTRIBUTION.merge(year: (record.computed_at || Time.current).year)
       )
     end

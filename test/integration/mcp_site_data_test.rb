@@ -74,4 +74,27 @@ class McpSiteDataTest < ActionDispatch::IntegrationTest
     assert error
     assert_match(/introuvable/, text)
   end
+
+  test "the wind topic: the region's roses for drawing stripped, and which trees are sheltered" do
+    lat, lng = Providers::Era5Land.cell(50.341, 4.9075)
+    sector = { "deg" => 270.0, "pct" => 30.0, "mean_kmh" => 18.0, "classes" => [ 1, 29, 0, 0 ] }
+    rose = { "year" => { "prevailing_deg" => 270.0, "sectors" => [ sector ] }, "seasons" => { "spring" => { "prevailing_deg" => 45.0, "sectors" => [ sector ] } },
+             "cold_spring" => { "prevailing_deg" => 45.0, "hours_pct" => 5.0 }, "strong" => { "prevailing_deg" => 225.0 } }
+    ObservedClimate.create!(cell_lat: lat, cell_lng: lng, first_year: 1995, last_year: 2024, status: "ready", computed_at: Time.current,
+                            indicators: { "years" => 30, "months" => [], "wind" => rose })
+    @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.905, lat: 50.34), properties: { "species_id" => plant_species(:apple).id })
+    previous, ENV["CDS_API_KEY"] = ENV["CDS_API_KEY"], "k"
+    data, error = call_tool(@owner, "get_site_data", { map_id: @map.id, topics: %w[wind] })
+    refute error
+    wind = data["wind"]
+    assert_equal "ready", wind["status"]
+    assert_equal 31, wind["scale"]["wind_grid_km"]
+    assert_equal 45.0, wind["rose"]["cold_spring"]["prevailing_deg"]
+    assert_not wind["rose"]["year"]["sectors"].first.key?("classes")
+    assert_not wind["rose"]["seasons"]["spring"]["sectors"].first.key?("classes")
+    tree = wind["trees"]["trees"].sole
+    assert_equal %w[wind cold_wind], tree["exposed"].map { _1["type"] }
+  ensure
+    ENV["CDS_API_KEY"] = previous
+  end
 end

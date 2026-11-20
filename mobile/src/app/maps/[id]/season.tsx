@@ -11,9 +11,9 @@ import { display } from '@/lib/display'
 import { gpsProperties } from '@/lib/geo'
 import { haptics } from '@/lib/haptics'
 import { formatDistance, t } from '@/lib/i18n'
-import { currentPosition, currentPositionWithAccuracy } from '@/lib/location'
+import { currentHeading, currentPosition, currentPositionWithAccuracy } from '@/lib/location'
 import { outbox } from '@/lib/outbox'
-import { SEASON_SIGN, SIGN_GROUPS, isSign, observedOn, signFeature, signLabel, signsOf, signsOfMonth, type Sign } from '@/lib/season'
+import { SEASON_SIGN, SIGN_GROUPS, WIND_SIGNS, isSign, observedOn, signFeature, signLabel, signsOf, signsOfMonth, windPoint, type Sign } from '@/lib/season'
 import type { Position } from '@/lib/types'
 import { useMapBundle } from '@/state/useMapBundle'
 import { chooseMedia, type MediaChoice } from '@/ui/chooseMedia'
@@ -71,6 +71,15 @@ function SignForm({ mapId, sign, onBack, bottom }: { mapId: number; sign: Sign; 
   const [text, setText] = useState('')
   const [media, setMedia] = useState<MediaChoice['items']>([])
   const [fix, setFix] = useState<{ position: Position; accuracy: number | null } | null | 'pending'>('pending')
+  // « Le vent frappe ici »: the person faces the wind and the compass says where it comes from.
+  const [windFrom, setWindFrom] = useState<number | null | 'reading' | 'no_compass'>(null)
+  const readWind = async () => {
+    setWindFrom('reading')
+    const heading = await currentHeading(3000)
+    if (heading == null) { setWindFrom('no_compass'); return }
+    haptics.tap()
+    setWindFrom(heading)
+  }
 
   // Where the person stands when the sign opens: that is where they see it.
   useEffect(() => {
@@ -91,7 +100,8 @@ function SignForm({ mapId, sign, onBack, bottom }: { mapId: number; sign: Sign; 
     const position = found ?? bundle.map.center ?? null
     if (!position) return
     const accuracy = fix && fix !== 'pending' ? gpsProperties(fix.accuracy) : {}
-    const tempId = outbox.addFeature(mapId, signFeature({ sign, label: signLabel(sign), text, position, observedAt: observedOn(ago), accuracy }))
+    const windFromDeg = typeof windFrom === 'number' ? windFrom : null
+    const tempId = outbox.addFeature(mapId, signFeature({ sign, label: signLabel(sign), text, position, observedAt: observedOn(ago), accuracy, windFromDeg }))
     for (const item of media) {
       outbox.add({
         type: 'uploadPhoto', mapId, file: item.file, takenAt: item.takenAt,
@@ -118,6 +128,21 @@ function SignForm({ mapId, sign, onBack, bottom }: { mapId: number; sign: Sign; 
       <View style={s.chips}>
         {DAYS.map((day) => <Chip key={day.key} label={t(`mobile.season.days.${day.key}`)} selected={ago === day.ago} onPress={() => setAgo(day.ago)} />)}
       </View>
+
+      {WIND_SIGNS.includes(sign) && (
+        <View style={{ gap: space.sm }}>
+          <Label>{t('mobile.season.wind.label')}</Label>
+          <Body muted>{t('mobile.season.wind.hint')}</Body>
+          <Button variant="secondary" icon="heading" label={t(typeof windFrom === 'number' ? 'mobile.season.wind.again' : 'mobile.season.wind.read')}
+            onPress={() => void readWind()} disabled={windFrom === 'reading'} />
+          {typeof windFrom === 'number' && (
+            <Text style={s.hand} maxFontSizeMultiplier={MAX_FONT_SCALE}>
+              {t('mobile.season.wind.from', { point: t(`mobile.season.wind.points.${windPoint(windFrom)}`), deg: Math.round(windFrom) })}
+            </Text>
+          )}
+          {windFrom === 'no_compass' && <Notice tone="warning">{t('mobile.season.wind.no_compass')}</Notice>}
+        </View>
+      )}
 
       <Label>{t('mobile.season.text_label')}</Label>
       <Input value={text} onChangeText={setText} placeholder={t('mobile.season.placeholder')} multiline accessibilityLabel={t('mobile.season.text_label')} />

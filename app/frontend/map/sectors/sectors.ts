@@ -91,15 +91,15 @@ export function groupsFromParam(value: string | null | undefined): { shown: Sect
 export const isSectorType = (value: unknown): value is SectorType =>
   typeof value === 'string' && (SECTOR_TYPES as readonly string[]).includes(value)
 
-/** When a sector is felt (`properties.sector_season`): a cold wind in winter, a fire risk in summer. */
-export const SECTOR_SEASONS = ['all_year', 'winter', 'summer'] as const
+/** When a sector is felt (`properties.sector_season`): a cold wind in winter or at flowering time (spring), a fire risk in summer. */
+export const SECTOR_SEASONS = ['all_year', 'winter', 'spring', 'summer'] as const
 export type SectorSeason = (typeof SECTOR_SEASONS)[number]
 
 export const isSectorSeason = (value: unknown): value is SectorSeason =>
   typeof value === 'string' && (SECTOR_SEASONS as readonly string[]).includes(value)
 
-/** Whether a sector of `season` shows when the map looks at `filter` (all, winter or summer). */
-export const showsIn = (season: SectorSeason, filter: 'all' | 'winter' | 'summer') =>
+/** Whether a sector of `season` shows when the map looks at `filter` (all, winter, spring or summer). */
+export const showsIn = (season: SectorSeason, filter: 'all' | 'winter' | 'spring' | 'summer') =>
   filter === 'all' || season === 'all_year' || season === filter
 
 /** 16 compass points, from N clockwise. */

@@ -1,8 +1,11 @@
 // A compass rose that turns with the 3D camera: the north needle always points
 // to the real north of the place, and its letters stay upright. A click turns
-// the view to face north.
+// the view to face north. With `wind`, the region's wind rose (ERA5-Land, the
+// year) is washed under the needle and turns with it: one sees from which
+// side of the relief the wind comes.
 import { useEffect, useRef } from 'react'
 import { t } from '@/lib/i18n'
+import { WIND_CLASS_COLORS } from '@/components/wind/colors'
 import { eighthOf, letterPosition } from './heading.ts'
 
 const CARDINALS = [
@@ -14,11 +17,13 @@ const CARDINALS = [
 
 const LETTER_RADIUS = 31
 
-export function Compass({ heading, onFaceNorth, className }: {
+export function Compass({ heading, onFaceNorth, className, wind }: {
   /** Camera heading in radians clockwise from north, or null while the scene loads. */
   heading: () => number | null
   onFaceNorth: () => void
   className?: string
+  /** Share of hours per direction the wind comes from (16, from north). */
+  wind?: { deg: number; pct: number }[] | null
 }) {
   const rose = useRef<SVGGElement>(null)
   const letters = useRef<(SVGTextElement | null)[]>([])
@@ -60,6 +65,7 @@ export function Compass({ heading, onFaceNorth, className }: {
         <circle cx="50" cy="50" r="47" className="fill-white/90 stroke-loam-300" strokeWidth="1.5" />
         <g ref={rose}>
           <circle cx="50" cy="50" r="19" className="fill-none stroke-loam-200" strokeWidth="1" strokeDasharray="2 3" />
+          {wind && <WindPetals petals={wind} />}
           {Array.from({ length: 16 }, (_, i) => (
             <line
               key={i}
@@ -91,5 +97,20 @@ export function Compass({ heading, onFaceNorth, className }: {
         ))}
       </svg>
     </button>
+  )
+}
+
+/** The wind rose under the needle: petals from 6 to 40 units, in the wind sectors' teal. */
+function WindPetals({ petals }: { petals: { deg: number; pct: number }[] }) {
+  const max = Math.max(1, ...petals.map((p) => p.pct))
+  const at = (deg: number, r: number) => `${(50 + r * Math.sin((deg * Math.PI) / 180)).toFixed(2)} ${(50 - r * Math.cos((deg * Math.PI) / 180)).toFixed(2)}`
+  return (
+    <g opacity="0.75">
+      {petals.map((p) => {
+        if (p.pct <= 0) return null
+        const r = 6 + Math.sqrt(p.pct / max) * 34
+        return <path key={p.deg} d={`M ${at(p.deg - 9, 5)} L ${at(p.deg - 9, r)} A ${r} ${r} 0 0 1 ${at(p.deg + 9, r)} L ${at(p.deg + 9, 5)} Z`} fill={WIND_CLASS_COLORS[1]} />
+      })}
+    </g>
   )
 }
