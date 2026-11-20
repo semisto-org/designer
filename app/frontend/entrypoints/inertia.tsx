@@ -4,6 +4,11 @@ import { track } from '@/lib/analytics'
 import AppLayout from '@/layouts/AppLayout'
 import PublicLayout from '@/layouts/PublicLayout'
 import ImpersonationFrame from '@/components/admin/ImpersonationBanner'
+import { installStaleChunkReload } from '@/lib/staleChunks'
+import { pendingWrites } from '@/lib/saveStatus'
+
+// A tab left open across a deploy reloads itself instead of breaking.
+installStaleChunkReload(pendingWrites)
 
 // Pages live in app/frontend/pages/<controller>/<action>.tsx.
 // Default layouts: the marketing site and sign-in use PublicLayout, the map
