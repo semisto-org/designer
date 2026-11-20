@@ -133,7 +133,42 @@ wallonia:
       - { label: "Faiblement (−1)", color: "#ffbee8" }
       - { label: "Moyennement (−2)", color: "#c500ff" }
       - { label: "Fortement (−3)", color: "#4c0073" }
-    note: "La sous-couche « Niveaux hydriques » du Fichier écologique des essences (le Géoportail ouvre, lui, sur « Apports d'eau »). Deux niveaux voisins peuvent porter le même nom, comme chez le SPW : c'est le chiffre qui compte. Touche la carte pour lire aussi la richesse du sol, le sous-secteur et les apports d'eau."
+    note: "Comme sur le Géoportail, deux niveaux voisins peuvent porter le même nom : c'est le chiffre qui compte. Le Fichier écologique des essences le croise avec la richesse du sol et la zone bioclimatique."
+  essences_trophiques:
+    items:
+      - heading: "Richesse du sol"
+      - { label: "Très pauvre (−3)", color: "#ff0000" }
+      - { label: "Pauvre (−2)", color: "#ffaa0a" }
+      - { label: "Assez pauvre (−1)", color: "#ffff00" }
+      - { label: "Moyen (0)", color: "#267300" }
+      - { label: "Riche (1)", color: "#00c5ff" }
+      - { label: "Calcaire (2)", color: "#002673" }
+    note: "Le niveau trophique du Fichier écologique des essences : les éléments nutritifs que le sol offre aux arbres."
+  essences_apports_eau:
+    items:
+      - { label: "Sans apport d'eau", color: "#cccccc" }
+      - { label: "Apport variable", color: "#0091a8" }
+      - { label: "Apport permanent", color: "#004da8" }
+    note: "L'eau qui arrive d'en haut (ruissellement, nappe) en plus de la pluie. C'est la sous-couche que le Géoportail montre en premier."
+  essences_sous_secteurs:
+    items:
+      - { label: "Versant froid", color: "#004da8" }
+      - { label: "Neutre", color: "#aaff00" }
+      - { label: "Versant chaud", color: "#ff0000" }
+    note: "Les sous-secteurs du Fichier écologique des essences : un versant nord reste frais, un versant sud chauffe et sèche plus vite."
+  zones_bioclimatiques:
+    items:
+      - { label: "Plaines et vallées scaldisiennes", color: "#c21f21" }
+      - { label: "Hesbigno-brabançon", color: "#e5b222" }
+      - { label: "Sambre-et-Meuse et Condroz", color: "#f8e732" }
+      - { label: "Fagne, Famenne et Calestienne", color: "#1ca0df" }
+      - { label: "Thiérache", color: "#2c67ad" }
+      - { label: "Basse et moyenne Ardenne", color: "#c8d786" }
+      - { label: "Ardenne centro-orientale", color: "#719c3c" }
+      - { label: "Haute Ardenne", color: "#27763d" }
+      - { label: "Haute Lorraine", color: "#99297e" }
+      - { label: "Basse Lorraine", color: "#dcc4df" }
+    note: "Les dix zones climatiques du Fichier écologique des essences (données IRM sur 20 ans) : la première question à se poser pour un arbre."
   cadastre:
     items:
       - { label: "Limite de parcelle", color: "#730000", shape: outline }

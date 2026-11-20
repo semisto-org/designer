@@ -3,7 +3,7 @@ module Mcp
     class IdentifyAtPoint < Base
       include PlaceAccess
 
-      MAX_LAYERS = 13
+      MAX_LAYERS = 16
       MAX_DISTANCE_M = 1000
 
       arguments(
