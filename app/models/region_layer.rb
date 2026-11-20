@@ -23,6 +23,10 @@
 # - role: "cadastre" marks the layer used to pick parcels;
 # - format: image/png (default) or image/jpeg (photos);
 # - tile_size: 512 (default for wms/arcgis_rest) or 256;
+# - pixel_ratio: 2 asks wms/arcgis_rest tiles at twice the pixels and twice
+#   the DPI (same scale), so text drawn into the image by the server (the
+#   cadastre's parcel numbers) stays sharp on HiDPI screens instead of being
+#   stretched from a 96 DPI bitmap;
 # - default: true on the base shown first;
 # - fallback: { url:, attribution: } raster used when a style fails;
 # - legend: { gradient: { colors:, labels: }, items: [{ label:, color:,
@@ -79,6 +83,10 @@ class RegionLayer < ApplicationRecord
     (option(:tile_size) || (kind == "xyz" ? 256 : 512)).to_i
   end
 
+  def pixel_ratio
+    option(:pixel_ratio).to_i.clamp(1, 3)
+  end
+
   def image_format
     option(:format).presence || "image/png"
   end
@@ -114,8 +122,8 @@ class RegionLayer < ApplicationRecord
   def upstream_image_url(bbox, width:, height:)
     box = bbox.map { |value| value.round(3) }.join(",")
     case kind
-    when "wms" then with_query(wms_query(bbox: box, width:, height:))
-    when "arcgis_rest" then with_query(export_query(bbox: box, width:, height:))
+    when "wms" then with_query(wms_query(bbox: box, width:, height:, ratio: 1))
+    when "arcgis_rest" then with_query(export_query(bbox: box, width:, height:, ratio: 1))
     end
   end
 
@@ -135,18 +143,26 @@ class RegionLayer < ApplicationRecord
       "#{url}#{url.include?("?") ? "&" : "?"}#{query}"
     end
 
-    def wms_query(bbox:, width: tile_size, height: tile_size)
+    # A tile is asked at `pixel_ratio` times its size, with the DPI raised
+    # to match (DPI is ArcGIS's WMS vendor parameter): the scale, hence the
+    # layer's scale ranges and symbol sizes, stays that of a 96 DPI tile.
+    def tile_pixels = tile_size * pixel_ratio
+
+    def wms_query(bbox:, width: tile_pixels, height: tile_pixels, ratio: pixel_ratio)
       transparent = image_format == "image/png" ? "TRUE" : "FALSE"
+      params = { SERVICE: "WMS", VERSION: "1.3.0", REQUEST: "GetMap", LAYERS: layers.to_s, STYLES: "",
+                 FORMAT: image_format, TRANSPARENT: transparent, CRS: "EPSG:3857",
+                 WIDTH: width, HEIGHT: height }
+      params[:DPI] = 96 * ratio if ratio > 1
       # BBOX stays last and unescaped: MapLibre substitutes the placeholder.
-      { SERVICE: "WMS", VERSION: "1.3.0", REQUEST: "GetMap", LAYERS: layers.to_s, STYLES: "",
-        FORMAT: image_format, TRANSPARENT: transparent, CRS: "EPSG:3857",
-        WIDTH: width, HEIGHT: height }.to_query.then { |q| "#{q}&BBOX=#{bbox}" }
+      params.to_query.then { |q| "#{q}&BBOX=#{bbox}" }
     end
 
-    def export_query(bbox:, width: tile_size, height: tile_size)
+    def export_query(bbox:, width: tile_pixels, height: tile_pixels, ratio: pixel_ratio)
       format = image_format == "image/jpeg" ? "jpg" : "png32"
       params = { f: "image", format:, transparent: format == "png32", bboxSR: 3857, imageSR: 3857,
                  size: "#{width},#{height}" }
+      params[:dpi] = 96 * ratio if ratio > 1
       params[:layers] = "show:#{layers}" if layers.present?
       "#{params.to_query}&bbox=#{bbox}"
     end
