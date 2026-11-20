@@ -18,6 +18,7 @@ import { GROWTH_YEARS, yearsBetween, type GrowingPlantsData } from '@/relief/gro
 import { NivaDashboard, NivaPad } from '@/relief/NivaControls'
 import type { OverlayFeature } from '@/relief/overlay'
 import type { WalkKey } from '@/relief/scene'
+import { useFlyKeys } from '@/relief/useFlyKeys'
 import { ChoiceGroup, Slider } from '@/relief/ui'
 import type { MultiPolygon } from 'geojson'
 import type { LandcoverClassData, SoilModel, TerrainGridData } from '@/types/relief'
@@ -89,6 +90,8 @@ export default function PublicRelief(props: Props) {
   const [niva, setNiva] = useState<NivaInfo>({ mode: 'off' })
   const [attribution, setAttribution] = useState<string | null>(null)
   const touch = useMemo(() => typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches, [])
+  // Arrows slide over the terrain in the overview, Shift + arrows turn and come closer.
+  useFlyKeys(controller, ready && walk === 'off' && niva.mode === 'off')
 
   const plantToday = useMemo(
     () => Math.min(GROWTH_YEARS, Math.max(0, yearsBetween(growingPlants.origin, growingPlants.today))),

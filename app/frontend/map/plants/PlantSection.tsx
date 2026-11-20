@@ -13,6 +13,7 @@ import { GRAFT_FORMS, GRAFT_TRUNK, ROOTSTOCK_VIGORS, TRUNK_RANGE, type GraftForm
 import { usePlanting } from '@/map/plants/store'
 import { paletteItemOf, StrataDot } from '@/map/plants/strata'
 import { VarietyField } from '@/map/plants/VarietyField'
+import PlantMeasures, { MEASURED_STRATA } from '@/map/plants/PlantMeasures'
 import type { MapFeature } from '@/types'
 
 const TRAININGS = ['free', 'pollard', 'coppice', 'chop_and_drop'] as const
@@ -278,6 +279,8 @@ export default function PlantSection({ feature }: { feature: MapFeature }) {
           ].filter(Boolean).join(', ')}</span>
         </p>
       ) : null)}
+
+      {plantedOn && strata != null && MEASURED_STRATA.includes(strata) && <PlantMeasures feature={feature} strata={strata} save={save} />}
 
       {NURSERY_FORMS.has(String(feature.properties.nursery_form)) && (
         <p className="text-loam-600">

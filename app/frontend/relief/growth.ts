@@ -24,6 +24,44 @@ export type GrowthInputs = {
   maturityYears: number
   /** Some of the values are a strata default or come from the growth rate. */
   indicative: boolean
+  /** Its silhouette in the open (the species', else its genus'), or null: drawn round. */
+  crownForm?: CrownForm | null
+}
+
+/**
+ * The silhouette of a tree or a shrub grown in the open (PlantCrownForm on
+ * the server): round (a lime, an apple), spreading (a chestnut, a walnut,
+ * branching low), columnar (an Italian cypress), conical (a fir, a larch),
+ * weeping (a weeping willow) or multi-stem (a hazel, an elder).
+ */
+export type CrownForm = 'round' | 'spreading' | 'columnar' | 'conical' | 'weeping' | 'multi_stem'
+export const CROWN_FORMS: readonly CrownForm[] = ['round', 'spreading', 'columnar', 'conical', 'weeping', 'multi_stem']
+
+/** A silhouette the server sent, or null when it is unknown. */
+export function crownFormOf(value: unknown): CrownForm | null {
+  return CROWN_FORMS.includes(value as CrownForm) ? (value as CrownForm) : null
+}
+
+/** What someone measured on the plant itself (PlantableFeature#plant_measures): metres, girth in cm, the day. */
+export type PlantMeasures = { height: number | null; crown: number | null; girth: number | null; on: string | null }
+
+/**
+ * A measure as the growth reads it: height and spread (m), trunk girth at
+ * 1.30 m (cm), and the plant's age when it was measured (years after its
+ * planting), null when it was already there before anyone noted it.
+ */
+export type Measured = { height: number | null; spread: number | null; girth: number | null; age: number | null }
+
+/** The measures of a plant planted on `plantedOn` (null: date unknown), or null when nothing was measured. */
+export function measuredOf(measures: PlantMeasures | null | undefined, plantedOn: string | null, longAgo = false): Measured | null {
+  if (!measures) return null
+  const positive = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : null)
+  const height = positive(measures.height)
+  const spread = positive(measures.crown)
+  const girth = positive(measures.girth)
+  if (height == null && spread == null && girth == null) return null
+  const age = !longAgo && plantedOn && measures.on ? Math.max(0, yearsBetween(plantedOn, measures.on)) : null
+  return { height, spread, girth, age }
 }
 
 export type GrowingPlantData = GrowthInputs & {
@@ -36,6 +74,8 @@ export type GrowingPlantData = GrowthInputs & {
   supportUntil?: number | null
   /** A grafted fruit tree: its form, trunk height (m), rootstock vigour and rootstock, as the gardener gave them. */
   graft: GraftData | null
+  /** What someone measured on it (height, crown, girth, day), or null. */
+  measures?: PlantMeasures | null
   lng: number
   lat: number
   number: string | number | null
@@ -153,6 +193,10 @@ export type ScenePlant = {
   training: PlantTraining
   /** A grafted fruit tree: its trunk and its rootstock's vigour, or null. */
   graft?: Graft | null
+  /** Its silhouette in the open, or null (round). */
+  crownForm?: CrownForm | null
+  /** What someone measured on it, or null. */
+  measured?: Measured | null
   /** Years after year 0 when it goes into the ground. */
   start: number
   /** A support plant, removed `until` years after its planting when that is set. */
@@ -260,8 +304,26 @@ export function managedSize(plant: Pick<ScenePlant, 'heightM' | 'spreadM' | 'mat
 /** A grafted tree leaves the nursery with its trunk formed and the start of a crown (m). */
 export const GRAFTED_CROWN_AT_PLANTING = { height: 0.6, spread: 0.6 }
 
-/** Height and spread `age` years after planting, or null before it is planted and once a support plant gave way. */
-export function sizeAt(plant: Pick<ScenePlant, 'strata' | 'heightM' | 'spreadM' | 'maturityYears'> & Kept & { until?: number | null }, age: number): { height: number; spread: number } | null {
+/** The age a measure is counted at when the planting date is unknown: grown. */
+export const MEASURED_LONG_AGO = 1_000_000
+
+/**
+ * A size from the curve, through what was measured: before the measure, the
+ * curve scaled to it; after it, the measure plus what the curve still grows.
+ */
+function fromMeasure(value: number, atMeasure: number, measure: number | null, age: number, measureAge: number | null): number {
+  if (measure == null || !(measure > 0)) return value
+  const before = measureAge == null || age < measureAge
+  if (before && atMeasure > 0) return (value * measure) / atMeasure
+  return measure + Math.max(0, value - atMeasure)
+}
+
+/**
+ * Height and spread `age` years after planting, or null before it is planted
+ * and once a support plant gave way. A plant someone measured goes through
+ * its measure: the catalogue gives the shape of the curve, the measure its size.
+ */
+export function sizeAt(plant: Pick<ScenePlant, 'strata' | 'heightM' | 'spreadM' | 'maturityYears'> & Kept & { until?: number | null; measured?: Measured | null }, age: number): { height: number; spread: number } | null {
   if (age < 0) return null
   if (plant.until != null && age >= plant.until) return null
   const graft = plant.training && plant.training !== 'free' ? null : plant.graft
@@ -273,8 +335,41 @@ export function sizeAt(plant: Pick<ScenePlant, 'strata' | 'heightM' | 'spreadM' 
   const adultSpread = Math.max(0.05, adult.spread)
   const h0 = Math.min(start.height, adultHeight)
   const s0 = Math.min(start.spread, adultSpread)
-  const share = growthShare(age, adult.maturityYears)
-  return { height: h0 + (adultHeight - h0) * share, spread: s0 + (adultSpread - s0) * share }
+  const curve = (a: number) => {
+    const share = growthShare(a, adult.maturityYears)
+    return { height: h0 + (adultHeight - h0) * share, spread: s0 + (adultSpread - s0) * share }
+  }
+  const size = curve(age)
+  const m = plant.measured
+  if (!m) return size
+  const at = curve(m.age == null ? MEASURED_LONG_AGO : Math.max(0, m.age))
+  return {
+    height: fromMeasure(size.height, at.height, m.height, age, m.age),
+    spread: fromMeasure(size.spread, at.spread, m.spread, age, m.age),
+  }
+}
+
+/** A trunk thickens by about 2.5 cm of girth a year in the open (Mitchell's rule of thumb). */
+export const GIRTH_PER_YEAR_CM = 2.5
+
+/**
+ * Radius of the trunk at its foot (m), `age` years after planting: from the
+ * girth someone measured when there is one (it keeps thickening after),
+ * else from the tree's size. A pollard's trunk swells under its head, cut
+ * after cut; a spreading tree carries a stout trunk.
+ */
+export function trunkRadius(plant: Pick<ScenePlant, 'training' | 'crownForm' | 'measured'>, size: { height: number; spread: number }, age: number): number {
+  const girth = plant.measured?.girth
+  if (girth != null && girth > 0) {
+    const measureAge = plant.measured?.age ?? null
+    const cm = measureAge == null || age >= measureAge
+      ? girth + (measureAge == null ? 0 : (age - measureAge) * GIRTH_PER_YEAR_CM)
+      : girth * Math.min(1, Math.max(0.05, (age + 0.5) / (measureAge + 0.5)))
+    // Girth is taken at 1.30 m; the foot flares a little wider.
+    return Math.max(0.02, (cm / 100 / (2 * Math.PI)) * 1.15)
+  }
+  const stout = plant.crownForm === 'spreading' ? 1.3 : plant.crownForm === 'columnar' || plant.crownForm === 'conical' ? 0.85 : 1
+  return Math.max(0.025, size.spread * 0.03 + size.height * 0.006) * (plant.training === 'pollard' ? 2.2 : 1) * stout
 }
 
 /** A training the server sent, or free when it is unknown or the form cannot take it. */
@@ -295,43 +390,81 @@ export function plantForm(strata: PlantStrata, plantType: string | null): PlantF
 export const CLIMBER_SUPPORT = 2.5
 
 /**
+ * How a crown is drawn in 3D: a ball, a cluster of lobes (a spreading tree),
+ * a cone, a weeping skirt open underneath. The shade and the 2D shadows read
+ * the same ellipsoid whatever the look.
+ */
+export type CrownLook = 'ball' | 'lobed' | 'cone' | 'weep'
+
+/** A crown on its trunk: an ellipsoid of horizontal `radius` and vertical half-axis `half`, centred `centre` m above the ground. */
+export type CrownShape = { kind: 'crown'; trunk: number; centre: number; half: number; radius: number; look: CrownLook; stems: boolean }
+
+/**
+ * Share of a grown tree's height its bare trunk takes, by silhouette: low
+ * branches for a tree grown in the open, nearly none for a cone.
+ */
+export const CLEAR_TRUNK: Record<CrownForm, number> = {
+  round: 0.25, spreading: 0.14, columnar: 0.06, conical: 0.05, weeping: 0.12, multi_stem: 0,
+}
+
+/** A young tree is a whip: mostly stem, up to this share of its height. */
+const WHIP_TRUNK = 0.4
+
+/**
  * The volume a plant of `height` × `spread` is drawn with, shared by the 3D
  * models and the shade: a crown (an ellipsoid of horizontal radius `radius`
  * and vertical half-axis `half`, centred `centre` metres above the ground),
  * on a trunk of `trunk` metres for a tree; a dome for a clump or a mat; a
- * column for a climber. A pollard is a short trunk crowned by its regrowth,
+ * column for a climber. A tree left free takes its silhouette (`crownForm`,
+ * round when unknown); a pollard is a short trunk crowned by its regrowth,
  * a coppice a crown of stems from the ground, a grafted tree a crown on the
  * trunk it was sold with (`graftTrunk`, m).
  */
-export function plantShape(form: PlantForm, strata: PlantStrata, height: number, spread: number, training: PlantTraining = 'free', graftTrunk: number | null = null):
-  { kind: 'crown'; trunk: number; centre: number; half: number; radius: number }
+export function plantShape(form: PlantForm, _strata: PlantStrata, height: number, spread: number, training: PlantTraining = 'free', graftTrunk: number | null = null, crownForm: CrownForm | null = null):
+  CrownShape
   | { kind: 'dome'; height: number; radius: number }
   | { kind: 'column'; height: number; radius: number } {
+  const crown = (trunk: number, centre: number, half: number, radius: number, look: CrownLook = 'ball', stems = false): CrownShape =>
+    ({ kind: 'crown', trunk, centre, half, radius, look, stems })
   if (trainable(form) && training === 'pollard') {
     // The head is grown first (a young pollard is a whip), then holds.
     const trunk = Math.min(POLLARD_HEAD, height * 0.55)
     const half = (height - trunk) / 2
-    return { kind: 'crown', trunk, centre: trunk + half, half, radius: spread / 2 }
+    return crown(trunk, trunk + half, half, spread / 2)
   }
   if (trainable(form) && (training === 'coppice' || training === 'chop_and_drop')) {
     // Many stems from the stool: a crown resting on the ground, a little lifted.
-    return { kind: 'crown', trunk: 0, centre: height * 0.52, half: height * 0.48, radius: spread / 2 }
+    return crown(0, height * 0.52, height * 0.48, spread / 2)
   }
   if (form === 'tree' && graftTrunk != null) {
     // The trunk is the nursery's; only the crown grows, above it.
     const trunk = Math.min(graftTrunk, Math.max(0, height - 0.4))
     const half = (height - trunk) / 2
-    return { kind: 'crown', trunk, centre: trunk + half, half, radius: spread / 2 }
+    return crown(trunk, trunk + half, half, spread / 2)
   }
   switch (form) {
     case 'tree': {
-      // A young tree is mostly stem; the crown takes over as it grows.
-      const trunk = height * (strata === 'canopy' ? 0.38 : 0.32)
+      const silhouette = crownForm ?? 'round'
+      // A young tree is mostly stem; its silhouette takes over as it grows.
+      const grown = Math.min(1, Math.max(0, (height - 2) / 6))
+      const clear = WHIP_TRUNK + (CLEAR_TRUNK[silhouette] - WHIP_TRUNK) * grown
+      if (silhouette === 'multi_stem') {
+        // Stems from the ground, the crown a little lifted on them.
+        const base = height * (0.4 - 0.25 * grown)
+        const half = (height - base) / 2
+        return crown(0, base + half, half, spread / 2, 'ball', true)
+      }
+      const trunk = height * clear
       const half = (height - trunk) / 2
-      return { kind: 'crown', trunk, centre: trunk + half, half, radius: spread / 2 }
+      const radius = silhouette === 'columnar' ? Math.min(spread / 2, Math.max(0.4, height * 0.13)) : spread / 2
+      const look: CrownLook = silhouette === 'spreading' ? 'lobed' : silhouette === 'conical' ? 'cone' : silhouette === 'weeping' ? 'weep' : 'ball'
+      return crown(trunk, trunk + half, half, radius, look)
     }
-    case 'bush':
-      return { kind: 'crown', trunk: 0, centre: height * 0.47, half: height / 2, radius: spread / 2 }
+    case 'bush': {
+      const radius = crownForm === 'columnar' ? Math.min(spread / 2, Math.max(0.2, height * 0.2)) : spread / 2
+      if (crownForm === 'multi_stem') return crown(0, height * 0.58, height * 0.42, radius, 'ball', true)
+      return crown(0, height * 0.47, height / 2, radius, crownForm === 'conical' ? 'cone' : 'ball')
+    }
     case 'climber':
       // On its support (a post, a pergola, a fence): the catalogue's height
       // is what it reaches up a tree.
@@ -370,7 +503,7 @@ export function plantShade(
   plants.forEach((plant, index) => {
     const size = sizeAt(plant, year - plant.start)
     if (!size) return
-    const shape = plantShape(plant.form, plant.strata, size.height, size.spread, plant.training, graftTrunk(plant))
+    const shape = plantShape(plant.form, plant.strata, size.height, size.spread, plant.training, graftTrunk(plant), plant.crownForm ?? null)
     const r = shape.radius
     // Smaller than a cell: its shadow is lost in the grid.
     if (r < cell / 2) return
@@ -473,6 +606,7 @@ export function scenePlants(meta: GridMeta, data: GrowingPlantsData): ScenePlant
     plants.push({
       x, y, form, strata: p.strata, heightM: p.heightM, spreadM: p.spreadM,
       maturityYears: p.maturityYears, training, graft: training === 'free' ? graftOf(form, p.graft) : null, start: p.plantedLongAgo ? -p.maturityYears : startOf(p.plantedOn), plant: index, patch: null, seed: p.id * 7919,
+      crownForm: crownFormOf(p.crownForm), measured: measuredOf(p.measures, p.plantedOn, !!p.plantedLongAgo),
       support: !!p.support, until: p.support && !p.plantedLongAgo ? p.supportUntil ?? null : null,
     })
   })
@@ -486,7 +620,7 @@ export function scenePlants(meta: GridMeta, data: GrowingPlantsData): ScenePlant
       for (const point of scatter(ring, count, patch.id * 131 + lineIndex * 17)) {
         plants.push({
           ...point, form: plantForm(line.strata, line.plantType), strata: line.strata, heightM: line.heightM,
-          spreadM: line.spreadM, maturityYears: line.maturityYears, training: 'free', start: patchStart, plant: null,
+          spreadM: line.spreadM, maturityYears: line.maturityYears, training: 'free', start: patchStart, plant: null, crownForm: crownFormOf(line.crownForm),
           patch: [patchIndex, lineIndex], seed: Math.round(point.x * 1000 + point.y * 7),
         })
       }

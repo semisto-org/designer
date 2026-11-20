@@ -1055,6 +1055,21 @@
     }
   },
   "plant_feature": {
+    "measures": {
+      "title": "Mesuré sur place",
+      "help": "Comment mesurer un arbre",
+      "trunk_girth": "Tour du tronc à 1,30 m (cm)",
+      "measured_height": "Hauteur (m)",
+      "crown_width": "Largeur de la couronne (m)",
+      "measured_on": "Mesuré le %{date}",
+      "value_trunk_girth": "tour du tronc %{value} cm",
+      "value_measured_height": "hauteur %{value} m",
+      "value_crown_width": "couronne %{value} m",
+      "invite_tree": "Une ficelle autour du tronc, et la 3D le reconnaîtra.",
+      "invite_shrub": "Un mètre ruban suffit, et la 3D le reconnaîtra.",
+      "none": "Pas encore mesuré.",
+      "hint": "Sans mesure, la 3D et l'ombre prennent la taille du catalogue. Avec, elles partent de la vraie, et la font grandir."
+    },
     "nursery_form": {
       "label": "Arrivé",
       "bare_root": "à racines nues",

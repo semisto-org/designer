@@ -1,4 +1,5 @@
-import { graftProperty, numberProperty, TRAINABLE_STRATA, trainingProperty } from '@/map/plants/properties'
+import { graftProperty, measuresProperty, numberProperty, TRAINABLE_STRATA, trainingProperty } from '@/map/plants/properties'
+import { measuredOf } from '@/relief/growth'
 import { plantIsSupport } from '@/map/plants/strata'
 import { growthKey, plantSizeAt, type GrowingPlant } from '@/map/time/growth'
 import { plantAge, plantedLongAgo, type Moment, type Timeline } from '@/map/time/moment'
@@ -20,6 +21,7 @@ export function growingPlant(feature: MapFeature, data: PlantingState | null, st
     training,
     graft: training === 'free' ? graftProperty(feature, strata) : null,
     supportUntil: support ? numberProperty(feature, 'support_until') : null,
+    measured: measuredOf(measuresProperty(feature), typeof feature.properties.planted_on === 'string' ? feature.properties.planted_on : null, plantedLongAgo(feature.properties)),
   }
 }
 

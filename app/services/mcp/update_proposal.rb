@@ -69,6 +69,10 @@ module Mcp
           return err(:trunk_height, min: PlantableFeature::TRUNK_HEIGHTS.min, max: PlantableFeature::TRUNK_HEIGHTS.max)
         end
         return err(:rootstock, max: PlantableFeature::ROOTSTOCK_LENGTH) if key == "rootstock" && !(value.is_a?(String) && value.length <= PlantableFeature::ROOTSTOCK_LENGTH)
+        if (range = PlantableFeature::MEASURE_RANGES[key]) && !(value.is_a?(Numeric) && range.cover?(value))
+          return err(:measure, key:, min: range.min, max: range.max)
+        end
+        return err(:future_date, key:) if key == "measured_on" && Date.iso8601(value) > PlantableFeature.latest_today
         if INTEGER_PROPERTIES.include?(key) && !(value.to_s.match?(/\A\d{1,9}\z/) && value.to_i.positive?)
           return err(:integer, key:)
         end

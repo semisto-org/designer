@@ -187,6 +187,19 @@ class McpFeatureUpdatesTest < ActionDispatch::IntegrationTest
     assert_equal "forte", labels["properties.rootstock_vigor"]
   end
 
+  test "measures taken on a tree go through as numbers, out-of-range ones come back with the range" do
+    data, error = call_tool(@owner, "propose_feature_updates", {
+      map_id: @map.id, updates: [
+        { feature_id: @tree.id, changes: { properties: { measured_height: 18, crown_width: 17.5, trunk_girth: 470, measured_on: "2026-11-20" } }, rationale: "Mesuré par la personne avec une ficelle et un bâton." },
+        { feature_id: @herbs[0].id, changes: { properties: { trunk_girth: 5000 } }, rationale: "Un tour de tronc impossible." }
+      ]
+    })
+    refute error, data
+    created = data["created"].sole
+    assert_includes created["diff"], { "field" => "properties.trunk_girth", "before" => nil, "after" => 470 }
+    assert_match(/trunk_girth est une mesure/, data["rejected"].sole["error"])
+  end
+
   test "idempotent: what changes nothing comes back as unchanged" do
     args = { map_id: @map.id, filter: { tag: "Strate basse" }, changes: { properties: { planted_on: "2026-05-23" } }, rationale: }
     call_tool(@owner, "propose_feature_updates", args)

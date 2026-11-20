@@ -15,6 +15,7 @@ fr:
       plan: "Plan"
       photos: "Photos aériennes"
       terrain: "Relief, sol et eau"
+      essences: "Choisir ses arbres (Fichier écologique des essences)"
       milieux: "Milieux et règles"
       other: "Autres couches"
     layers:
@@ -112,10 +113,14 @@ fr:
           axis_detail: "L'eau de pluie se concentre ici"
         essences:
           line: "%{label} : %{value}"
+          with_level: "%{level} (%{value})"
           nt_desc: "Niveau trophique"
           nh_desc: "Niveau hydrique"
-          ss_desc: "Climat"
+          ss_desc: "Versant"
           ae_desc: "Apports d'eau"
+        zones_bioclimatiques:
+          title: "Zone bioclimatique : %{name}"
+          detail: "Fichier écologique des essences"
         forets_anciennes:
           ferraris: "Vers 1777 (carte de Ferraris)"
         plan_secteur:

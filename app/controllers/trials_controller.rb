@@ -142,8 +142,12 @@ class TrialsController < ApplicationController
 
     # The region's own knowledge, named for the visitor: its data layers,
     # never a sensitive one, never the base maps or the cadastre.
+    # Eight names, taken in turn from each group (relief and soil, the trees'
+    # Fichier, rules…) so one large group never fills the list on its own.
     def region_knowledge(catalogue)
-      catalogue.reject { |l| l.category == "base" || l.role == "cadastre" || Collab::PublicSnapshot.sensitive_region_layer?(l) }
+      layers = catalogue.reject { |l| l.category == "base" || l.role == "cadastre" || Collab::PublicSnapshot.sensitive_region_layer?(l) }
+      groups = layers.group_by(&:group_name).values
+      groups.map(&:size).max.to_i.times.flat_map { |i| groups.filter_map { _1[i] } }
         .map(&:name).uniq.first(8)
     end
 end

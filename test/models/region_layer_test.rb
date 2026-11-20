@@ -6,10 +6,10 @@ class RegionLayerTest < ActiveSupport::TestCase
 
   test "the Wallonia seed is complete and idempotent" do
     layers = seed_wallonia_layers
-    assert_equal 49, layers.size
+    assert_equal 53, layers.size
     assert_equal 38, layers.count(&:photo?), "21 flights from 1971, 17 of them with an infrared twin"
     assert_equal %w[plan], layers.select(&:base?).reject(&:photo?).map(&:key)
-    assert_equal 10, layers.count(&:identifiable?)
+    assert_equal 14, layers.count(&:identifiable?)
     assert_equal [ "ortho_2026" ], layers.select(&:default?).map(&:key)
     assert_equal [ "cadastre" ], layers.select { |l| l.role == "cadastre" }.map(&:key)
     assert layers.select { |l| l.url.include?("wallonie") }.all? { |l| l.attribution == "© SPW – Géoportail de la Wallonie" }
@@ -18,7 +18,7 @@ class RegionLayerTest < ActiveSupport::TestCase
 
     stamp = layers.maximum(:updated_at)
     travel 1.minute do
-      assert_equal 49, seed_wallonia_layers.size
+      assert_equal 53, seed_wallonia_layers.size
       assert_equal stamp, layers.reload.maximum(:updated_at), "an unchanged seed does not bust the tile cache"
     end
   end
@@ -39,6 +39,28 @@ class RegionLayerTest < ActiveSupport::TestCase
     assert sols.tile_url.start_with?("https://geoservices.wallonie.be/arcgis/services/SOL_SOUS_SOL/CNSW/MapServer/WMSServer?")
     assert sols.tile_url.end_with?("&BBOX={bbox-epsg-3857}")
     assert_equal "https://tiles.openfreemap.org/styles/positron", wallonia_layer("plan").tile_url
+  end
+
+  test "the cadastre asks HiDPI tiles so its parcel numbers stay sharp" do
+    seed_wallonia_layers
+    cadastre = wallonia_layer("cadastre")
+    assert_equal 2, cadastre.pixel_ratio
+    assert_equal 512, cadastre.tile_size
+    url = cadastre.upstream_tile_url(18, 134_000, 88_000)
+    assert_includes url, "WIDTH=1024"
+    assert_includes url, "HEIGHT=1024"
+    assert_includes url, "DPI=192"
+
+    sols = wallonia_layer("sols")
+    assert_equal 1, sols.pixel_ratio
+    assert_includes sols.upstream_tile_url(18, 134_000, 88_000), "WIDTH=512"
+    assert_not_includes sols.upstream_tile_url(18, 134_000, 88_000), "DPI="
+
+    cadastre.update!(kind: "arcgis_rest")
+    assert_includes cadastre.upstream_tile_url(18, 134_000, 88_000), "dpi=192"
+    assert_includes cadastre.upstream_tile_url(18, 134_000, 88_000), "size=1024%2C1024"
+    # A one-off image keeps the size and DPI it is asked for.
+    assert_not_includes cadastre.upstream_image_url([ 0, 0, 1, 1 ], width: 800, height: 600), "dpi="
   end
 
   test "identify settings and inertia payload" do

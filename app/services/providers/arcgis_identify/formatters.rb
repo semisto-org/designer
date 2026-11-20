@@ -17,7 +17,9 @@ module Providers
       # Belgian parcel reference: division, section, radical/bis, exponent,
       # power (« 21444B0021/00S008 »; « _ » when there is no exponent).
       CAPAKEY = %r{\A\d{5}(?<section>[A-Z])(?<radical>\d{4})/(?<bis>\d{2})(?<exposant>[A-Z_])(?<puissance>\d{3})\z}
-      ESSENCES_FIELDS = %w[NT_DESC NH_DESC SS_DESC AE_DESC].freeze
+      # The FEE rasters: each description field, with the numbered level the
+      # Fichier écologique reads (two neighbouring levels can share a name).
+      ESSENCES_FIELDS = { "NT_DESC" => "NIVEAUX_TROPHIQUES", "NH_DESC" => "NIVEAUX_HYDRIQUES", "SS_DESC" => nil, "AE_DESC" => nil }.freeze
 
       module_function
 
@@ -153,10 +155,22 @@ module Providers
       def format_essences(results)
         results.flat_map do |result|
           a = attrs(result)
-          ESSENCES_FIELDS.filter_map do |field|
+          ESSENCES_FIELDS.filter_map do |field, level_field|
             value = a["Raster.#{field}"] || a[field]
-            entry(t("essences.line", label: t("essences.#{field.downcase}"), value:)) if present?(value)
+            next unless present?(value)
+
+            level = level_field && (a["Raster.#{level_field}"] || a[level_field])
+            value = value.to_s.strip
+            value = t("essences.with_level", level: level.to_s.strip.tr("-", "−"), value:) if present?(level)
+            entry(t("essences.line", label: t("essences.#{field.downcase}"), value:))
           end
+        end
+      end
+
+      def format_zones_bioclimatiques(results)
+        results.filter_map do |result|
+          name = attrs(result)["NOM"] || result["value"]
+          entry(t("zones_bioclimatiques.title", name: name.to_s.strip), detail: t("zones_bioclimatiques.detail")) if present?(name)
         end
       end
 

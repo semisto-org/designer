@@ -94,6 +94,11 @@ export default function PlantShow({ species: s, observations, plantings, region,
           <Row label={t('plants.fields.strata')} value={strataLabel(s.strata)} provenance={p('strata')} />
           <Row label={t('plants.fields.height')} value={range(s.heightMinM, s.heightMaxM)} provenance={p('height_max_m')} />
           <Row label={t('plants.fields.spread')} value={range(s.spreadMinM, s.spreadMaxM)} provenance={p('spread_max_m')} />
+          <Row
+            label={t('plants.fields.crown_form')}
+            value={s.crownForm && (s.crownFormIndicative ? t('plants.show.crown_form_indicative', { form: vocab('crown_form', s.crownForm) }) : vocab('crown_form', s.crownForm))}
+            provenance={s.crownFormIndicative ? undefined : p('crown_form')}
+          />
           <Row label={t('plants.fields.foliage_type')} value={s.foliageType && vocab('foliage_type', s.foliageType)} provenance={p('foliage_type')} />
           <Row label={t('plants.fields.life_cycle')} value={s.lifeCycle && vocab('life_cycle', s.lifeCycle)} provenance={p('life_cycle')} />
           <Row label={t('plants.fields.growth_rate')} value={s.growthRate && vocab('growth_rate', s.growthRate)} provenance={p('growth_rate')} />

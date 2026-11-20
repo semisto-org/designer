@@ -26,6 +26,7 @@ import { drawOverlay, type OverlayFeature, type OverlayOptions } from './overlay
 import { waterDesigns, type SoilEffect, type TankSummary } from './waterDesigns.ts'
 import { landcoverRoles } from './roles.ts'
 import type { CameraMode, ReliefScene, WalkKey } from './scene.ts'
+import type { FlyKey } from './flyKeys.ts'
 import { buildSoilMaps, calibrateRates, SOIL_STATES, UNKNOWN_CLASS, type SoilState } from './soil.ts'
 import {
   boxBlur, compassPoint, frostClass, frostRisk, slopeAspect, spreadAccumulation, wetnessClass, wetnessIndex,
@@ -529,6 +530,14 @@ export class ReliefController {
 
   resetWalkKeys() {
     this.scene?.resetWalkKeys()
+  }
+
+  setFlyKey(key: FlyKey, down: boolean) {
+    this.scene?.setFlyKey(key, down)
+  }
+
+  resetFlyKeys() {
+    this.scene?.resetFlyKeys()
   }
 
   private setWalkMode(mode: WalkMode) {

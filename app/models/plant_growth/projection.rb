@@ -27,18 +27,23 @@ module PlantGrowth
       graft = training == "free" ? Curve.graft(form, @feature.plant_graft) : nil
       long_ago = @feature.planted_on_precision == "unknown"
       support_until = @feature.support_plant?(@quantities.palette_role_for(key)) && !long_ago ? @feature.support_until : nil
+      planted_on = @feature.known_planted_on
+      measures = @feature.plant_measures
+      measured = Curve.measured(measures, planted_on:)
       size = ->(age) do
         grown = Curve.size_at(strata:, height: inputs[:heightM], spread: inputs[:spreadM], maturity: inputs[:maturityYears],
-                              age:, training:, graft:, until_years: support_until)
+                              age:, training:, graft:, until_years: support_until, measured:)
         grown && { height_m: grown[:height].round(2), spread_m: grown[:spread].round(2) }
       end
-      planted_on = @feature.known_planted_on
       age = planted_on && ((@today - planted_on) / 365.25).round(1)
 
       {
         strata:,
         adult: { height_m: inputs[:heightM], spread_m: inputs[:spreadM], maturity_years: inputs[:maturityYears] },
         indicative: inputs[:indicative],
+        crown_form: inputs[:crownForm] || "round",
+        # Measured on the plant itself: the sizes below start from it.
+        measured: measures && { height_m: measures[:height], crown_width_m: measures[:crown], trunk_girth_cm: measures[:girth], on: measures[:on] }.compact,
         training:,
         planted_on: planted_on&.iso8601,
         planted_long_ago: long_ago,

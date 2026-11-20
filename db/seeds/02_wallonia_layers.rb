@@ -18,6 +18,9 @@
 #   are MapLibre zooms for 512 px tiles, i.e. Claudy's Leaflet maxNativeZoom - 1.
 # - Clicking reads exact altitude from the LiDAR DTM, not from the contour
 #   layer (`courbes` identifies on RELIEF/WALLONIE_MNT_2021_2022).
+# - The SPW draws the cadastre's parcel numbers into its images at 96 DPI,
+#   without anti-aliasing: stretched on a HiDPI screen they could not be
+#   read. The cadastre asks twice the pixels at DPI=192 (`pixel_ratio`).
 wallonia = Region.find_by!(key: "wallonia")
 
 spw = "https://geoservices.wallonie.be/arcgis"
@@ -26,9 +29,11 @@ wms = ->(service) { "#{spw}/services/#{service}/MapServer/WMSServer" }
 identify = ->(service) { "#{spw}/rest/services/#{service}/MapServer/identify" }
 
 overlay = lambda do |key, name, group, order, service:, layers:, opacity:, position:, info_service: service,
-                     info_layers:, description:, min_zoom: nil, max_zoom: 19, tolerance: 3, role: nil|
-  options = { "identify" => { "layers" => info_layers, "formatter" => key, "tolerance" => tolerance }, "order" => order }
+                     info_layers:, description:, min_zoom: nil, max_zoom: 19, tolerance: 3, role: nil, formatter: key,
+                     pixel_ratio: nil|
+  options = { "identify" => { "layers" => info_layers, "formatter" => formatter, "tolerance" => tolerance }, "order" => order }
   options["role"] = role if role
+  options["pixel_ratio"] = pixel_ratio if pixel_ratio
   {
     key:, name:, group_name: group, category: "overlay", kind: "wms", url: wms.(service), layers:,
     identify_url: identify.(info_service), attribution: spw_attribution, opacity:, position:,
@@ -143,19 +148,37 @@ catalogue = [
            service: "SOL_SOUS_SOL/CNSW", layers: "1,2", opacity: 1.0, position: 100, max_zoom: 15,
            info_layers: "1,2",
            description: "Le type de sol, son drainage et sa charge caillouteuse (Carte numérique des sols de Wallonie)."),
-  # The Géoportail's « Fichier écologique des essences » is a series of four
-  # rasters (WMS 0 apports d'eau, 1 sous-secteurs, 2 niveaux hydriques,
-  # 3 niveaux trophiques) and opens on « Apports d'eau ». We draw the hydric
-  # levels, so the name says it, to avoid reading it as the Géoportail default.
-  overlay.("essences", "Niveaux hydriques du sol (FEE)", "terrain", 5,
+  # -- Choisir ses arbres: the « Fichier écologique des essences » -------
+  # The Géoportail's FEE series is four rasters (WMS 0 apports d'eau,
+  # 1 sous-secteurs, 2 niveaux hydriques, 3 niveaux trophiques; REST 7, 6, 5,
+  # 4) plus its bioclimatic zones (FAUNE_FLORE/BIOCLIM). One overlay each, in
+  # their own group, so any of them can be drawn as on the Géoportail; each
+  # reads only its own level on a click. `essences` keeps its key (saved views).
+  overlay.("zones_bioclimatiques", "Zones bioclimatiques", "essences", 1,
+           service: "FAUNE_FLORE/BIOCLIM", layers: "0", opacity: 0.45, position: 56,
+           info_layers: "9",
+           description: "Les dix climats de la Wallonie, première clé du Fichier écologique des essences : quels arbres supportent le climat d'ici."),
+  overlay.("essences", "Niveaux hydriques du sol", "essences", 2,
            service: "FAUNE_FLORE/FEE", layers: "2", opacity: 0.55, position: 60,
-           info_layers: "4,5,6,7",
-           description: "L'eau que le sol garde pour les racines, du marécageux au très sec (Fichier écologique des essences) : pour choisir des arbres adaptés au lieu."),
+           info_layers: "5",
+           description: "L'eau que le sol garde pour les racines, de −4 (marécageux) à 5 (très sec)."),
+  overlay.("essences_trophiques", "Niveaux trophiques du sol", "essences", 3,
+           service: "FAUNE_FLORE/FEE", layers: "3", opacity: 0.55, position: 58,
+           info_layers: "4", formatter: "essences",
+           description: "La richesse du sol en éléments nutritifs, de −3 (très pauvre) à 2 (calcaire)."),
+  overlay.("essences_apports_eau", "Apports d'eau", "essences", 4,
+           service: "FAUNE_FLORE/FEE", layers: "0", opacity: 0.55, position: 62,
+           info_layers: "7", formatter: "essences",
+           description: "Les bas de pente et fonds de vallée qui reçoivent de l'eau en plus de la pluie, parfois, ou en permanence."),
+  overlay.("essences_sous_secteurs", "Versants chauds et froids", "essences", 5,
+           service: "FAUNE_FLORE/FEE", layers: "1", opacity: 0.55, position: 64,
+           info_layers: "6", formatter: "essences",
+           description: "Les sous-secteurs du relief : versants qui reçoivent plus ou moins de soleil que la normale."),
 
   # -- Milieux et règles -------------------------------------------------
   overlay.("cadastre", "Plan cadastral", "milieux", 1,
            service: "PLAN_REGLEMENT/CADMAP_PARCELLES", layers: "0", opacity: 1.0, position: 140, min_zoom: 13,
-           info_layers: "0", role: "cadastre",
+           info_layers: "0", role: "cadastre", pixel_ratio: 2,
            description: "Les limites et numéros des parcelles cadastrales."),
   overlay.("plan_secteur", "Plan de secteur", "milieux", 2,
            service: "AMENAGEMENT_TERRITOIRE/PDS", layers: "2,21,20,10,9,8,7,6", opacity: 0.5, position: 80,

@@ -1,6 +1,8 @@
 // The map's plants as volumes in the 3D view, at their size of a given year
-// (growth.ts): a tree is a trunk and a low-poly crown, a bush a crown on the
-// ground, a perennial a dome, a ground cover a flat mat, a climber a column.
+// (growth.ts): a tree is a trunk and a low-poly crown in its silhouette (a
+// ball, a cluster of lobes for a spreading tree, a cone, a weeping skirt, a
+// crown on many stems), a bush a crown on the ground, a perennial a dome, a
+// ground cover a flat mat, a climber a column.
 // One instanced mesh per shape, so a few thousand plants cost a handful of
 // draw calls and a year is a matrix update.
 //
@@ -9,7 +11,7 @@
 // scene.ts imports this module.
 
 import * as THREE from 'three'
-import { graftTrunk, plantShape, sizeAt, type PlantStrata, type ScenePlant } from './growth.ts'
+import { graftTrunk, plantShape, sizeAt, trunkRadius, type CrownLook, type PlantStrata, type ScenePlant } from './growth.ts'
 
 /** Foliage greens per strata, as they look in summer (the 3D is not the legend). */
 export const NATURAL_GREENS: Record<PlantStrata, string> = {
@@ -24,25 +26,72 @@ export const NATURAL_GREENS: Record<PlantStrata, string> = {
 }
 const BARK = '#6e5a44'
 
-type Shape = 'trunk' | 'crown' | 'dome' | 'column'
+type Shape = 'trunk' | 'stems' | 'crown' | 'lobed' | 'cone' | 'weep' | 'dome' | 'column'
+
+const LOOK_SHAPE: Record<CrownLook, Shape> = { ball: 'crown', lobed: 'lobed', cone: 'cone', weep: 'weep' }
+
+/** Several geometries as one (positions and normals only, non-indexed). */
+function merged(parts: THREE.BufferGeometry[]): THREE.BufferGeometry {
+  const flat = parts.map((g) => (g.index ? g.toNonIndexed() : g))
+  const count = flat.reduce((n, g) => n + g.attributes.position.count, 0)
+  const position = new Float32Array(count * 3)
+  const normal = new Float32Array(count * 3)
+  let offset = 0
+  for (const g of flat) {
+    position.set(g.attributes.position.array as Float32Array, offset * 3)
+    normal.set(g.attributes.normal.array as Float32Array, offset * 3)
+    offset += g.attributes.position.count
+  }
+  const geometry = new THREE.BufferGeometry()
+  geometry.setAttribute('position', new THREE.BufferAttribute(position, 3))
+  geometry.setAttribute('normal', new THREE.BufferAttribute(normal, 3))
+  return geometry
+}
 
 function shapeGeometry(shape: Shape): THREE.BufferGeometry {
   switch (shape) {
     case 'trunk': return new THREE.CylinderGeometry(0.7, 1, 1, 6).translate(0, 0.5, 0)
+    // Five leaning stems from one stool, in a unit cylinder (radius 1, height 1).
+    case 'stems': return merged([0, 1, 2, 3, 4].map((i) => {
+      const a = (i / 5) * Math.PI * 2
+      return new THREE.CylinderGeometry(0.05, 0.09, 1, 5).translate(0, 0.5, 0)
+        .applyMatrix4(new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(Math.sin(a), 0, -Math.cos(a)), 0.45))
+        .translate(Math.cos(a) * 0.15, 0, Math.sin(a) * 0.15)
+    }))
     case 'crown': return new THREE.IcosahedronGeometry(1, 1)
+    // A spreading crown: a broad lobe and smaller ones around, inside the unit sphere.
+    case 'lobed': return merged([
+      new THREE.IcosahedronGeometry(0.78, 1).translate(0, 0.05, 0),
+      new THREE.IcosahedronGeometry(0.5, 1).translate(-0.48, -0.18, 0.2),
+      new THREE.IcosahedronGeometry(0.48, 1).translate(0.5, -0.12, -0.2),
+      new THREE.IcosahedronGeometry(0.46, 1).translate(0.08, 0.45, 0.12),
+      new THREE.IcosahedronGeometry(0.42, 1).translate(-0.12, -0.35, -0.48),
+    ])
+    case 'cone': return new THREE.ConeGeometry(1, 2, 8, 2).translate(0, 0, 0)
+    // Hanging twigs: a dome open underneath, its skirt falling to the bottom of the crown.
+    case 'weep': return new THREE.LatheGeometry([
+      [0.97, -1], [1, -0.55], [1, 0.1], [0.93, 0.5], [0.72, 0.82], [0.4, 0.97], [0, 1],
+    ].map(([x, y]) => new THREE.Vector2(x, y)), 10)
     case 'dome': return new THREE.SphereGeometry(1, 9, 4, 0, Math.PI * 2, 0, Math.PI / 2)
     case 'column': return new THREE.CylinderGeometry(0.55, 1, 1, 7).translate(0, 0.5, 0)
   }
 }
 
-/** The shapes a plant is made of. */
+/**
+ * The shapes a plant is made of, from its form, how it is kept and its
+ * silhouette (none of which change with the years): only those get an
+ * instance, so a garden of round trees costs no more than before.
+ */
 function shapesOf(plant: ScenePlant): Shape[] {
-  switch (plant.form) {
-    case 'tree': return ['trunk', 'crown']
-    case 'bush': return ['crown']
-    case 'climber': return ['column']
-    default: return ['dome']
-  }
+  if (plant.form === 'climber') return ['column']
+  if (plant.form !== 'tree' && plant.form !== 'bush') return ['dome']
+  const shape = plantShape(plant.form, plant.strata, 10, 6, plant.training, graftTrunk(plant), plant.crownForm ?? null)
+  if (shape.kind !== 'crown') return [shape.kind === 'column' ? 'column' : 'dome']
+  const shapes: Shape[] = []
+  if (shape.trunk > 0) shapes.push('trunk')
+  if (shape.stems) shapes.push('stems')
+  shapes.push(LOOK_SHAPE[shape.look])
+  return shapes
 }
 
 const ZERO = new THREE.Matrix4().makeScale(0, 0, 0)
@@ -62,7 +111,7 @@ export class PlantLayer {
   constructor(plants: ScenePlant[], altitudes: Float32Array) {
     this.plants = plants
     this.altitudes = altitudes
-    const counts: Record<Shape, number> = { trunk: 0, crown: 0, dome: 0, column: 0 }
+    const counts: Record<Shape, number> = { trunk: 0, stems: 0, crown: 0, lobed: 0, cone: 0, weep: 0, dome: 0, column: 0 }
     for (const plant of plants) {
       const slots: Partial<Record<Shape, number>> = {}
       for (const shape of shapesOf(plant)) slots[shape] = counts[shape]++
@@ -70,7 +119,7 @@ export class PlantLayer {
     }
     for (const shape of Object.keys(counts) as Shape[]) {
       if (!counts[shape]) continue
-      const material = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.95, metalness: 0, flatShading: shape !== 'trunk' })
+      const material = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.95, metalness: 0, flatShading: shape !== 'trunk' && shape !== 'stems', side: shape === 'weep' ? THREE.DoubleSide : THREE.FrontSide })
       const mesh = new THREE.InstancedMesh(shapeGeometry(shape), material, counts[shape])
       mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage)
       // The bounding sphere changes with every year: never culled.
@@ -91,7 +140,7 @@ export class PlantLayer {
     const hsl = { h: 0, s: 0, l: 0 }
     this.plants.forEach((plant, index) => {
       for (const [shape, slot] of Object.entries(this.slots[index]) as [Shape, number][]) {
-        if (shape === 'trunk') color.set(BARK)
+        if (shape === 'trunk' || shape === 'stems') color.set(BARK)
         else {
           color.set(colors[plant.strata] ?? NATURAL_GREENS.shrub).getHSL(hsl)
           const jitter = ((plant.seed % 97) / 97 - 0.5) * 0.08
@@ -136,16 +185,18 @@ export class PlantLayer {
         matrix.compose(position.set(x, ground + y, z), turn, scale.set(sx, sy, sx))
         this.meshes.get(shape)!.setMatrixAt(slot, matrix)
       }
-      const shape = plantShape(plant.form, plant.strata, height, spread, plant.training, graftTrunk(plant))
+      const shape = plantShape(plant.form, plant.strata, height, spread, plant.training, graftTrunk(plant), plant.crownForm ?? null)
+      // Every shape of the plant hidden, then the ones of its silhouette set.
+      for (const [name, slot] of Object.entries(slots) as [Shape, number][]) this.meshes.get(name)!.setMatrixAt(slot, ZERO)
       switch (shape.kind) {
-        case 'crown':
-          if (shape.trunk > 0) {
-            // A pollard's trunk swells under its head, cut after cut.
-            const radius = Math.max(0.025, spread * 0.03 + height * 0.006) * (plant.training === 'pollard' ? 2.2 : 1)
-            set('trunk', -0.1, radius, shape.trunk + shape.half * 0.4 + 0.1)
-          }
-          set('crown', shape.centre, shape.radius, shape.half)
+        case 'crown': {
+          if (shape.trunk > 0) set('trunk', -0.1, trunkRadius(plant, size, year - plant.start), shape.trunk + shape.half * 0.4 + 0.1)
+          if (shape.stems) set('stems', -0.05, Math.max(0.3, shape.radius * 0.6), shape.centre)
+          const look = LOOK_SHAPE[shape.look]
+          // The cone's unit geometry is 2 tall, centred: scaled to the crown's height.
+          set(look, shape.centre, shape.radius, shape.half)
           break
+        }
         case 'column':
           set('column', 0, shape.radius, shape.height)
           break
