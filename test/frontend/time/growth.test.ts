@@ -46,10 +46,10 @@ test('a crown\'s noon shadow: as wide as the crown, stretched north, much longer
   assert.ok(Math.abs(june.width - 8) < 0.05)
   assert.ok(Math.abs(december.width - 8) < 0.05)
   assert.ok(december.north > 3 * june.north, `${december.north} vs ${june.north}`)
-  // The ellipsoid crown (trunk 4.56 m, centre 8.28 m, half 3.72 m) at 16° in December:
-  // centre 28.7 m north, reaching 28.7 ± √(4² + 12.9²) m.
-  assert.ok(Math.abs(december.north - (28.72 + 13.51)) < 0.2, String(december.north))
-  assert.ok(Math.abs(december.south - (28.72 - 13.51)) < 0.2, String(december.south))
+  // The round crown of a grown tree (trunk 3 m, centre 7.5 m, half 4.5 m) at 16° in December:
+  // centre 26.1 m north, reaching 26.1 ± √(4² + 15.6²) m.
+  assert.ok(Math.abs(december.north - (26.06 + 16.14)) < 0.2, String(december.north))
+  assert.ok(Math.abs(december.south - (26.06 - 16.14)) < 0.2, String(december.south))
   assert.ok(june.south < 0, 'in June the shadow starts under the crown')
 })
 

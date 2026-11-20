@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  CHOP_MATURITY, GRAFT_CROWN, GRAFT_TRUNK, MANAGED_MATURITY, MANAGED_SIZE, PLANTING_SIZE, VIGOR_SIZE, calendarYear, graftOf, growthShare, insideRing, managedSize, plantForm, plantShade, plantShape, scatter, scenePlants, sizeAt, trainingOf, yearsBetween,
+  CHOP_MATURITY, CLEAR_TRUNK, GRAFT_CROWN, GRAFT_TRUNK, MANAGED_MATURITY, crownFormOf, measuredOf, trunkRadius, MANAGED_SIZE, PLANTING_SIZE, VIGOR_SIZE, calendarYear, graftOf, growthShare, insideRing, managedSize, plantForm, plantShade, plantShape, scatter, scenePlants, sizeAt, trainingOf, yearsBetween,
   type GrowingPlantsData, type GrowthInputs, type ScenePlant,
 } from '../../../app/frontend/relief/growth.ts'
 import type { GridMeta } from '../../../app/frontend/relief/grid.ts'
@@ -285,4 +285,66 @@ test('a support plant chopped and dropped stays small, and leaves the scene the 
   assert.equal(sizeAt(support, 9.5 - support.start), null)
   assert.equal(productive.until, null, 'only a support plant gives way')
   assert.equal(old.until, null, 'a plant of unknown age has no year to count from')
+})
+
+test('a tree takes its silhouette: low branches when spreading, a cone, stems from the ground', () => {
+  const crown = (form: Parameters<typeof plantShape>[6]) => {
+    const shape = plantShape('tree', 'canopy', 20, 14, 'free', null, form)
+    assert.equal(shape.kind, 'crown')
+    return shape as Extract<ReturnType<typeof plantShape>, { kind: 'crown' }>
+  }
+  const round = crown(null)
+  const spreading = crown('spreading')
+  assert.equal(round.look, 'ball')
+  assert.equal(spreading.look, 'lobed')
+  assert.ok(Math.abs(round.trunk - 20 * CLEAR_TRUNK.round) < 1e-9)
+  assert.ok(spreading.trunk < round.trunk, 'a spreading tree branches lower')
+  // Whatever the silhouette, the crown tops at the tree's height.
+  for (const shape of [round, spreading, crown('conical'), crown('weeping'), crown('columnar'), crown('multi_stem')]) {
+    assert.ok(Math.abs(shape.centre + shape.half - 20) < 1e-9)
+  }
+  assert.equal(crown('conical').look, 'cone')
+  assert.equal(crown('weeping').look, 'weep')
+  assert.ok(crown('columnar').radius < 3, 'a columnar tree stays narrow')
+  const hazel = crown('multi_stem')
+  assert.equal(hazel.trunk, 0)
+  assert.ok(hazel.stems)
+  // A young tree is a whip whatever its silhouette.
+  const whip = plantShape('tree', 'canopy', 1.8, 0.5, 'free', null, 'spreading')
+  if (whip.kind === 'crown') assert.ok(Math.abs(whip.trunk - 1.8 * 0.4) < 1e-9)
+  // A pollard keeps its head, whatever its species' silhouette.
+  const pollard = plantShape('tree', 'canopy', 5.5, 4, 'pollard', null, 'spreading')
+  if (pollard.kind === 'crown') assert.equal(pollard.look, 'ball')
+  assert.equal(crownFormOf('spreading'), 'spreading')
+  assert.equal(crownFormOf('umbrella'), null)
+})
+
+test('a measured tree goes through its measure, then keeps growing as the curve does', () => {
+  const chestnut = { strata: 'canopy' as const, heightM: 22.5, spreadM: 12.5, maturityYears: 30 }
+  // Already there before anyone noted it: its measured size, whatever the year.
+  const old = { ...chestnut, measured: measuredOf({ height: 18, crown: 17, girth: 470, on: '2026-11-21' }, '2026-10-18', true) }
+  assert.equal(old.measured!.age, null)
+  for (const age of [30, 40, 1000]) {
+    const size = sizeAt(old, age)!
+    assert.ok(Math.abs(size.height - 18) < 1e-6 && Math.abs(size.spread - 17) < 1e-6, `${age}: ${size.height}`)
+  }
+  // Planted in 2016, measured ten years later at 6 m: 6 m then, more after, less before.
+  const young = { ...chestnut, measured: measuredOf({ height: 6, crown: null, girth: null, on: '2026-01-01' }, '2016-01-01') }
+  assert.ok(Math.abs(young.measured!.age! - 10) < 0.01)
+  assert.ok(Math.abs(sizeAt(young, young.measured!.age!)!.height - 6) < 1e-9)
+  assert.ok(sizeAt(young, 15)!.height > 6)
+  assert.ok(sizeAt(young, 5)!.height < 6)
+  // The crown was not measured: it follows the catalogue.
+  assert.equal(sizeAt(young, 15)!.spread, sizeAt(chestnut, 15)!.spread)
+  assert.equal(measuredOf({ height: null, crown: null, girth: null, on: null }, null), null)
+})
+
+test('a trunk is as thick as its measured girth, then thickens 2.5 cm a year', () => {
+  const size = { height: 18, spread: 17 }
+  const measured = { height: null, spread: null, girth: 470, age: 10 }
+  const radius = trunkRadius({ training: 'free', crownForm: 'spreading', measured }, size, 10)
+  assert.ok(Math.abs(radius - (4.7 / (2 * Math.PI)) * 1.15) < 1e-9)
+  assert.ok(trunkRadius({ training: 'free', crownForm: 'spreading', measured }, size, 20) > radius)
+  // Without a girth, a spreading tree carries a stouter trunk than a cone.
+  assert.ok(trunkRadius({ training: 'free', crownForm: 'spreading' }, size, 10) > trunkRadius({ training: 'free', crownForm: 'conical' }, size, 10))
 })

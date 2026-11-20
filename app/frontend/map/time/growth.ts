@@ -3,10 +3,10 @@
 // the shadow its crown casts at noon in June or December. Pure functions,
 // tested in test/frontend/time.
 
-import { graftTrunk, plantForm, plantShape, sizeAt, type Graft, type PlantStrata, type PlantTraining } from '../../relief/growth.ts'
+import { crownFormOf, graftTrunk, plantForm, plantShape, sizeAt, type Graft, type Measured, type PlantStrata, type PlantTraining } from '../../relief/growth.ts'
 
 /** What the server says of a species or cultivar's growth on this map (PlantingState#growth). */
-export type GrowthEntry = { heightM: number; spreadM: number; maturityYears: number; indicative: boolean }
+export type GrowthEntry = { heightM: number; spreadM: number; maturityYears: number; indicative: boolean; crownForm?: string | null }
 
 /** A plant as the 2D map grows it. */
 export type GrowingPlant = {
@@ -17,6 +17,8 @@ export type GrowingPlant = {
   graft: Graft | null
   /** A support plant removed this many years after its planting, or null. */
   supportUntil: number | null
+  /** What someone measured on it, or null. */
+  measured?: Measured | null
 }
 
 /** The key PlantingState#growth uses for a species and its cultivar. */
@@ -36,6 +38,7 @@ export function plantSizeAt(plant: GrowingPlant, age: number | 'adult'): { heigh
     training: plant.training,
     graft: plant.training === 'free' ? plant.graft : null,
     until: age === 'adult' ? null : plant.supportUntil,
+    measured: plant.measured ?? null,
   }
   return sizeAt(model, age === 'adult' ? 1000 : age)
 }
@@ -64,11 +67,11 @@ const M_PER_DEG_LAT = 111_320
  * low plant, a climber, or a sun under the horizon.
  */
 export function crownShadow(
-  [lng, lat]: [number, number], plant: Pick<GrowingPlant, 'strata' | 'plantType' | 'training' | 'graft'>,
+  [lng, lat]: [number, number], plant: Pick<GrowingPlant, 'strata' | 'plantType' | 'training' | 'graft'> & { growth?: Pick<GrowthEntry, 'crownForm'> },
   size: { height: number; spread: number }, season: Season, steps = 36,
 ): [number, number][] | null {
   const form = plantForm(plant.strata, plant.plantType)
-  const shape = plantShape(form, plant.strata, size.height, size.spread, plant.training, graftTrunk({ training: plant.training, graft: plant.graft }))
+  const shape = plantShape(form, plant.strata, size.height, size.spread, plant.training, graftTrunk({ training: plant.training, graft: plant.graft }), crownFormOf(plant.growth?.crownForm))
   if (shape.kind !== 'crown' || shape.centre + shape.half < SHADING_CROWN || shape.radius <= 0) return null
   const elevation = noonElevation(lat, season)
   if (elevation <= 1) return null

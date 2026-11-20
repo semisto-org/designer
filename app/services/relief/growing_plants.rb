@@ -44,6 +44,8 @@ module Relief
             support: feature.support_plant?(@quantities.palette_role_for(key)),
             supportUntil: feature.support_until,
             graft: feature.plant_graft,
+            # What someone measured on the tree itself (height, crown, girth, day).
+            measures: feature.plant_measures,
             plantedOn: (feature.known_planted_on&.iso8601 rescue nil),
             # In the ground since an unknown date: grown already.
             plantedLongAgo: feature.planted_on_precision == "unknown"
