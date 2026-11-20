@@ -13,7 +13,7 @@ A tree planted today will live through the climate of 2050, often that of 2080. 
 - **Heatwaves**: canopy and hedges cool the soil and the air; avoid large bare or mineral surfaces; protect young fruit tree trunks from the afternoon sun.
 - **Late frosts**: warming brings bud break forward and makes April frosts more damaging. No early-flowering fruit trees (apricot, almond, peach) in hollows where cold air pools; rather on slopes and near walls.
 - **Heavy rain and storms**: plan where the water of an exceptional storm goes, keep soils covered against erosion, and never let a water element send its surplus towards a building or the neighbours.
-- **Wind storms**: permeable windbreaks, no large fragile trees near buildings.
+- **Wind storms**: permeable windbreaks, no large fragile trees near buildings. `get_site_data` (topic `wind`, `strong`) says where the windiest hours come from; ERA5 has no gusts, so storms are stronger than its figures.
 - **New pests and diseases**: diversity (species, varieties, families) is the best insurance.
 
 ## Choosing species for 2050

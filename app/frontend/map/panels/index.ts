@@ -105,6 +105,7 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'plant-observations', applies: isPlant, component: deferred(() => import('@/map/plants/ObservationsSection'), 'none'), order: 21 },
   { id: 'plant-harvests', applies: isPlant, component: deferred(() => import('@/map/harvests/HarvestsSection'), 'none'), order: 20.5 },
   { id: 'fruit-store', applies: appliesToFruitStore, component: deferred(() => import('@/map/storage/StorageSection'), 'none'), order: 20.5 },
+  { id: 'plant-wind-shelter', applies: isPlant, component: deferred(() => import('@/map/plants/WindShelterSection'), 'none'), order: 21.5 },
   { id: 'plant-identify', applies: isPlant, component: deferred(() => import('@/map/plants/IdentifySection'), 'none'), order: 22 },
   { id: 'plant-other-properties', applies: isPlant, component: deferred(() => import('@/map/plants/OtherPropertiesSection'), 'none'), order: 23 },
   { id: 'feature-tasks', applies: (f) => f.properties.status === 'active' && !isAnnotationLayer(f.properties.layer), component: deferred(() => import('@/map/tasks/FeatureTasksSection'), 'none'), order: 21.5 },

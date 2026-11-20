@@ -39,7 +39,7 @@ class Maps::WaterBalancesControllerTest < ActionDispatch::IntegrationTest
 
     with_cds_key do
       get map_water_balance_path(@map), as: :json
-      ObservedClimate.sole.update!(status: "ready", computed_at: Time.current, indicators: { months: YVOIR_MONTHS })
+      ObservedClimate.sole.update!(status: "ready", computed_at: Time.current, indicators: { years: 30, months: YVOIR_MONTHS })
       get map_water_balance_path(@map), as: :json
     end
     json = response.parsed_body

@@ -42,7 +42,7 @@ class Maps::ObservedClimatesControllerTest < ActionDispatch::IntegrationTest
       record.update!(status: "ready", computed_at: Time.zone.local(2026, 10, 8), indicators: {
         years: 30, annual: { mean_temp_c: 9.8, hot_days: 2.1 },
         frost: { last_spring: { mean: "04-18", late: "05-02", years_with: 30 } },
-        months: [ { month: 1, rain_mm: 80 } ]
+        months: [ { month: 1, rain_mm: 80 } ], wind: { available: false }
       })
       assert_no_enqueued_jobs { get map_observed_climate_path(@map), as: :json }
       json = response.parsed_body

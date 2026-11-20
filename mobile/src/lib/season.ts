@@ -50,14 +50,17 @@ const YEAR_DAYS = 365
 const DAY = 86_400_000
 
 /** The new element for a sign seen where one stands. */
-export function signFeature({ sign, label, text, position, observedAt, accuracy = {} }: {
+export function signFeature({ sign, label, text, position, observedAt, accuracy = {}, windFromDeg = null }: {
   sign: Sign; label: string; text: string; position: [number, number]; observedAt: string; accuracy?: Record<string, unknown>
+  /** « Le vent frappe ici »: where the wind came from, read on the phone's compass while facing it. */
+  windFromDeg?: number | null
 }) {
+  const wind = windFromDeg != null ? { wind_from_deg: Math.round(((windFromDeg % 360) + 360) % 360) } : {}
   return {
     layer: 'notes', kind: SEASON_SIGN,
     name: label,
     notes: text.trim() || null,
-    properties: { sign, observed_at: observedAt, ...accuracy },
+    properties: { sign, observed_at: observedAt, ...accuracy, ...wind },
     geometry: { type: 'Point' as const, coordinates: position },
   }
 }
@@ -154,3 +157,13 @@ export const signsOfMonth = (now = new Date()): Sign[] =>
 const stringOrNull = (value: unknown): string | null => (typeof value === 'string' && value ? value : null)
 const pad = (n: number) => String(n).padStart(2, '0')
 const isoDay = (date: Date) => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+
+/** Signs that ask where the wind comes from, read on the compass while facing it. */
+export const WIND_SIGNS: readonly Sign[] = ['wind_exposed']
+
+const POINTS = ['n', 'nne', 'ne', 'ene', 'e', 'ese', 'se', 'sse', 's', 'sso', 'so', 'oso', 'o', 'ono', 'no', 'nno'] as const
+
+/** The compass point (16, French letters) a heading falls in: 250° is « oso ». */
+export function windPoint(deg: number): (typeof POINTS)[number] {
+  return POINTS[Math.floor(((((deg % 360) + 360) % 360) + 11.25) / 22.5) % 16]
+}

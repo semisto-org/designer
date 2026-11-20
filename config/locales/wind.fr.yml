@@ -1,0 +1,67 @@
+# The wind of a map's place: the wind rose (« Secteurs » and « Climat »
+# panels, project dossier, 3D compass) and the shelter of a tree.
+fr:
+  wind:
+    rose:
+      label: "Rose des vents : d'où vient le vent, et combien d'heures"
+      points:
+        n: "N"
+        e: "E"
+        s: "S"
+        w: "O"
+    views:
+      year: "L'année"
+      winter: "Hiver"
+      spring: "Printemps"
+      summer: "Été"
+      autumn: "Automne"
+      cold_spring: "Bise de printemps"
+      strong: "Vents forts"
+    card:
+      title: "Le vent de ta région"
+      views_label: "Quel vent montrer"
+      pending: "Je lis trente ans de vent au-dessus de chez toi. Ça prend quelques minutes, la rose s'affichera ici."
+      failed: "Le vent n'a pas pu être lu pour l'instant. Je réessaierai demain."
+      regional: "C'est le vent de la région (une maille d'environ %{km} km), pas celui de ton coin : une vallée, une haie ou une grange le dévient."
+      go_read: "Va le lire sur place, un jour de vent : un ruban sur un piquet, les arbres isolés qui penchent, la neige qui s'accumule. Note « Le vent frappe ici » avec l'app : ta mesure se dessine sur la rose."
+      measured:
+        one: "La flèche brune, c'est le vent que tu as mesuré sur ton terrain : il compte plus que la rose."
+        other: "Les %{count} flèches brunes, ce sont les vents que tu as mesurés sur ton terrain : ils comptent plus que la rose."
+      legend: "Vitesse du vent"
+      kmh: "km/h"
+      attribution: "Vent à 10 m, ERA5-Land %{first}–%{last}, Copernicus Climate Change Service (%{year}), sans les rafales."
+      to_sectors: "Poser les vents dans les secteurs"
+      add_prevailing: "Ajouter le vent dominant comme secteur"
+      add_cold: "Ajouter la bise de printemps comme secteur"
+      prevailing_name: "Vents dominants"
+      cold_name: "Bise de printemps"
+      prevailing_notes: "Vent dominant de l'année d'après trente ans de climat observé (ERA5-Land). À confirmer sur place : une haie brise-vent de ce côté abrite environ dix fois sa hauteur."
+      cold_notes: "Vent froid et sec du printemps, quand les fruitiers fleurissent. Les floraisons précoces (abricotier, pêcher, amandier, poirier précoce) se placent à l'abri de ce côté."
+    reading:
+      year: "Sur l'année, le vent vient surtout %{from} (%{pct} % des heures), à %{kmh} km/h en moyenne."
+      when:
+        winter: "En hiver"
+        spring: "Au printemps"
+        summer: "En été"
+        autumn: "En automne"
+      season: "%{when}, le vent vient surtout %{from} (%{pct} % des heures), à %{kmh} km/h en moyenne."
+      cold_spring: "Au printemps, %{pct} % des heures ont un vent froid (sous %{cold} °C), surtout %{from} ; %{north_east} % de ces heures viennent du nord à l'est. C'est la bise qui brûle les fleurs."
+      no_cold_spring: "Presque pas de vent froid au printemps ici."
+      strong: "Les heures les plus venteuses viennent surtout %{from} : au-delà de %{kmh} km/h, jusqu'à %{max} km/h (sans les rafales, plus fortes)."
+    shelter:
+      title: "À l'abri du vent ?"
+      loading: "Je regarde les haies autour…"
+      none: "Pose d'abord les vents dans le panneau « Secteurs » : je te dirai ensuite si une haie abrite cet arbre."
+      sheltered: "%{wind} (%{range}) : à l'abri derrière %{by}, à %{distance} m (son abri porte jusqu'à %{reach} m)."
+      exposed: "%{wind} (%{range}) : exposé, aucune haie, aucun brise-vent ni mur ne l'abrite de ce côté."
+      exposed_cold: "%{wind} (%{range}) : exposé, ses fleurs risquent de brûler au printemps. Une haie de ce côté, ou une place plus abritée ?"
+      wind: "Vent dominant"
+      cold_wind: "Vent froid"
+      from_climate: "d'après le climat observé"
+      open_sectors: "Ouvrir les secteurs"
+      kinds:
+        hedge: "la haie"
+        windbreak: "le brise-vent"
+        existing_hedge: "la haie existante"
+        wall: "le mur"
+        hedge_bank: "le talus planté"

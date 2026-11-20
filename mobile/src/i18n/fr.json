@@ -989,6 +989,32 @@
       },
       "position": "Noté là où tu es, à %{accuracy} près.",
       "no_position": "Position introuvable : le signe sera placé au centre de la carte.",
+      "wind": {
+        "label": "D'où vient le vent ?",
+        "hint": "Tourne-toi face au vent, le téléphone à plat devant toi, puis touche le bouton : la boussole dit d'où il souffle. Ta mesure se dessine sur la rose des vents de la carte.",
+        "read": "Je suis face au vent",
+        "again": "Mesurer à nouveau",
+        "from": "Il vient de là : %{point}, %{deg}°.",
+        "no_compass": "La boussole ne répond pas. Note la direction en quelques mots, par exemple « de l'ouest ».",
+        "points": {
+          "n": "nord",
+          "nne": "nord-nord-est",
+          "ne": "nord-est",
+          "ene": "est-nord-est",
+          "e": "est",
+          "ese": "est-sud-est",
+          "se": "sud-est",
+          "sse": "sud-sud-est",
+          "s": "sud",
+          "sso": "sud-sud-ouest",
+          "so": "sud-ouest",
+          "oso": "ouest-sud-ouest",
+          "o": "ouest",
+          "ono": "ouest-nord-ouest",
+          "no": "nord-ouest",
+          "nno": "nord-nord-ouest"
+        }
+      },
       "save": "Noter ce signe",
       "saved": "Signe noté",
       "year": {

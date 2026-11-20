@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react'
 import type { OverlayArc } from '@/map/sectors/overlay'
 import { groupsFromParam, isSectorGroup, type SectorGroup } from '@/map/sectors/sectors'
 
-export type SeasonFilter = 'all' | 'winter' | 'summer'
+export type SeasonFilter = 'all' | 'winter' | 'spring' | 'summer'
 
 /**
  * How the editor shows the sector analysis, for this viewer and this map:

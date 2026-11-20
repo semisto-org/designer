@@ -7,6 +7,10 @@ import {
 } from '@/map/sectors/sectors'
 import { rangeText } from '@/map/sectors/labels'
 import { renderAerial } from '@/dossier/snapshot'
+import { petalsOf, prevailingOf } from '@/components/wind/model'
+import { useWind } from '@/components/wind/useWind'
+import { windFrom } from '@/components/wind/WindCard'
+import { WindRose } from '@/components/wind/WindRose'
 import type { Dossier } from '@/types/dossier'
 
 // The picture beside the sidebar on an A4 landscape page (297 × 210 mm),
@@ -137,6 +141,9 @@ export function SectorsSection({ dossier, number }: { dossier: Dossier; number: 
   const terrainM = center ? farthestM(center, outline.flat().length ? outline.flat() : cover.bbox ? [[cover.bbox[0], cover.bbox[1]], [cover.bbox[2], cover.bbox[3]]] : []) : 0
   const layout = sectorLayout({ width: WIDTH, height: HEIGHT, rings: ringCount, terrainRadiusM: terrainM || 40 })
   const image = useAerial(cover, center, layout.metersPerPx)
+  // The region's wind beside the arcs: the client sees where the wind sectors come from.
+  const wind = useWind(dossier.map.id)
+  const roses = wind?.available ? wind.rose : null
 
   if (!center) return null
   const cx = WIDTH / 2
@@ -184,6 +191,15 @@ export function SectorsSection({ dossier, number }: { dossier: Dossier; number: 
             ))}
           </dl>
           {drawn.length === 0 && <p className="mt-[1.2cqw] text-white/60 print:hidden">{t('sectors.page.none')}</p>}
+          {roses && wind?.available && (
+            <figure className="mt-auto flex items-center gap-[1cqw] pt-[1.6cqw]">
+              <WindRose petals={petalsOf(roses, 'year')} view="year" prevailing={prevailingOf(roses, 'year')} tone="dark" size={96}
+                signs={wind.signs.flatMap((s) => (s.windFromDeg != null ? [s.windFromDeg] : []))} className="h-[9cqw] w-[9cqw] shrink-0" />
+              <figcaption className="text-[0.9cqw] leading-snug text-white/70">
+                {t('sectors.page.wind_rose', { from: windFrom(roses.year.prevailingDeg), km: wind.scale.windGridKm })}
+              </figcaption>
+            </figure>
+          )}
         </div>
 
         <div className="relative min-h-0 bg-[#3b4a33]">

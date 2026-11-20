@@ -9,7 +9,7 @@ module Sectors
   #   # => { "type" => "LineString", "coordinates" => [[lng, lat], ...] }
   module Arc
     TYPES = %w[wind cold_wind fire flood frost noise dust pollution good_view bad_view privacy wildlife predators other].freeze
-    SEASONS = %w[all_year winter summer].freeze
+    SEASONS = %w[all_year winter spring summer].freeze
     # Soft field-notebook colours, the same as SECTOR_COLORS in sectors.ts.
     COLORS = {
       "wind" => "#8cc6c8", "cold_wind" => "#6ea2c8", "fire" => "#e4705e", "flood" => "#88a794",

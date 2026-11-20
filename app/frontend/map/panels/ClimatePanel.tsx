@@ -9,6 +9,7 @@ import { Sources } from '@/components/climate/Sources'
 import { Upsell } from '@/components/climate/Upsell'
 import { ObservedClimate } from '@/components/observed_climate/ObservedClimate'
 import { WaterBalance } from '@/components/observed_climate/WaterBalance'
+import { WindSection } from '@/components/wind/WindSection'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
@@ -84,6 +85,7 @@ export default function ClimatePanel() {
           <>
             <ObservedClimate mapId={mapId} version={`${report.location.lat},${report.location.lng}`} />
             <WaterBalance mapId={mapId} version={`${report.location.lat},${report.location.lng}`} />
+            <WindSection mapId={Number(mapId)} />
             <WeatherStationsSection />
           </>
         )}
@@ -105,6 +107,7 @@ export default function ClimatePanel() {
       <CurrentClimate data={current} />
       <ObservedClimate mapId={mapId} version={report.location ? `${report.location.lat},${report.location.lng}` : null} />
       <WaterBalance mapId={mapId} version={report.location ? `${report.location.lat},${report.location.lng}` : null} />
+      <WindSection mapId={Number(mapId)} />
       {locked && <Upsell plantsCount={plants.count} />}
       {'available' in projections && projections.available && (
         <FutureClimate block={projections} current={current.zone} scenario={scenario} onScenario={setScenario} />

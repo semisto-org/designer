@@ -7,6 +7,10 @@
 # ObservedClimateJob) -> ready, or failed. A failed cell is tried again
 # after RETRY_FAILED_AFTER, a pending one that stopped moving (lost job)
 # after STALE_AFTER.
+#
+# A cell computed before the wind was read (indicators without "wind") is
+# computed again once, in the background: its indicators stay shown
+# meanwhile (#indicators? below), only the wind waits.
 class ObservedClimate < ApplicationRecord
   FIRST_YEAR = 1995
   LAST_YEAR = 2024
@@ -41,8 +45,14 @@ class ObservedClimate < ApplicationRecord
   end
 
   def restartable?
-    (pending? && updated_at < STALE_AFTER.ago) || (failed? && updated_at < RETRY_FAILED_AFTER.ago)
+    (pending? && updated_at < STALE_AFTER.ago) || (failed? && updated_at < RETRY_FAILED_AFTER.ago) || (ready? && !wind?)
   end
+
+  # Indicators to show: those of a ready record, or those of an earlier
+  # computation while the wind is being added.
+  def indicators? = indicators.is_a?(Hash) && indicators["years"].to_i.positive?
+
+  def wind? = indicators.is_a?(Hash) && indicators["wind"].is_a?(Hash)
 
   # Resets the computation and queues the job again, once even when two
   # requests race: only the one that moves updated_at enqueues.

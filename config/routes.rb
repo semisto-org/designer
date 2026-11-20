@@ -391,6 +391,15 @@ Rails.application.routes.draw do
     end
   end
   # --- end observed_climate ---
+  # --- wind ---
+  resources :maps, only: [] do
+    scope module: :maps do
+      resource :wind, only: :show do
+        get :shelter
+      end
+    end
+  end
+  # --- end wind ---
   # --- site_rules ---
   resources :maps, only: [] do
     scope module: :maps do

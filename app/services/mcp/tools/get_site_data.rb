@@ -2,7 +2,7 @@ module Mcp
   module Tools
     # What the external data sources say about the map's place, in one call:
     # sun and horizon (PVGIS), nearby weather stations (IRM), the climate
-    # observed over 30 years (ERA5-Land) and its water balance month by
+    # observed over 30 years (ERA5-Land), its wind roses, and its water balance month by
     # month, the trees already there (Meta/WRI
     # canopy height), the buildings around it with their heights (measured
     # roofs where the region publishes them in 3D) and the town-planning
@@ -15,6 +15,9 @@ module Mcp
         "sun" => ->(map) { Sun::MapReport.new(map).as_json },
         "weather_stations" => ->(map) { WeatherStations::MapReport.new(map).as_json },
         "observed_climate" => ->(map) { ObservedClimate::MapReport.new(map).as_json },
+        # The region's wind roses, what the person noted of the wind on the land,
+        # the map's wind sectors and which trees a hedge shelters from them.
+        "wind" => ->(map) { Wind::MapReport.new(map).as_json.then { |report| report["available"] ? report.merge("trees" => Wind::Shelter.new(map).trees) : report } },
         "water_balance" => ->(map) { WaterBalance::MapReport.new(map).as_json },
         "canopy" => ->(map) { Canopy::MapReport.new(map).as_json },
         "buildings" => ->(map) { Relief::BuildingsReport.new(map).as_json },
@@ -53,8 +56,16 @@ module Mcp
           case topic
           when "sun" then data.merge("paths" => Array(data["paths"]).map { _1.except("points") })
           when "canopy" then data.except("grid")
+          # The rose per speed class is for drawing; the AI gets each direction's share and speed.
+          when "wind" then data.merge("rose" => slim_rose(data["rose"]))
           else data
           end
+        end
+
+        def slim_rose(rose)
+          return rose unless rose.is_a?(Hash)
+          strip = ->(r) { r.is_a?(Hash) ? r.merge("sectors" => Array(r["sectors"]).map { _1.except("classes") }) : r }
+          rose.merge("year" => strip.(rose["year"]), "seasons" => rose["seasons"].to_h.transform_values(&strip))
         end
 
         def summarize_result(data) = { topics: data.keys.size, available: data.count { |_, v| v["available"] } }

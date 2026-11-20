@@ -47,6 +47,29 @@ class ObservedClimate::FetchTest < ActiveSupport::TestCase
     assert_equal(-1.0, @record.indicators["annual"]["annual_min_c"])
   end
 
+  test "the 10 m wind becomes the wind roses; a series without wind says so once" do
+    csv = +"valid_time,t2m,tp,u10,v10\n"
+    (Date.new(1995, 1, 1)..Date.new(1995, 12, 31)).each do |date|
+      [ 3, 15 ].each { |hour| csv << "#{date} #{format('%02d', hour)}:00:00,280.15,0.0001,4.0,1.0\n" }
+    end
+    @record.update!(job_id: "job-1")
+    stub_cds_job("successful")
+    stub_cds_results(body: csv)
+
+    assert_nil step
+    wind = @record.reload.indicators["wind"]
+    assert_equal 730, wind["hours"]
+    # Blowing towards the east-north-east: a wind from the west-south-west.
+    assert_equal 247.5, wind["year"]["prevailing_deg"]
+    assert @record.wind?
+
+    @record.update!(status: "pending", job_id: "job-1")
+    stub_cds_results(body: csv.lines.map { _1.split(",")[0, 3].join(",") }.join("\n"))
+    assert_nil step
+    assert_equal({ "available" => false }, @record.reload.indicators["wind"])
+    assert @record.wind?, "not computed again for a wind the CDS does not give"
+  end
+
   test "a failed CDS job or a refused request fails the record" do
     @record.update!(job_id: "job-1")
     stub_cds_job("failed")
