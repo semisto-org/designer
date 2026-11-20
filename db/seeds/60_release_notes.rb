@@ -17,6 +17,17 @@ release_notes = [
     screenshot_alt: "La rose des vents d'un terrain, avec la mesure faite sur place, et la fiche d'un pommier à l'abri d'une haie mais exposé à la bise de printemps."
   },
   {
+    key: "fenetre-sur-l-an-15", published_on: "2026-11-21",
+    title: "Fenêtre sur l'an 15 : ta forêt future, dans le paysage",
+    body: <<~TEXT,
+      Debout sur ton terrain, lève ton téléphone : la caméra filme le paysage, et les arbres de ton design y apparaissent à la taille qu'ils auront à l'an 5, 15 ou 30. Tourne-toi, ils suivent. Un talus cache ce qui est derrière lui, les quatre arbres les plus proches sont nommés avec leur hauteur, et la saison les habille.
+
+      Le noyer fermera-t-il la vue depuis la terrasse ? La haie cachera-t-elle la route ? Tu le vois là, avant de planter. Pas sur place ? Regarde à travers une photo prise sur le terrain. Et garde la vue dans tes photos : dans quinze ans, tu compareras.
+    TEXT
+    link_path: "/help/fenetre-sur-lan-15", link_label: "Lire l'aide",
+    screenshot_alt: "Une photo d'un terrain en pente, avec les arbres du design peints à l'an 15 et leur nom écrit à la main."
+  },
+  {
     key: "app-terrain-en-test", published_on: "2026-11-11",
     title: "Bientôt : l'app de terrain, pensée pour dehors",
     body: <<~TEXT

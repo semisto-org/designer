@@ -531,6 +531,43 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_match(/feature_id/, text)
   end
 
+  test "get_view_from_point says what one will see of the design from a point, and links the window" do
+    centre = @map.boundary.centroid
+    synthetic_terrain(@map) { |_dx, _dy| 200 }
+    # An alder 20 m north of the point, an apple 20 m east, both planned (planted today).
+    north = @map.features.create!(layer: "plants", kind: "plant", name: "Aulne du nord",
+      geometry: { "type" => "Point", "coordinates" => [ centre.x, centre.y + 0.00018 ] },
+      properties: { "species_id" => plant_species(:alder).id })
+    @map.features.create!(layer: "plants", kind: "plant",
+      geometry: { "type" => "Point", "coordinates" => [ centre.x + 0.00028, centre.y ] },
+      properties: { "species_id" => plant_species(:apple).id })
+    @map.features.create!(layer: "existing", kind: "existing_tree", name: "Vieux chêne",
+      geometry: { "type" => "Point", "coordinates" => [ centre.x, centre.y - 0.00018 ] }, properties: { "height_m" => 18 })
+
+    data, error = call_tool(@viewer, "get_view_from_point", { map_id: @map.id, lng: centre.x, lat: centre.y })
+    refute error
+    assert_equal 2, data["plants_total"], "the trees already there are in the landscape, not counted"
+    alder = data["plants"].find { |p| p["feature_id"] == north.id }
+    assert_in_delta 20, alder["distance_m"], 1
+    assert_includes [ 0, 360 ], alder["bearing_deg"]
+    assert alder["height_m"] > 4, "an alder grows tall in 15 years"
+    assert alder["top_angle_deg"].positive?
+    assert_equal 15, data["year"]
+    assert_equal "terrain", data["relief"]
+    assert_match %r{/maps/#{@map.id}/window\?}, data["window_url"]
+    assert_equal "get_view_from_point", AiAction.last.tool
+
+    # Looking east with a narrow field: only the apple.
+    data, = call_tool(@viewer, "get_view_from_point", { map_id: @map.id, lng: centre.x, lat: centre.y, heading: 90, field_of_view: 40, year: 5 })
+    assert_equal [ 90 ], data["plants"].map { |p| p["bearing_deg"] }
+    assert_match(/heading=90/, data["window_url"])
+    assert_match(/year=5/, data["window_url"])
+
+    text, error = call_tool(@viewer, "get_view_from_point", { map_id: @map.id, lng: centre.x + 0.1, lat: centre.y })
+    assert error
+    assert text.present?
+  end
+
   test "find_keypoints gives the keypoints of the valleys with their keylines" do
     synthetic_terrain(@map) { |dx, dy| 200 + dx.abs * 0.15 + (dy.positive? ? dy * 0.10 : dy * 0.02) }
     data, error = call_tool(@viewer, "find_keypoints", { map_id: @map.id })

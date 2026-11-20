@@ -1,8 +1,8 @@
 import clsx from 'clsx'
-import { ChevronLeft, ChevronRight, Columns2, Download, Locate, MapPin, Pencil, Plus, Trash2, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Columns2, Download, Locate, MapPin, Pencil, Plus, Trash2, Trees, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Button } from '@/components/ui/Button'
+import { Button, buttonClass } from '@/components/ui/Button'
 import { Field, Input, Select, Textarea } from '@/components/ui/Field'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
@@ -252,6 +252,14 @@ export function PhotoLightbox({ order }: { order?: MapPhotoData[] } = {}) {
         </div>
 
         {photo.derivedFromId != null && <RenderingOrigin mapId={mapId} photo={photo} />}
+
+        {!isVideo && photo.lng != null && photo.lat != null && (
+          // « Fenêtre sur l'an 15 »: the design's trees, grown, painted into this very view.
+          <a href={`/maps/${mapId}/window?photo_id=${photo.id}`} className={buttonClass('secondary', 'sm', 'w-full justify-center')}>
+            <Trees className="h-4 w-4" />
+            {t('window.page.open_window')}
+          </a>
+        )}
 
         <Field label={t('soil_photos.lightbox.caption')}>
           <Textarea rows={2} value={caption} disabled={!canEdit} maxLength={500} placeholder={t('soil_photos.lightbox.caption_placeholder')}
