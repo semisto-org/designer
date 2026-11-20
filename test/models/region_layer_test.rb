@@ -6,10 +6,10 @@ class RegionLayerTest < ActiveSupport::TestCase
 
   test "the Wallonia seed is complete and idempotent" do
     layers = seed_wallonia_layers
-    assert_equal 49, layers.size
+    assert_equal 53, layers.size
     assert_equal 38, layers.count(&:photo?), "21 flights from 1971, 17 of them with an infrared twin"
     assert_equal %w[plan], layers.select(&:base?).reject(&:photo?).map(&:key)
-    assert_equal 10, layers.count(&:identifiable?)
+    assert_equal 14, layers.count(&:identifiable?)
     assert_equal [ "ortho_2026" ], layers.select(&:default?).map(&:key)
     assert_equal [ "cadastre" ], layers.select { |l| l.role == "cadastre" }.map(&:key)
     assert layers.select { |l| l.url.include?("wallonie") }.all? { |l| l.attribution == "© SPW – Géoportail de la Wallonie" }
@@ -18,7 +18,7 @@ class RegionLayerTest < ActiveSupport::TestCase
 
     stamp = layers.maximum(:updated_at)
     travel 1.minute do
-      assert_equal 49, seed_wallonia_layers.size
+      assert_equal 53, seed_wallonia_layers.size
       assert_equal stamp, layers.reload.maximum(:updated_at), "an unchanged seed does not bust the tile cache"
     end
   end
