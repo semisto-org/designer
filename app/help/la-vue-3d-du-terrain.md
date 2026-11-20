@@ -44,6 +44,16 @@ Avec le **Soleil**, les plantes portent leur ombre, à la taille de l'année cho
 
 Touche une plante pour lire son nom, sa taille l'année choisie et sa taille adulte. **Couleurs des strates** reprend les couleurs de la légende de la carte. La croissance reste indicative : la taille de formation, le sol et le climat la changent, et les grimpantes sont montrées sur un support de 2,50 m.
 
+### Planter dans la 3D
+
+Tu peux aussi concevoir directement dans le relief. Dans l'onglet **Vue**, **Planter dans la 3D** ouvre ta palette : choisis une plante, elle suit ta souris sur le terrain, transparente, à la taille qu'elle aura l'année montrée par la frise (quinze ans plus tard, si tu ne choisis pas d'autre année). Sous elle, un cercle couvre sa couronne et une tache sombre montre son ombre à midi, le 21 décembre, quand le soleil est le plus bas.
+
+La couleur du cercle dit si l'endroit lui convient, d'après sa fiche et le relief : vert pour un bon endroit, orange pour un endroit à surveiller, rouge pour un endroit difficile. La carte en haut de l'écran dit pourquoi : à l'ombre ou au soleil à midi en juin, un sol plus sec ou plus humide que ce qu'elle aime, un creux où l'air froid s'accumule et où ses fleurs précoces risquent de geler. Clique pour la planter, autant de fois que tu veux ; Échap ou **Terminer** pour t'arrêter. Sur téléphone, touche une fois pour voir l'endroit, une seconde fois au même endroit pour planter.
+
+Tout cela vient d'un modèle du relief. Quand un endroit pose question, Terranova te dit quand aller voir (un midi de juin, après une grosse pluie, un matin de gelée de printemps) et **L'ajouter à mes tâches** crée la tâche, liée à la plante. Note ce que tu as vu dans le carnet des saisons.
+
+Touche une plante pour la **Déplacer** (même fantôme, même cercle) ou la **Retirer** (elle va à la corbeille de la carte, tu peux l'annuler). Les plantes que ton IA a proposées apparaissent en transparence : touche-en une pour lire sa raison, puis **Accepter** ou **Refuser**.
+
 ### À hauteur d'yeux
 
 **Se promener** (onglet **Vue**) te place dans ton jardin, les yeux à 1,60 m : clique (ou touche) le terrain là où tu veux te tenir. Fais glisser pour regarder autour de toi, marche aux flèches (ou Z Q S D), avec Maj pour courir ; sur téléphone, des boutons apparaissent à l'écran. Fais passer les années pendant la promenade pour voir les volumes de ton futur jardin-forêt depuis le banc ou le chemin. Échap ou **Revenir à la vue d'ensemble** te ramène au-dessus du terrain.

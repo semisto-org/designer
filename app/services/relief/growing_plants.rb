@@ -10,8 +10,12 @@ module Relief
     # would otherwise weigh more than the rest of the garden).
     PATCH_LIMIT = 600
 
-    def initialize(map)
+    # `drafts`: also the plants an AI proposed and nobody reviewed yet
+    # (`draft: true`, with their rationale), shown as ghosts in the editor's
+    # 3D view; never in a public one.
+    def initialize(map, drafts: false)
       @map = map
+      @drafts = drafts
       @quantities = map.planted_quantities
     end
 
@@ -29,7 +33,8 @@ module Relief
 
     private
       def plant_rows
-        @map.features.in_design.where(kind: PlantableFeature::PLANT, status: "active").order(:id).filter_map do |feature|
+        statuses = @drafts ? %w[active draft] : %w[active]
+        @map.features.in_design.where(kind: PlantableFeature::PLANT, status: statuses).order(:id).filter_map do |feature|
           point = feature.geometry
           next unless point.respond_to?(:x)
 
@@ -49,7 +54,7 @@ module Relief
             plantedOn: (feature.known_planted_on&.iso8601 rescue nil),
             # In the ground since an unknown date: grown already.
             plantedLongAgo: feature.planted_on_precision == "unknown"
-          )
+          ).merge(feature.status == "draft" ? { draft: true, rationale: feature.rationale.presence } : {})
         end
       end
 
@@ -119,6 +124,9 @@ module Relief
             # Its months in flower and in fruit, for the seasons of the 3D view.
             flowering: species&.flowering_months.presence || [],
             fruiting: species&.fruiting_months.presence || species&.harvest_months.presence || [],
+            # What it needs, to say in 3D whether a spot suits it (relief/plantFit.ts).
+            exposures: species&.exposures.presence || [],
+            soilMoisture: species&.soil_moisture.presence || [],
             **PlantGrowth.inputs(strata:, species:, variety:)
           }
         end

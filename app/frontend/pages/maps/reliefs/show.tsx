@@ -1,7 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react'
 import clsx from 'clsx'
 import {
-  ArrowLeft, Camera, CloudRain, Crosshair, Download, Eye, Loader2, Menu, Moon, MoonStar, Pause, Play, RotateCcw, Sun, SunMedium, X,
+  ArrowLeft, Camera, Sprout, CloudRain, Crosshair, Download, Eye, Loader2, Menu, Moon, MoonStar, Pause, Play, RotateCcw, Sun, SunMedium, X,
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { HelpButton } from '@/components/help/HelpButton'
@@ -22,8 +22,15 @@ import { Compass } from '@/relief/Compass'
 import { NivaDashboard, NivaPad, NivaSection, type NivaSettings } from '@/relief/NivaControls'
 import { GrowthBar, GrowthSection, PlantCard, WalkPad, useGrowthYear, useSeason } from '@/relief/GrowthControls'
 import { RoofCard } from '@/relief/RoofCard'
+import { PlantingCard, checksText, type LastPlanted, type PlantTool } from '@/relief/PlantingCard'
+import { growthKey } from '@/map/time/growth'
+import { scheduleReload, usePlanting } from '@/map/plants/store'
+import { toast } from '@/components/ui/toast'
+import { confirmAction } from '@/components/ui/confirm'
+import { ApiError } from '@/lib/api'
+import type { PaletteItem, PlantingState } from '@/types/plants'
 import { PresentationTimeControl } from '@/relief/PresentationTimeControl'
-import { GROWTH_YEARS, yearsBetween, type GrowingPlantsData } from '@/relief/growth'
+import { GROWTH_YEARS, calendarYear, plantForm, yearsBetween, type GrowingPlantsData, type ScenePlant } from '@/relief/growth'
 import type { WalkKey } from '@/relief/scene'
 import { useFlyKeys } from '@/relief/useFlyKeys'
 import { STRATA_COLORS } from '@/map/plants/strataColors'
@@ -217,6 +224,179 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
   const season = useSeason(growth, (month) => controller.current?.setPlantMonth(month))
   const pointer = useRef<[number, number] | null>(null)
   const touch = useMemo(() => typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches, [])
+
+  // ---- Planting in 3D: a plant of the palette (or one of the map's) carried to its place.
+  const [plantTool, setPlantTool] = useState<PlantTool | null>(null)
+  const [lastPlanted, setLastPlanted] = useState<LastPlanted | null>(null)
+  const [stationReady, setStationReady] = useState(false)
+  const plantToolRef = useRef(plantTool)
+  plantToolRef.current = plantTool
+  const saving = useRef(false)
+  const touchPreview = useRef<[number, number] | null>(null)
+
+  // The plants after a write come back with the page's props: the 3D follows.
+  useEffect(() => {
+    controller.current?.setGrowingPlants(growingPlants)
+  }, [growingPlants])
+  useEffect(() => { featureList.current = features }, [features])
+
+  function reloadPlants() {
+    router.reload({ only: ['growingPlants', 'features'] })
+    scheduleReload(map.id)
+  }
+
+  async function carry(plant: ScenePlant, needs: { exposures: string[]; soilMoisture: string[]; flowering?: number[] }) {
+    const c = controller.current
+    if (!c) return
+    setPlantInfo(null)
+    setRoofPick(null)
+    setProbe(null)
+    setStationReady(false)
+    // A new plant is shown grown: fifteen years on, unless another year is chosen.
+    if (Math.round(growth.target) === Math.round(plantToday)) growth.set(Math.min(GROWTH_YEARS, Math.round(plantToday) + 15))
+    if (isCompact()) setPanelOpen(false)
+    await c.startCarry(plant, needs)
+    setStationReady(true)
+  }
+
+  function choosePlant(item: PaletteItem, data: PlantingState | null) {
+    const species = item.species
+    const size = data?.growth?.[growthKey(item.speciesId, item.varietyId)]
+    const strata = item.effectiveStrata
+    const form = plantForm(strata, species.plantType)
+    const plant: ScenePlant = {
+      x: 0, y: 0, form, strata,
+      heightM: size?.heightM ?? species.heightMaxM ?? 3,
+      spreadM: size?.spreadM ?? species.crownM ?? 2,
+      maturityYears: size?.maturityYears ?? 10,
+      training: 'free', start: Math.round(plantToday), plant: null, patch: null, seed: item.id * 7919,
+      foliage: species.foliageType, flowering: [], fruiting: species.harvestMonths ?? [],
+    }
+    setPlantTool({ step: 'carry', mode: 'place', name: item.name, item, featureId: null, info: null })
+    void carry(plant, { exposures: species.exposures ?? [], soilMoisture: species.soilMoisture ?? [] })
+  }
+
+  function startMove(info: PlantInfo) {
+    const found = info.featureId != null ? controller.current?.plantOfFeature(info.featureId) : null
+    if (!found || info.featureId == null) return
+    const name = info.ownName ?? info.name ?? t(`plants.strata.${info.strata}`)
+    setPlantTool({ step: 'carry', mode: 'move', name, item: null, featureId: info.featureId, info: null })
+    void carry(found.plant, found.needs)
+  }
+
+  function stopPlantTool() {
+    controller.current?.stopCarry()
+    setPlantTool(null)
+    setLastPlanted(null)
+  }
+
+  // Escape puts the plant down without planting it.
+  useEffect(() => {
+    if (!plantTool) return
+    const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') stopPlantTool() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [plantTool]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  function onPointerMove(event: React.PointerEvent) {
+    const tool = plantToolRef.current
+    if (!tool || tool.step !== 'carry' || event.pointerType === 'touch') return
+    const info = controller.current?.hoverCarry(event) ?? null
+    if (info) setPlantTool({ ...tool, info })
+  }
+
+  /** A click while carrying: the plant goes there (a new one, or the moved one). */
+  async function putDown(event: React.PointerEvent) {
+    const tool = plantToolRef.current
+    const c = controller.current
+    if (!tool || tool.step !== 'carry' || !c || saving.current) return
+    const info = c.hoverCarry(event)
+    if (!info) return
+    setPlantTool({ ...tool, info })
+    // On a touch screen there is no hover: a first touch shows the spot, a second one there plants.
+    if (event.pointerType === 'touch') {
+      const seen = touchPreview.current
+      touchPreview.current = [event.clientX, event.clientY]
+      if (!seen || Math.hypot(event.clientX - seen[0], event.clientY - seen[1]) > 30) return
+    }
+    touchPreview.current = null
+    const geometry = { type: 'Point', coordinates: [info.lng, info.lat] }
+    saving.current = true
+    try {
+      if (tool.mode === 'place' && tool.item) {
+        const item = tool.item
+        const saved = await api<MapFeature>(`/maps/${map.id}/features`, {
+          method: 'POST',
+          body: { feature: { layer: 'plants', kind: 'plant', geometry, properties: { species_id: item.speciesId, ...(item.varietyId ? { variety_id: item.varietyId } : {}) } } },
+        })
+        setLastPlanted({ featureId: saved.properties.id, name: item.name, fit: info.fit })
+        toast(t('relief.planting.placed', { name: item.name }), { tone: 'success' })
+      } else if (tool.mode === 'move' && tool.featureId != null) {
+        const feature = featureList.current.find((f) => f.properties.id === tool.featureId)
+        await api<MapFeature>(`/maps/${map.id}/features/${tool.featureId}`, {
+          method: 'PATCH',
+          body: { feature: { geometry, ...(feature ? { lock_version: feature.properties.lockVersion } : {}) } },
+        })
+        setLastPlanted({ featureId: tool.featureId, name: tool.name, fit: info.fit })
+        toast(t('relief.planting.moved', { name: tool.name }), { tone: 'success' })
+        c.stopCarry()
+        setPlantTool(null)
+      }
+      reloadPlants()
+    } catch (error) {
+      toast(t(error instanceof ApiError && error.status === 409 ? 'relief.planting.conflict' : 'relief.planting.failed'), { tone: 'error' })
+    } finally {
+      saving.current = false
+    }
+  }
+
+  /** « À vérifier sur place »: a task of the project, tied to the plant, says what to look at and when. */
+  async function addCheck(last: LastPlanted) {
+    const notes = last.fit.notes.filter((n) => n.tone !== 'good').map((n) => t(`relief.planting.fit.${n.key}`).toLowerCase()).join(', ')
+    try {
+      await api(`/maps/${map.id}/tasks`, {
+        method: 'POST',
+        body: { task: {
+          title: t('relief.planting.check.task_title', { name: last.name }),
+          notes: t('relief.planting.check.task_notes', { notes, checks: checksText(last.fit.checks) }),
+          feature_ids: [last.featureId],
+        } },
+      })
+      toast(t('relief.planting.check.added'), { tone: 'success' })
+      setLastPlanted(null)
+    } catch {
+      toast(t('relief.planting.failed'), { tone: 'error' })
+    }
+  }
+
+  async function removePlant(info: PlantInfo) {
+    if (info.featureId == null) return
+    const name = info.ownName ?? info.name ?? t(`plants.strata.${info.strata}`)
+    if (!(await confirmAction({ title: t('relief.planting.card.remove_title', { name }), body: t('relief.planting.card.remove_body'), tone: 'danger', confirmLabel: t('relief.planting.card.remove') }))) return
+    const id = info.featureId
+    try {
+      await api(`/maps/${map.id}/features/${id}`, { method: 'DELETE' })
+      setPlantInfo(null)
+      reloadPlants()
+      toast(t('relief.planting.card.removed', { name }), {
+        action: { label: t('relief.planting.card.undo'), run: () => { void api(`/maps/${map.id}/features/${id}/restore`, { method: 'POST' }).then(reloadPlants) } },
+      })
+    } catch {
+      toast(t('relief.planting.failed'), { tone: 'error' })
+    }
+  }
+
+  async function reviewDraft(info: PlantInfo, accept: boolean) {
+    if (info.featureId == null) return
+    try {
+      await api(`/maps/${map.id}/drafts/${info.featureId}/${accept ? 'accept' : 'reject'}`, { method: 'POST' })
+      setPlantInfo(null)
+      reloadPlants()
+      toast(t(accept ? 'relief.planting.card.accepted' : 'relief.planting.card.rejected'), { tone: 'success' })
+    } catch {
+      toast(t('relief.planting.failed'), { tone: 'error' })
+    }
+  }
 
   useEffect(() => {
     if (!container.current) return
@@ -524,6 +704,10 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
     const start = pointer.current
     pointer.current = null
     if (!start || Math.hypot(event.clientX - start[0], event.clientY - start[1]) > 5) return
+    if (plantToolRef.current?.step === 'carry') {
+      await putDown(event)
+      return
+    }
     if (controller.current?.nivaPlacing) {
       controller.current.placeNiva(event)
       setProbe(null)
@@ -651,9 +835,10 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
     <div className="relative h-dvh w-full overflow-hidden bg-[#dfe9ee]">
       <div
         ref={container}
-        className={clsx('absolute inset-0', (niva.mode === 'placing' || walk === 'placing') && 'cursor-crosshair', walking && 'cursor-grab active:cursor-grabbing')}
+        className={clsx('absolute inset-0', (niva.mode === 'placing' || walk === 'placing' || plantTool?.step === 'carry') && 'cursor-crosshair', walking && 'cursor-grab active:cursor-grabbing')}
         onPointerDown={(event) => { pointer.current = [event.clientX, event.clientY] }}
         onPointerUp={onPointerUp}
+        onPointerMove={onPointerMove}
       />
 
       {loadingLabel && (
@@ -809,6 +994,18 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
                       onStrataColors={(on) => updatePlantsView({ strataColors: on })}
                       onWalk={toggleWalk}
                       onMoveWalker={() => controller.current?.moveWalker()}
+                      planting={canEdit && !presenting ? (
+                        <div className="space-y-2">
+                          <SectionTitle>{t('relief.planting.section_title')}</SectionTitle>
+                          <p className="text-sm text-loam-600">{t('relief.planting.section_intro')}</p>
+                          <Button
+                            variant={plantTool ? 'primary' : 'secondary'} size="sm" className="w-full" aria-pressed={!!plantTool}
+                            onClick={() => (plantTool ? stopPlantTool() : setPlantTool({ step: 'choose' }))}
+                          >
+                            <Sprout className="h-4 w-4" />{t('relief.planting.start')}
+                          </Button>
+                        </div>
+                      ) : null}
                     />
                   )}
                   niva={(
@@ -872,7 +1069,46 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
         )}
       </aside>
 
-      {plantInfo && <PlantCard info={plantInfo} onClose={() => setPlantInfo(null)} />}
+      {plantInfo && (
+        <PlantCard info={plantInfo} onClose={() => setPlantInfo(null)}>
+          {plantInfo.draft && (
+            <div className="space-y-1 rounded-xl bg-prune-50 p-2">
+              <p className="font-semibold text-prune-700">{t('relief.planting.card.draft')}</p>
+              {plantInfo.rationale && <p className="text-loam-700">{plantInfo.rationale}</p>}
+            </div>
+          )}
+          {canEdit && plantInfo.featureId != null && !presenting ? (
+            <div className="flex flex-wrap gap-2 pt-1">
+              {plantInfo.draft ? (
+                <>
+                  <Button size="sm" variant="leaf" onClick={() => void reviewDraft(plantInfo, true)}>{t('relief.planting.card.accept')}</Button>
+                  <Button size="sm" variant="secondary" onClick={() => void reviewDraft(plantInfo, false)}>{t('relief.planting.card.reject')}</Button>
+                </>
+              ) : (
+                <>
+                  <Button size="sm" variant="secondary" onClick={() => startMove(plantInfo)}>{t('relief.planting.card.move')}</Button>
+                  <Button size="sm" variant="danger-ghost" onClick={() => void removePlant(plantInfo)}>{t('relief.planting.card.remove')}</Button>
+                </>
+              )}
+            </div>
+          ) : canEdit && plantInfo.patchName ? (
+            <p className="text-loam-500">{t('relief.planting.card.patch')}</p>
+          ) : null}
+        </PlantCard>
+      )}
+      {plantTool && (
+        <PlantingTool
+          mapId={map.id}
+          tool={plantTool}
+          touch={touch}
+          yearLabel={String(calendarYear(growingPlants.origin, growth.target))}
+          stationReady={stationReady}
+          last={lastPlanted}
+          onChoose={choosePlant}
+          onStop={stopPlantTool}
+          onAddCheck={(last) => void addCheck(last)}
+        />
+      )}
       {roofPick && (
         <RoofCard
           mapId={map.id}
@@ -1463,4 +1699,12 @@ function ProbeCard({ probe, sunTime, coldTime, onClose }: {
       {lines}
     </div>
   )
+}
+
+/** The plant tool's card, with the map's palette (loaded when the tool opens). */
+function PlantingTool({ mapId, onChoose, ...props }: Omit<Parameters<typeof PlantingCard>[0], 'palette' | 'loading' | 'onChoose'> & {
+  onChoose: (item: PaletteItem, data: PlantingState | null) => void
+}) {
+  const { data, loading } = usePlanting(mapId)
+  return <PlantingCard mapId={mapId} palette={data?.palette ?? null} loading={loading} onChoose={(item) => onChoose(item, data)} {...props} />
 }
