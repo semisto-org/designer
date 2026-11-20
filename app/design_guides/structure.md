@@ -21,7 +21,7 @@ Lawton starts no plan without the zone map: it places every element by how often
 
 ## Hedges and windbreaks
 
-- **Windbreak** (`windbreak`) on the side of the prevailing winds (often west to south-west in western Europe) and of the cold east and north-east winds that scorch blossom. A windbreak shelters about ten times its height; it must be permeable (about half the wind passes through), not a wall.
+- **Windbreak** (`windbreak`) on the side of the prevailing winds (often west to south-west in western Europe) and of the cold east and north-east winds that scorch blossom. A windbreak shelters about ten times its height; it must be permeable (about half the wind passes through), not a wall. Its shelter grows with it: about ten times the height it has that year (3 to 4 m at year 5), so pioneers in its first rows shelter the young fruit trees meanwhile. Never write "dense" for a windbreak.
 - **Hedge** (`hedge`), diverse, in several rows and layers: standard trees, shrubs, soft fruit, at least five to eight species, including nitrogen fixers and bee plants. Existing hedges are kept and filled in.
 - Hedges hold boundaries, break the wind, shelter beneficial insects and birds, and give biomass and fruit.
 
@@ -54,6 +54,6 @@ Structure trees are planted first: they take the longest. Fast-growing **pioneer
 
 ## What to propose as drafts
 
-Zones with `propose_zones` (and zone 5 with `propose_features`, layer `notes`, kind `permaculture_zone`); layer `structures` for shelters and greenhouses; layer `plants` for trees and hedges, with `species` and spacing (`spacing_m`) in `properties` when known. Each `rationale` cites the wind, sun, existing features or use that justifies the location.
+Zones with `propose_zones` (and zone 5 with `propose_features`, layer `notes`, kind `permaculture_zone`); layer `structures` for shelters and greenhouses. Hedges and windbreaks are layer `structures`, kinds `hedge` and `windbreak`, with `rows`, `spacing_m` and `height_m` (the mature height). They have no species field yet: name their 5 to 8 species in the `rationale` (nitrogen fixers, bee plants, and fast pioneers that shelter years 1 to 5), and add each one to the palette with the role `hedge` (`propose_palette`), so the order counts them. Large trees stay single `plant` points in layer `plants`, with `species` and spacing (`spacing_m`) in `properties` when known. Each `rationale` cites the wind, sun, existing features or use that justifies the location.
 
 Paths (layer `access`) follow the land and the feet, not a ruler: a path that bends with the slope, around a tree or towards a view is drawn as a curve. Give it a few points at its turns and `rounded: true` with `rounding: 7` (1 is a hint of a curve, 10 a supple line from end to end); the map draws and measures the curve, the points stay the ones a person edits. The same goes for a hedge or a fence that follows a contour, and for a pond or a bed with soft corners. A path already drawn with sharp elbows is rounded with `propose_feature_updates` (`properties: { rounded: true, rounding: 7 }`).
