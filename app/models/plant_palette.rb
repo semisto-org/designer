@@ -227,17 +227,10 @@ class PlantPalette
 
     def existing_count(key) = existing_trees.count { |tree| tree.key == key }
 
-    def normalize(text) = I18n.transliterate(text.to_s.squish).downcase
+    def normalize(text) = PlantSpecies.normalize_name(text)
 
     # { normalized text => species id }, by latin name or French common name.
-    def species_for_texts(texts)
-      names = texts.map { |text| normalize(text) }.reject(&:blank?).uniq
-      return {} if names.empty?
-      found = PlantSpecies.where("lower(unaccent(latin_name)) IN (?)", names).pluck(:latin_name, :id)
-      found += PlantCommonName.where(nameable_type: "PlantSpecies", language: "fr")
-                              .where("lower(unaccent(name)) IN (?)", names).pluck(:name, :nameable_id)
-      found.each_with_object({}) { |(name, id), index| index[normalize(name)] ||= id }
-    end
+    def species_for_texts(texts) = PlantSpecies.ids_for_names(texts)
 
     # Quantities per tag, as if the palette were filtered by it.
     def by_tag(key) = tags.to_h { |tag| [ tag, tag_slot(tag, key) ] }

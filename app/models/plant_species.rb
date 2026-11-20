@@ -111,6 +111,20 @@ class PlantSpecies < ApplicationRecord
     long.any? ? long.first(8) : words
   end
 
+  # A name as typed by someone (« Tilleul », « Pinus nigra »), ready to compare.
+  def self.normalize_name(text) = I18n.transliterate(text.to_s.squish).downcase
+
+  # { normalized name => species id } for names typed freely: latin name or
+  # French common name, without case or accents. Unknown names are left out.
+  def self.ids_for_names(texts)
+    names = texts.map { |text| normalize_name(text) }.reject(&:blank?).uniq
+    return {} if names.empty?
+    found = where("lower(unaccent(latin_name)) IN (?)", names).pluck(:latin_name, :id)
+    found += PlantCommonName.where(nameable_type: "PlantSpecies", language: "fr")
+                            .where("lower(unaccent(name)) IN (?)", names).pluck(:name, :nameable_id)
+    found.each_with_object({}) { |(name, id), index| index[normalize_name(name)] ||= id }
+  end
+
   def self.find_by_latin_name(latin_name)
     where("lower(latin_name) = ?", latin_name.to_s.squish.downcase).first
   end
