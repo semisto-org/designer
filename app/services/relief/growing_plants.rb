@@ -66,12 +66,13 @@ module Relief
           species_id = ids[PlantSpecies.normalize_name(props["species"])]
           height = positive(props["height_m"])
           crown = positive(props["crown_diameter_m"])
+          girth = positive(props["trunk_circumference_cm"])&.round
           strata = species_id ? nil : existing_strata(height, crown)
           growth([ species_id, nil ], strata:).merge(
             id: feature.id, lng: feature.geometry.x.round(7), lat: feature.geometry.y.round(7),
             number: nil, ownName: feature.name.presence, existing: true,
             training: nil, support: false, supportUntil: nil, graft: nil,
-            measures: (height || crown) ? { height:, crown:, girth: nil, on: nil } : nil,
+            measures: (height || crown || girth) ? { height:, crown:, girth:, on: nil } : nil,
             plantedOn: nil, plantedLongAgo: true
           )
         end

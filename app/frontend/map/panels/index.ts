@@ -115,6 +115,7 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'permaculture-zone', applies: appliesToZone, component: deferred(() => import('@/map/zones/ZoneSection'), 'none'), order: 17 },
   { id: 'drawing-element', applies: appliesToElement, component: deferred(() => import('@/map/drawing/ElementSection'), 'none'), order: 20 },
   { id: 'water-source', applies: appliesToWaterSource, component: deferred(() => import('@/map/water/WaterSourceSection'), 'none'), order: 19 },
+  { id: 'tree-height', applies: (f) => f.properties.kind === 'existing_tree' && f.properties.status === 'active', component: deferred(() => import('@/map/drawing/TreeHeightSection'), 'none'), order: 20.2 },
   { id: 'gps-accuracy', applies: appliesToGpsPoint, component: deferred(() => import('@/map/gps/GpsAccuracySection'), 'none'), order: 10 },
   { id: 'tags', applies: () => true, component: deferred(() => import('@/map/tags/TagsSection'), 'none'), order: 15 },
   { id: 'project-state', applies: appliesToProjectState, component: deferred(() => import('@/map/drawing/ProjectStateSection'), 'none'), order: 16 },

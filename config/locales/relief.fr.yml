@@ -1,6 +1,18 @@
 # Feature area "relief-water": the map's relief, rain, runoff and sun.
 fr:
   relief:
+    tree_height:
+      seen: "Vu d'en haut, cet arbre mesure %{height}."
+      nothing: "Vu d'en haut, le relief ne voit pas d'arbre ici : vérifie sa position, ou l'arbre est plus récent que le relevé."
+      source: "(%{source})"
+      keep: "Garder cette hauteur"
+      replace: "Remplacer les %{height} notés"
+      keep_all:
+        one: "Remplir aussi l'arbre sans hauteur"
+        other: "Remplir les %{count} arbres sans hauteur"
+      saved:
+        one: "Hauteur notée sur 1 arbre."
+        other: "Hauteur notée sur %{count} arbres."
     panel: "Eau et relief"
     errors:
       unavailable: "Le relief n'est pas encore disponible pour cette région."

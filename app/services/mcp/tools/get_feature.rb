@@ -21,6 +21,7 @@ module Mcp
           created_at: feature.created_at.iso8601,
           **plant_journal(feature),
           **plant_growth(feature),
+          **height_from_above(map, feature),
           **water_links(map, feature)
         )
       end
@@ -47,6 +48,15 @@ module Mcp
           return {} unless feature.plant?
           growth = PlantGrowth::Projection.new(feature).as_json
           growth ? { growth: } : {}
+        end
+
+        # For a tree already on the land: how tall the relief's surface model
+        # (LiDAR in Wallonia) sees it, to compare with or fill its height_m.
+        def height_from_above(map, feature)
+          return {} unless feature.kind == "existing_tree"
+          heights = Relief::TreeHeights.new(map)
+          height = heights.for_features([ feature ])[feature.id]
+          height ? { height_from_above: { height_m: height, source: heights.source } } : {}
         end
 
         # For a pipe, ditch or swale: what it connects and the drop along it;
