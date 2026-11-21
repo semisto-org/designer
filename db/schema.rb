@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_20_220000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_21_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -1477,6 +1477,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_20_220000) do
     t.datetime "values_checked_at"
     t.string "values_check_error"
     t.string "crown_form"
+    t.string "foliage_tone"
+    t.string "leaf_texture"
+    t.string "crown_density"
+    t.string "flower_color"
+    t.string "fruit_color"
+    t.string "bark_color"
+    t.string "autumn_color"
     t.index "lower((latin_name)::text)", name: "index_plant_species_on_lower_latin_name", unique: true
     t.index ["eco_services"], name: "index_plant_species_on_eco_services", using: :gin
     t.index ["exposures"], name: "index_plant_species_on_exposures", using: :gin

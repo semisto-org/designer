@@ -104,6 +104,9 @@ class Relief::GrowingPlantsTest < ActiveSupport::TestCase
     plant = Relief::GrowingPlants.new(@map).as_json[:plants].sole
     assert_equal({ height: 18.0, crown: 17.0, girth: 470, on: "2026-11-20" }, plant[:measures])
     assert_equal PlantCrownForm.for(plant_species(:alder))&.dig(:form), plant[:crownForm]
+    # Its look for the 3D: the species' values, else its genus'.
+    assert_equal PlantLook.values(plant_species(:alder)), plant[:look]
+    assert_equal "dark_green", plant[:look][:foliageTone]
   end
 
   test "the trees already on the land grow in 3D at the size noted on them" do

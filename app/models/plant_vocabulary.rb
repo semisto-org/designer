@@ -100,6 +100,85 @@ module PlantVocabulary
         "multi_stem" => [ "multi-troncs", "multitronc", "cepee naturelle", "buissonnant" ]
       }
     },
+    # How the plant looks, as the 3D view paints it (PlantLook, relief/plantModels.ts).
+    foliage_tone: {
+      multi: false,
+      values: {
+        "dark_green" => [ "vert fonce", "vert sombre" ],
+        "green" => %w[vert vert-moyen],
+        "light_green" => [ "vert clair", "vert tendre" ],
+        "grey_green" => [ "gris-vert", "vert gris", "argente", "glauque", "silver" ],
+        "blue_green" => [ "bleu-vert", "vert bleute", "bleute" ],
+        "yellow_green" => [ "jaune-vert", "dore", "golden" ],
+        "purple" => %w[pourpre rouge-pourpre violet]
+      }
+    },
+    leaf_texture: {
+      multi: false,
+      values: {
+        "fine" => %w[fin fine fines],
+        "medium" => %w[moyen moyenne],
+        "coarse" => %w[grossier grossiere grandes-feuilles large]
+      }
+    },
+    crown_density: {
+      multi: false,
+      values: {
+        "light" => %w[legere leger claire aeree],
+        "medium" => %w[moyenne moyen],
+        "dense" => %w[dense epaisse]
+      }
+    },
+    flower_color: {
+      multi: false,
+      values: {
+        "white" => %w[blanc blanche],
+        "cream" => %w[creme blanc-creme],
+        "yellow" => %w[jaune],
+        "orange" => %w[orangee],
+        "pink" => %w[rose],
+        "red" => %w[rouge],
+        "purple" => %w[violet pourpre mauve],
+        "blue" => %w[bleu bleue],
+        "green" => [ "vert", "verte", "discret", "discrete" ]
+      }
+    },
+    fruit_color: {
+      multi: false,
+      values: {
+        "red" => %w[rouge],
+        "orange" => [],
+        "yellow" => %w[jaune],
+        "green" => %w[vert verte],
+        "blue" => %w[bleu bleue],
+        "purple" => %w[violet pourpre],
+        "black" => %w[noir noire],
+        "brown" => %w[brun brune marron],
+        "white" => %w[blanc blanche]
+      }
+    },
+    bark_color: {
+      multi: false,
+      values: {
+        "grey" => %w[gris grise],
+        "silver" => [ "gris clair", "argente", "argentee" ],
+        "brown" => %w[brun brune],
+        "red_brown" => [ "brun-rouge", "acajou", "cannelle" ],
+        "white" => %w[blanc blanche],
+        "dark" => [ "fonce", "noir", "gris fonce" ]
+      }
+    },
+    autumn_color: {
+      multi: false,
+      values: {
+        "yellow" => %w[jaune dore],
+        "orange" => %w[orange cuivre],
+        "red" => %w[rouge],
+        "purple" => %w[pourpre violet],
+        "brown" => %w[brun roux],
+        "none" => [ "aucune", "reste vert", "sans couleur" ]
+      }
+    },
     exposures: {
       multi: true,
       values: {

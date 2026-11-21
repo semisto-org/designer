@@ -92,6 +92,8 @@ export type VarietySheet = VarietySummary & {
   provenance: Record<string, Provenance>
 }
 
+export type LookTrait = 'foliageTone' | 'leafTexture' | 'crownDensity' | 'flowerColor' | 'fruitColor' | 'barkColor' | 'autumnColor'
+
 export type SpeciesSheet = SpeciesSummary & {
   genus: string | null
   commonNames: string[]
@@ -103,6 +105,8 @@ export type SpeciesSheet = SpeciesSummary & {
   crownForm: string | null
   /** True when the silhouette is the usual one of its genus, not the species' own. */
   crownFormIndicative: boolean | null
+  /** How the 3D paints it (PlantLook), trait by trait; indicative when it is its genus' usual look. */
+  look: Partial<Record<LookTrait, { value: string; indicative: boolean }>>
   heightMinM: number | null
   spreadMinM: number | null
   soilTypes: string[]
