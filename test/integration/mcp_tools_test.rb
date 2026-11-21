@@ -1095,4 +1095,16 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     refute error
     assert_equal "Avant-projet", data.dig("design_phases", "current")
   end
+
+  test "get_master_plan numbers the project as the printed plan does, without the networks" do
+    shape = { "type" => "Polygon", "coordinates" => [ [ [ 4.907, 50.341 ], [ 4.9072, 50.341 ], [ 4.9072, 50.3412 ], [ 4.907, 50.341 ] ] ] }
+    pond = @map.features.create!(layer: "water", kind: "pond", name: "Mare du haut", geometry: shape, properties: { "planned" => true })
+    data, error = call_tool(@viewer, "get_master_plan", { map_id: @map.id })
+    refute error
+    items = data["themes"].flat_map { _1["items"] }
+    assert_includes items.map { _1["id"] }, pond.id
+    assert_not_includes items.map { _1["id"] }, @pipe.id
+    assert_match "export=master_plan", data["export_url"]
+  end
 end
+

@@ -809,6 +809,8 @@ Rails.application.routes.draw do
       post :take, on: :member
     end
     patch "design/phase", to: "maps/design_phases#rename_current", as: :current_design_phase
+    # « Plan directeur »: the design numbered theme by theme.
+    get "design/master_plan", to: "maps/master_plans#show", as: :master_plan
   end
   # --- end design phases ---
 

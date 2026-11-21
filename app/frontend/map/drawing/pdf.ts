@@ -12,6 +12,8 @@ import { FEATURES_SOURCE } from '@/map/layers/features'
 import { PARCELS_SOURCE } from '@/map/layers/parcels'
 import { inTag } from '@/map/tags/tags'
 import { inVariant } from '@/map/variants/variants'
+import { applyPresentRender } from '@/map/presentation/render'
+import { DESIGN_MODE_STATE, DRAWN_VIEW_STATE } from '@/map/scenario'
 import { isZoneKind } from '@/map/zones/zones'
 import type { MapFeature } from '@/types'
 
@@ -30,19 +32,19 @@ type PaintValue = Parameters<MapLibreMap['setPaintProperty']>[2]
  * the centre of the map, which gives the zoom. The offscreen canvas uses a
  * pixel ratio of DPI / 96 so symbols keep their on-screen size on paper.
  */
-export type Paper = 'A4' | 'A3'
+export type Paper = 'A4' | 'A3' | 'A2' | 'A1' | 'A0'
 export type Orientation = 'portrait' | 'landscape'
 
 export const SCALES = [100, 200, 250, 500, 1000, 2000, 2500]
 const NICE_SCALES = [100, 200, 250, 500, 750, 1000, 1250, 1500, 2000, 2500, 3000, 4000, 5000, 7500, 10000, 15000, 20000, 25000, 50000]
-const PAPER_MM: Record<Paper, [number, number]> = { A4: [210, 297], A3: [297, 420] }
+export const PAPER_MM: Record<Paper, [number, number]> = { A4: [210, 297], A3: [297, 420], A2: [420, 594], A1: [594, 841], A0: [841, 1189] }
 const EARTH_CIRCUMFERENCE = 40075016.686
 const CSS_DPI = 96
 export const PRINT_DPI = 200
 const MAX_CANVAS_PX = 4096
 const RENDER_TIMEOUT_MS = 30_000
 
-type Box = { x: number; y: number; w: number; h: number }
+export type Box = { x: number; y: number; w: number; h: number }
 export type Layout = { width: number; height: number; frame: Box; cartouche: Box }
 
 export function pageLayout(paper: Paper, orientation: Orientation): Layout {
@@ -183,6 +185,10 @@ function applyTheme(map: MapLibreMap, theme: string) {
 type RenderOptions = {
   center: [number, number]; scale: number; frame: Box; hiddenLayers: string[]; variant?: number | null; tag?: string | null; hiddenKinds?: string[]; hiddenIds?: number[]
   theme?: string | null; hideBoundary?: boolean
+  /** The designer's plan look of « Présenter » (paper, crowns, ink outline). */
+  planLook?: boolean
+  /** Called with the offscreen map once drawn, before it goes (to project points on the page). */
+  inspect?: (map: MapLibreMap) => void
 }
 
 /** Hides every layer drawn from the terrain's outline. */
@@ -193,7 +199,7 @@ function hideBoundaryLayers(map: MapLibreMap) {
   }
 }
 
-export async function renderMap(source: MapLibreMap, { center, scale, frame, hiddenLayers, variant, tag, hiddenKinds, hiddenIds, theme, hideBoundary }: RenderOptions): Promise<string> {
+export async function renderMap(source: MapLibreMap, { center, scale, frame, hiddenLayers, variant, tag, hiddenKinds, hiddenIds, theme, hideBoundary, planLook, inspect }: RenderOptions): Promise<string> {
   const widthCss = Math.round(mmToCss(frame.w))
   const heightCss = Math.round(mmToCss(frame.h))
   const pixelRatio = Math.min(PRINT_DPI / CSS_DPI, MAX_CANVAS_PX / Math.max(widthCss, heightCss))
@@ -220,7 +226,14 @@ export async function renderMap(source: MapLibreMap, { center, scale, frame, hid
     applyLayerVisibility(map, hiddenLayers, { activeOnly: true, variant, tag, hiddenKinds, hiddenIds })
     if (theme) applyTheme(map, theme)
     if (hideBoundary) hideBoundaryLayers(map)
+    if (planLook) {
+      // The project as designed, in the designer's plan look; the working marks step aside.
+      map.setGlobalStateProperty(DESIGN_MODE_STATE, 'project')
+      map.setGlobalStateProperty(DRAWN_VIEW_STATE, false)
+      applyPresentRender(map, true)
+    }
     await waitFor(map, 'idle')
+    inspect?.(map)
     return map.getCanvas().toDataURL('image/jpeg', 0.92)
   } finally {
     map.remove()
@@ -330,22 +343,22 @@ function drawLegendSwatch(doc: JsPDF, entry: LegendEntry, x: number, y: number) 
   }
 }
 
-function drawNorthArrow(doc: JsPDF, cx: number, cy: number) {
+export function drawNorthArrow(doc: JsPDF, cx: number, cy: number, k = 1) {
   doc.setLineDashPattern([], 0)
   doc.setFillColor('#ffffff')
   doc.setDrawColor('#1b1712')
-  doc.setLineWidth(0.3)
-  doc.circle(cx, cy, 6.5, 'FD')
+  doc.setLineWidth(0.3 * k)
+  doc.circle(cx, cy, 6.5 * k, 'FD')
   doc.setFillColor('#1b1712')
-  doc.triangle(cx, cy - 4.2, cx - 2.2, cy + 3.2, cx, cy + 1.8, 'F')
-  doc.triangle(cx, cy - 4.2, cx + 2.2, cy + 3.2, cx, cy + 1.8, 'S')
+  doc.triangle(cx, cy - 4.2 * k, cx - 2.2 * k, cy + 3.2 * k, cx, cy + 1.8 * k, 'F')
+  doc.triangle(cx, cy - 4.2 * k, cx + 2.2 * k, cy + 3.2 * k, cx, cy + 1.8 * k, 'S')
   doc.setFont('helvetica', 'bold')
-  doc.setFontSize(6.5)
+  doc.setFontSize(6.5 * k)
   doc.setTextColor('#1b1712')
-  doc.text(t('drawing.pdf.north'), cx, cy - 4.8, { align: 'center' })
+  doc.text(t('drawing.pdf.north'), cx, cy - 4.8 * k, { align: 'center' })
 }
 
-function drawScaleBar(doc: JsPDF, scale: number, x: number, y: number, maxMm: number) {
+export function drawScaleBar(doc: JsPDF, scale: number, x: number, y: number, maxMm: number) {
   const bar = scaleBar(scale, maxMm)
   const segment = bar.mm / 4
   doc.setLineDashPattern([], 0)
@@ -533,6 +546,6 @@ function drawSheet(doc: JsPDF, layout: Layout, input: PdfInput, sheet: Sheet, im
   drawScaleBar(doc, input.scale, sx + 1, cart.y + cart.h - (big ? 14 : 12), c3 - 12)
 }
 
-function slug(text: string) {
+export function slug(text: string) {
   return text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60)
 }

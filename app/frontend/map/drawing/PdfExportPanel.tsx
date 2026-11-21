@@ -15,6 +15,9 @@ import {
 } from '@/map/drawing/pdf'
 import { hiddenPlantIds } from '@/map/drawing/hidden'
 import { useDrawingState } from '@/map/drawing/store'
+import { exportMasterPlan, type MasterPlanData } from '@/map/drawing/masterPlan'
+import { masterLayout } from '@/map/drawing/masterPlanLayout'
+import { api } from '@/lib/api'
 import { useShownVariant } from '@/map/variants/store'
 import { showPrintFrame } from '@/map/drawing/style'
 import { usePlanting } from '@/map/plants/store'
@@ -23,6 +26,10 @@ import { notePrint } from '@/lib/prints'
 import type { BBox, MapFeature, SharedProps } from '@/types'
 
 type Step = { step: 'map' | 'pdf'; page: number; pages: number } | null
+/** One plan, a book of sheets, or the « Plan directeur » (numbered, with its legend by theme). */
+export type PdfKind = 'plan' | 'book' | 'master'
+const PAPERS: Paper[] = ['A4', 'A3']
+const MASTER_PAPERS: Paper[] = ['A3', 'A2', 'A1', 'A0']
 
 function Segmented<T extends string>({ value, options, onChange, label }: {
   value: T; options: { value: T; label: string }[]; onChange: (value: T) => void; label: string
@@ -53,7 +60,7 @@ function Segmented<T extends string>({ value, options, onChange, label }: {
  * terrain), title. The printed extent is drawn on the map; at a fixed scale
  * it follows the centre of the map, so the user frames the plan by moving it.
  */
-export function PdfExportPanel({ onClose, initialBook = false }: { onClose: () => void; initialBook?: boolean }) {
+export function PdfExportPanel({ onClose, initialKind = 'plan' }: { onClose: () => void; initialKind?: PdfKind }) {
   const editor = useEditor()
   const { currentUser } = usePage().props as unknown as SharedProps
   const hidden = useDrawingState((s) => s.hiddenLayers)
@@ -67,15 +74,17 @@ export function PdfExportPanel({ onClose, initialBook = false }: { onClose: () =
   const instance = editor.instance
   // The variant (and tag) shown on the map is the one printed, and named in the title.
   const [title, setTitle] = useState([editor.map.name, variant?.name, tag].filter(Boolean).join(' · '))
-  const [paper, setPaper] = useState<Paper>('A4')
+  // « Carnet de planches »: the overall plan, then one sheet per design layer; « Plan directeur »: numbered.
+  const [kind, setKind] = useState<PdfKind>(initialKind)
+  const book = kind === 'book'
+  const master = kind === 'master'
+  const [paper, setPaper] = useState<Paper>(initialKind === 'master' ? 'A3' : 'A4')
   const [orientation, setOrientation] = useState<Orientation>('landscape')
   const [scaleChoice, setScaleChoice] = useState<number | 'fit'>('fit')
   const [withNetworks, setWithNetworks] = useState(false)
   const hasBoundary = editor.map.boundary != null
   const [withBoundary, setWithBoundary] = useState(true)
   const showBoundary = hasBoundary && withBoundary
-  // « Carnet de planches »: the overall plan, then one sheet per design layer.
-  const [book, setBook] = useState(initialBook)
   const [step, setStep] = useState<Step>(null)
   const [viewCenter, setViewCenter] = useState<[number, number]>(() => instance.getCenter().toArray() as [number, number])
 
@@ -87,7 +96,7 @@ export function PdfExportPanel({ onClose, initialBook = false }: { onClose: () =
     return turfBbox({ type: 'FeatureCollection', features: active }) as BBox
   }, [editor.map.bbox, editor.features])
 
-  const layout = pageLayout(paper, orientation)
+  const layout = master ? masterLayout(paper, orientation) : pageLayout(paper, orientation)
   const fitted = scaleChoice === 'fit' && extent != null
   const scale = fitted ? fitScale(extent, layout.frame) : scaleChoice === 'fit' ? 500 : scaleChoice
   const center: [number, number] = fitted ? [(extent[0] + extent[2]) / 2, (extent[1] + extent[3]) / 2] : viewCenter
@@ -141,7 +150,31 @@ export function PdfExportPanel({ onClose, initialBook = false }: { onClose: () =
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose, step])
 
+  async function generateMaster() {
+    setStep({ step: 'map', page: 1, pages: 1 })
+    try {
+      const plan = await api<MasterPlanData>(`/maps/${editor.map.id}/design/master_plan`)
+      await exportMasterPlan(instance, {
+        title: title.trim() || editor.map.name,
+        paper, orientation, scale, center, hiddenLayers,
+        hideBoundary: !showBoundary,
+        variant: variant?.id ?? null,
+        author: currentUser?.name ?? null,
+        sources: attributions(instance),
+        url: `${window.location.origin}/maps/${editor.map.id}`,
+      }, plan, (next) => setStep({ step: next, page: 1, pages: 1 }))
+      editor.notify(t('drawing.pdf.done'))
+      notePrint(editor.map.id, 'pdf')
+    } catch (error) {
+      console.error(error)
+      editor.notify(t('drawing.pdf.error'), 'error')
+    } finally {
+      setStep(null)
+    }
+  }
+
   async function generate() {
+    if (master) return generateMaster()
     setStep({ step: 'map', page: 1, pages: book ? sheets.length : 1 })
     try {
       await exportPdf(instance, {
@@ -196,10 +229,15 @@ export function PdfExportPanel({ onClose, initialBook = false }: { onClose: () =
           <div>
             <Segmented
               label={t('drawing.pdf.content')}
-              value={book ? 'book' : 'plan'}
-              onChange={(v) => setBook(v === 'book')}
-              options={[{ value: 'plan', label: t('drawing.pdf.single') }, { value: 'book', label: t('drawing.pdf.book') }]}
+              value={kind}
+              onChange={(v) => {
+                setKind(v)
+                const papers = v === 'master' ? MASTER_PAPERS : PAPERS
+                if (!papers.includes(paper)) setPaper(papers[0])
+              }}
+              options={[{ value: 'plan', label: t('drawing.pdf.single') }, { value: 'book', label: t('drawing.pdf.book') }, { value: 'master', label: t('master_plan.option') }]}
             />
+            {master && <p className="mt-1 text-sm text-loam-500">{t('master_plan.hint')}</p>}
             {book && (
               <p className="mt-1 text-sm text-loam-500">
                 {sheets.length > 1
@@ -208,7 +246,7 @@ export function PdfExportPanel({ onClose, initialBook = false }: { onClose: () =
               </p>
             )}
           </div>
-          <Segmented label={t('drawing.pdf.paper')} value={paper} onChange={setPaper} options={[{ value: 'A4', label: 'A4' }, { value: 'A3', label: 'A3' }]} />
+          <Segmented label={t('drawing.pdf.paper')} value={paper} onChange={setPaper} options={(master ? MASTER_PAPERS : PAPERS).map((p) => ({ value: p, label: p }))} />
           <Segmented
             label={t('drawing.pdf.orientation')}
             value={orientation}
