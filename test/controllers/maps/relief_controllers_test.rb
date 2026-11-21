@@ -223,6 +223,19 @@ class Maps::ReliefControllersTest < ActionDispatch::IntegrationTest
     assert_equal "sub_canopy", plants.first["strata"]
   end
 
+  test "the AI's drafts come to an editor's 3D as ghosts, never to a viewer's" do
+    @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.9001, lat: 50.3401), status: "draft",
+                          properties: { "species_id" => plant_species(:apple).id })
+    sign_in_as users(:alice)
+    get map_relief_path(@map), headers: inertia_headers
+    assert_equal [], response.parsed_body.dig("props", "growingPlants", "plants")
+
+    sign_in_as users(:michael)
+    get map_relief_path(@map), headers: inertia_headers
+    plants = response.parsed_body.dig("props", "growingPlants", "plants")
+    assert_equal [ true ], plants.map { |p| p["draft"] }
+  end
+
   test "the relief page and its files once imported" do
     stub_spw
     terrain = @map.create_terrain!

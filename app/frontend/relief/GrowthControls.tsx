@@ -174,7 +174,9 @@ export function GrowthBar({ year, shown, playing, today, origin, onYear, onToggl
 }
 
 /** The panel section of the « Vue » tab: the plants and the walk. */
-export function GrowthSection({ count, patches, plantsOn, strataColors, walk, touch, onPlants, onStrataColors, onWalk, onMoveWalker }: {
+export function GrowthSection({ count, patches, plantsOn, strataColors, walk, touch, onPlants, onStrataColors, onWalk, onMoveWalker, planting }: {
+  /** « Planter dans la 3D », for an editor. */
+  planting?: ReactNode
   count: number
   patches: boolean
   plantsOn: boolean
@@ -188,6 +190,7 @@ export function GrowthSection({ count, patches, plantsOn, strataColors, walk, to
 }) {
   return (
     <div className="space-y-3 border-t border-loam-100 pt-3">
+      {planting}
       {count > 0 && (
         <div className="space-y-2">
           <SectionTitle>{t('relief.page.growth.title')}</SectionTitle>
@@ -220,7 +223,8 @@ export function GrowthSection({ count, patches, plantsOn, strataColors, walk, to
 }
 
 /** What a plant touched in 3D is, and its size at the year shown. */
-export function PlantCard({ info, onClose }: { info: PlantInfo; onClose: () => void }) {
+/** A plant touched in 3D; `children`: what an editor can do with it (move, remove, review a draft). */
+export function PlantCard({ info, onClose, children }: { info: PlantInfo; onClose: () => void; children?: ReactNode }) {
   const m = (value: number) => formatNumber(value, value < 10 ? 1 : 0)
   const title = [info.number != null ? String(info.number) : null, info.ownName ?? info.name ?? t(`plants.strata.${info.strata}`)].filter(Boolean).join(' · ')
   return (
@@ -270,6 +274,7 @@ export function PlantCard({ info, onClose }: { info: PlantInfo; onClose: () => v
         })}</p>
       )}
       {info.indicative && <p className="text-loam-400">{t('relief.page.growth.card.indicative')}</p>}
+      {children}
     </div>
   )
 }

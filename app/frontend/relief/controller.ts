@@ -16,6 +16,7 @@ import { buildingLayer, drawnBuildings, mergeBuildings, modelBuildings, sharesPl
 import { CANOPY_MAX, CANOPY_RAMP, FROST_RAMP, HYPSOMETRY, SUN_RAMP, WETNESS_RAMP, hexToRgb, ramp, type RGB } from './colors.ts'
 import { applyDesigns, downsampleCrest, downsampleDesigned, ringCells, type Design, type Footprint, type GridPoint } from './design.ts'
 import { polygonMask, toGrid, toLngLat, type GridMeta } from './grid.ts'
+import { crownShadow, noonSun, plantFit, type PlantFit, type PlantNeeds } from './plantFit.ts'
 import { coldAirField, coldLayer, type ColdAirField } from './coldAir.ts'
 import { analyzeDrainage, decodeGrid, downsample, RainSimulation, type Drainage } from './hydro.ts'
 import type { BlocksInput } from './blocks.ts'
@@ -131,7 +132,21 @@ export type PlantInfo = {
   /** A grafted fruit tree: its form, trunk (m), rootstock vigour and rootstock as drawn, or null. */
   graft: { form: GraftForm | null; trunk: number; vigor: RootstockVigor; rootstock: string | null } | null
   indicative: boolean
+  /** The map feature of a plant point (null for a plant of a patch), to move or remove it in 3D. */
+  featureId: number | null
+  /** An AI's proposal waiting for a human, with its reason. */
+  draft: boolean
+  rationale: string | null
+  /** A tree already on the land (« Arbre existant »). */
+  existing: boolean
 }
+
+
+/** The plant carried by the pointer, where it would go and how well the spot suits it. */
+export type CarryInfo = { lng: number; lat: number; fit: PlantFit }
+
+/** Colours of the ring under a carried plant, by how well the spot suits it. */
+const FIT_COLORS: Record<PlantFit['level'], string> = { good: '#6d7a00', fair: '#c97f05', poor: '#b01a19', unknown: '#726b9f' }
 
 /** A work of the water design in the rain list; `roofArea` (m²) for a tank, the roofs that fill it. */
 export type DesignSummary = { id: number | string; kind: string; name: string | null; capacity: number; water: number; roofArea?: number }
@@ -428,7 +443,11 @@ export class ReliefController {
       return { heights: cached.heights, cover: cached.cover, plantYear: year }
     }
     const { cols, rows } = this.meta
-    const { heights, cover } = plantShade(base, cols, rows, this.cell, this.plants, altitudes, year)
+    // An AI's draft is not on the map yet: it casts no shade.
+    const kept = this.plants.flatMap((plant, i) => (plant.draft ? [] : [i]))
+    const { heights, cover } = kept.length === this.plants.length
+      ? plantShade(base, cols, rows, this.cell, this.plants, altitudes, year)
+      : plantShade(base, cols, rows, this.cell, kept.map((i) => this.plants[i]), Float32Array.from(kept, (i) => altitudes[i]), year)
     this.plantShadeCache = { base, altitudes, year, heights, cover }
     return { heights, cover, plantYear: year }
   }
@@ -512,7 +531,128 @@ export class ReliefController {
         rootstock: point.graft.rootstock,
       } : null,
       indicative: inputs.indicative,
+      featureId: point?.id ?? null,
+      draft: !!point?.draft,
+      rationale: point?.rationale ?? null,
+      existing: !!point?.existing,
     }
+  }
+
+  /** The scene plant of a map feature, or null. */
+  plantOfFeature(featureId: number): { plant: ScenePlant; needs: PlantNeeds } | null {
+    const data = this.options.growingPlants
+    if (!data) return null
+    const index = data.plants.findIndex((p) => p.id === featureId)
+    const plant = index >= 0 ? this.plants.find((p) => p.plant === index) : null
+    if (!plant) return null
+    const p = data.plants[index]
+    return { plant, needs: { exposures: p.exposures ?? [], soilMoisture: p.soilMoisture ?? [], flowering: p.flowering ?? [] } }
+  }
+
+  /** The map's plants changed (one placed, moved, removed, a draft reviewed): the 3D follows. */
+  setGrowingPlants(data: GrowingPlantsData) {
+    this.options.growingPlants = data
+    if (!this.scene) return
+    this.plants = scenePlants(this.meta, data)
+    this.plantShadeCache = null
+    this.junePlants = null
+    if (this.plants.length) this.layoutPlants()
+    else {
+      this.scene.setPlants(null)
+      this.plantAltitudes = null
+    }
+    this.replaySun()
+  }
+
+  // ---- Placing or moving a plant in 3D ---------------------------------------------
+
+  private carry: { plant: ScenePlant; needs: PlantNeeds } | null = null
+  /** Sun (1) or shade (0) at noon on 21 June, with the plants of the year shown; redone when they change. */
+  private junePlants: { year: number; mask: Uint8Array } | null = null
+
+  get carrying(): boolean { return !!this.carry }
+
+  /**
+   * The pointer carries a plant (from the palette, or one of the map's to
+   * move): a ghost at the year shown, a ring in the colour of the spot's fit
+   * and its shadow at noon in December. Reads the relief's station first.
+   */
+  async startCarry(plant: ScenePlant, needs: PlantNeeds): Promise<void> {
+    if (!this.scene) return
+    if (this.walkMode !== 'off') this.stopWalk()
+    if (this.niva || this.nivaPlacing) this.parkNiva()
+    this.carry = { plant: { ...plant }, needs }
+    this.scene.setGhostPlant(this.carry.plant, this.nivaTerrain().height(plant.x, plant.y))
+    await this.ensureStation()
+  }
+
+  stopCarry() {
+    this.carry = null
+    this.scene?.setGhostPlant(null)
+  }
+
+  /** The ghost follows the pointer; says where it is and how well the spot suits the plant. */
+  hoverCarry(event: { clientX: number; clientY: number }): CarryInfo | null {
+    const carry = this.carry
+    const scene = this.scene
+    if (!carry || !scene) return null
+    const point = this.groundPoint(event)
+    if (!point) return null
+    carry.plant.x = point.x
+    carry.plant.y = point.y
+    scene.moveGhostPlant(point.x, point.y, point.altitude)
+    const fit = this.fitAt(point, carry.needs)
+    this.drawCarryMarks(point, fit)
+    return { lng: point.lng, lat: point.lat, fit }
+  }
+
+  private fitAt(point: GroundPoint, needs: PlantNeeds): PlantFit {
+    const { cols } = this.meta
+    const i = Math.round(point.row) * cols + Math.round(point.col)
+    const station = this.station
+    return plantFit(needs, {
+      sunJune: this.juneSun()?.[i] != null ? this.juneSun()![i] === 1 : null,
+      wetness: station ? wetnessClass(station.wetness[i], wetnessThresholdsFor(this.cell)) : null,
+      frost: station ? frostClass(station.frost[i]) : null,
+    })
+  }
+
+  /** The June noon shade over the whole grid (about 30 ms), kept until the plants or their year change. */
+  private juneSun(): Uint8Array | null {
+    if (!this.full || !this.options.location) return null
+    const year = Math.round(this.plantYear * 10) / 10
+    if (this.junePlants?.year === year) return this.junePlants.mask
+    const [lng, lat] = this.location
+    const sun = noonSun({ year: new Date().getUTCFullYear(), month: 6, day: 21 }, lat, lng, sunPosition)
+    const { heights, cover } = this.sunSurface()
+    const { cols, rows } = this.meta
+    const mask = shadowMask(heights, cols, rows, this.cell, sun, undefined, undefined, cover ?? undefined)
+    this.junePlants = { year, mask }
+    return mask
+  }
+
+  /** The ring of the crown at the year shown and its shadow at noon on 21 December, draped on the relief. */
+  private drawCarryMarks(point: GroundPoint, fit: PlantFit) {
+    const carry = this.carry
+    if (!carry || !this.scene) return
+    const terrain = this.nivaTerrain()
+    const size = sizeAt(carry.plant, this.plantYear - carry.plant.start) ?? sizeAt(carry.plant, 0)
+    const radius = Math.max(0.3, (size?.spread ?? 1) / 2)
+    const height = size?.height ?? 1
+    const ring = Array.from({ length: 24 }, (_, k) => {
+      const a = (k / 24) * Math.PI * 2
+      const x = point.x + Math.cos(a) * radius
+      const y = point.y + Math.sin(a) * radius
+      return { x, y, z: terrain.height(x, y) }
+    })
+    let shadow: Array<{ x: number; y: number; z: number }> = []
+    if (this.options.location) {
+      const [lng, lat] = this.location
+      const sun = noonSun({ year: new Date().getUTCFullYear(), month: 12, day: 21 }, lat, lng, sunPosition)
+      const bottom = carry.plant.form === 'tree' ? Math.min(height * 0.35, 2.5) : 0
+      shadow = crownShadow(point.x, point.y, radius, bottom, height, sun).map((p) => ({ ...p, z: terrain.height(p.x, p.y) }))
+    }
+    this.scene.setGhostMarks({ ring, ringColor: FIT_COLORS[fit.level], shadow })
   }
 
   // ---- On foot, at eye level -----------------------------------------------------

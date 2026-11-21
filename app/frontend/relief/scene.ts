@@ -194,6 +194,15 @@ export class ReliefScene {
   private buildingOwner: Int32Array | null = null
   private buildingsOn = true
   private plants: PlantLayer | null = null
+  /** The AI's drafts, as ghosts, and the index in the list given to `setPlants` of each plant of both layers. */
+  private draftPlants: PlantLayer | null = null
+  private plantIndex: { active: number[]; drafts: number[] } = { active: [], drafts: [] }
+  /** The plant carried by the pointer (placed or moved in 3D), and its marks on the ground. */
+  private ghost: PlantLayer | null = null
+  private ghostMarks: THREE.Group | null = null
+  private plantYear = 0
+  private plantMonth: number | null = null
+  private plantColors: Record<PlantStrata, string> | null = null
   private plantsOn = true
   private walk: {
     x: number
@@ -518,43 +527,153 @@ ${OVERLAY_MIX}`)
 
   // ---- The map's plants, grown to a year ------------------------------------
 
-  /** The plants (grid metres) and the real altitude of the ground under each; null removes them. */
+  /**
+   * The plants (grid metres) and the real altitude of the ground under each;
+   * null removes them. Drafts (`draft`) go to a see-through layer of their own.
+   */
   setPlants(plants: ScenePlant[] | null, altitudes?: Float32Array) {
-    if (this.plants) {
-      this.scene.remove(this.plants.group)
-      this.plants.dispose()
-      this.plants = null
+    for (const layer of [this.plants, this.draftPlants]) {
+      if (!layer) continue
+      this.scene.remove(layer.group)
+      layer.dispose()
     }
+    this.plants = null
+    this.draftPlants = null
+    this.plantIndex = { active: [], drafts: [] }
     if (!plants?.length || !altitudes) return
-    this.plants = new PlantLayer(plants, altitudes)
-    this.plants.group.visible = this.plantsOn
-    this.scene.add(this.plants.group)
+    const active: number[] = []
+    const drafts: number[] = []
+    plants.forEach((plant, index) => (plant.draft ? drafts : active).push(index))
+    const layer = (indices: number[], ghost: boolean) => {
+      if (!indices.length) return null
+      const made = new PlantLayer(indices.map((i) => plants[i]), Float32Array.from(indices, (i) => altitudes[i]), { ghost })
+      made.group.visible = this.plantsOn
+      this.scene.add(made.group)
+      return made
+    }
+    this.plants = layer(active, false)
+    this.draftPlants = layer(drafts, true)
+    this.plantIndex = { active, drafts }
     this.placePlants()
+  }
+
+  private plantLayers(): PlantLayer[] {
+    return [this.plants, this.draftPlants, this.ghost].filter((layer): layer is PlantLayer => !!layer)
   }
 
   private placePlants() {
     const g = this.grid
-    this.plants?.place({
-      x0: ((g.cols - 1) * g.cellSize) / 2, z0: ((g.rows - 1) * g.cellSize) / 2, zBase: g.zBase, exaggeration: this.exaggeration,
-    })
+    const frame = { x0: ((g.cols - 1) * g.cellSize) / 2, z0: ((g.rows - 1) * g.cellSize) / 2, zBase: g.zBase, exaggeration: this.exaggeration }
+    for (const layer of this.plantLayers()) layer.place(frame)
   }
 
   setPlantYear(year: number) {
-    this.plants?.setYear(year)
+    this.plantYear = year
+    for (const layer of this.plantLayers()) layer.setYear(year)
   }
 
   setPlantColors(colors: Record<PlantStrata, string>) {
-    this.plants?.setColors(colors)
+    this.plantColors = colors
+    for (const layer of this.plantLayers()) layer.setColors(colors)
   }
 
   /** The plants as they look in `month` (1 = 1 January … 13 = 31 December). */
   setPlantMonth(month: number) {
-    this.plants?.setMonth(month)
+    this.plantMonth = month
+    for (const layer of this.plantLayers()) layer.setMonth(month)
   }
 
   showPlants(on: boolean) {
     this.plantsOn = on
-    if (this.plants) this.plants.group.visible = on
+    for (const layer of [this.plants, this.draftPlants]) if (layer) layer.group.visible = on
+  }
+
+  /**
+   * The plant the pointer carries (placed or moved in 3D), see-through, at
+   * the year shown; null takes it away with its marks.
+   */
+  setGhostPlant(plant: ScenePlant | null, altitude = 0) {
+    if (this.ghost) {
+      this.scene.remove(this.ghost.group)
+      this.ghost.dispose()
+      this.ghost = null
+    }
+    this.setGhostMarks(null)
+    if (!plant) return
+    this.ghost = new PlantLayer([{ ...plant }], Float32Array.of(altitude), { ghost: true })
+    if (this.plantColors) this.ghost.setColors(this.plantColors)
+    if (this.plantMonth != null) this.ghost.setMonth(this.plantMonth)
+    this.scene.add(this.ghost.group)
+    this.placePlants()
+    this.ghost.setYear(this.plantYear)
+  }
+
+  moveGhostPlant(x: number, y: number, altitude: number) {
+    this.ghost?.moveTo(0, x, y, altitude)
+  }
+
+  /**
+   * Marks on the ground under the carried plant: its crown's footprint
+   * (a ring in the colour of how well the spot suits it) and its shadow at
+   * noon in December. Points in grid metres with their real altitude.
+   */
+  setGhostMarks(marks: {
+    ring: Array<{ x: number; y: number; z: number }>
+    ringColor: string
+    shadow: Array<{ x: number; y: number; z: number }>
+  } | null) {
+    if (this.ghostMarks) {
+      this.scene.remove(this.ghostMarks)
+      this.ghostMarks.traverse((object) => {
+        const mesh = object as THREE.Mesh
+        mesh.geometry?.dispose()
+        ;(mesh.material as THREE.Material | undefined)?.dispose()
+      })
+      this.ghostMarks = null
+    }
+    if (!marks) return
+    const g = this.grid
+    const x0 = ((g.cols - 1) * g.cellSize) / 2
+    const z0 = ((g.rows - 1) * g.cellSize) / 2
+    // A few centimetres (times the exaggeration) above the ground, not to sink in it.
+    const lift = 0.15
+    const local = (p: { x: number; y: number; z: number }) => new THREE.Vector3(p.x - x0, (p.z - g.zBase) * this.exaggeration + lift, p.y - z0)
+    const group = new THREE.Group()
+    group.renderOrder = 2
+    if (marks.shadow.length > 2) {
+      // A fan from the middle of the shadow, its rim draped on the relief.
+      const centre = marks.shadow.reduce((sum, p) => ({ x: sum.x + p.x / marks.shadow.length, y: sum.y + p.y / marks.shadow.length, z: sum.z + p.z / marks.shadow.length }), { x: 0, y: 0, z: 0 })
+      const vertices: number[] = []
+      const c = local(centre)
+      for (let i = 0; i < marks.shadow.length; i++) {
+        const a = local(marks.shadow[i])
+        const b = local(marks.shadow[(i + 1) % marks.shadow.length])
+        vertices.push(c.x, c.y, c.z, b.x, b.y, b.z, a.x, a.y, a.z)
+      }
+      const geometry = new THREE.BufferGeometry()
+      geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3))
+      const material = new THREE.MeshBasicMaterial({ color: '#2b2940', transparent: true, opacity: 0.28, depthWrite: false, side: THREE.DoubleSide })
+      group.add(new THREE.Mesh(geometry, material))
+    }
+    if (marks.ring.length > 2) {
+      const geometry = new THREE.BufferGeometry().setFromPoints([...marks.ring, marks.ring[0]].map(local))
+      const material = new THREE.LineBasicMaterial({ color: marks.ringColor, transparent: true, opacity: 0.95, depthTest: false })
+      const line = new THREE.Line(geometry, material)
+      line.renderOrder = 3
+      group.add(line)
+      const fill = new THREE.BufferGeometry()
+      const c = local(marks.ring.reduce((sum, p) => ({ x: sum.x + p.x / marks.ring.length, y: sum.y + p.y / marks.ring.length, z: sum.z + p.z / marks.ring.length }), { x: 0, y: 0, z: 0 }))
+      const vertices: number[] = []
+      for (let i = 0; i < marks.ring.length; i++) {
+        const a = local(marks.ring[i])
+        const b = local(marks.ring[(i + 1) % marks.ring.length])
+        vertices.push(c.x, c.y, c.z, b.x, b.y, b.z, a.x, a.y, a.z)
+      }
+      fill.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3))
+      group.add(new THREE.Mesh(fill, new THREE.MeshBasicMaterial({ color: marks.ringColor, transparent: true, opacity: 0.22, depthWrite: false, side: THREE.DoubleSide })))
+    }
+    this.ghostMarks = group
+    this.scene.add(group)
   }
 
   /** The building (index in the volumes given to `setBuildings`) under a pointer, or null. */
@@ -567,12 +686,15 @@ ${OVERLAY_MIX}`)
     return this.buildingOwner[hit.face.a] ?? null
   }
 
-  /** The plant (index in the list given to `setPlants`) under a pointer, or null. */
+  /** The plant (index in the list given to `setPlants`) under a pointer, drafts included, or null. */
   pickPlant(event: { clientX: number; clientY: number }): number | null {
-    if (!this.plants || !this.plantsOn) return null
+    if (!this.plantsOn || (!this.plants && !this.draftPlants)) return null
     const raycaster = new THREE.Raycaster()
     raycaster.setFromCamera(this.pointer(event), this.camera)
-    return this.plants.pick(raycaster)
+    const active = this.plants?.pick(raycaster) ?? null
+    if (active != null) return this.plantIndex.active[active] ?? null
+    const draft = this.draftPlants?.pick(raycaster) ?? null
+    return draft != null ? this.plantIndex.drafts[draft] ?? null : null
   }
 
   private pointer(event: { clientX: number; clientY: number }): THREE.Vector2 {
@@ -1605,6 +1727,7 @@ ${OVERLAY_MIX}`)
     this.setBuildings(null)
     this.stopWalk()
     this.setPlants(null)
+    this.setGhostPlant(null)
     this.setSketch(null)
     this.stars?.geometry.dispose()
     this.terrain.geometry.dispose()

@@ -38,6 +38,30 @@ class Relief::GrowingPlantsTest < ActiveSupport::TestCase
     assert_nil alder[:plantedOn]
   end
 
+  test "the editor's 3D also gets the AI's drafts, as such, with their reason" do
+    @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.9002, lat: 50.3401),
+                          properties: { "species_id" => plant_species(:apple).id })
+    draft = @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.9004, lat: 50.3402), status: "draft", source: "ai",
+                                  rationale: "Au sud de la haie, à l'abri de la bise.", properties: { "species_id" => plant_species(:alder).id })
+    @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.9005, lat: 50.3402), status: "rejected",
+                          properties: { "species_id" => plant_species(:alder).id })
+
+    plants = Relief::GrowingPlants.new(@map, drafts: true).as_json[:plants]
+    assert_equal 2, plants.size, "a refused proposal stays out"
+    assert_nil plants.first[:draft]
+    assert_equal draft.id, plants.last[:id]
+    assert plants.last[:draft]
+    assert_equal "Au sud de la haie, à l'abri de la bise.", plants.last[:rationale]
+  end
+
+  test "each plant carries what it needs, to say in 3D whether a spot suits it" do
+    @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.9002, lat: 50.3401),
+                          properties: { "species_id" => plant_species(:apple).id })
+    apple = Relief::GrowingPlants.new(@map).as_json[:plants].sole
+    assert_equal plant_species(:apple).exposures, apple[:exposures]
+    assert_equal plant_species(:apple).soil_moisture, apple[:soilMoisture]
+  end
+
   test "a plant in the ground since an unknown date is shown grown, and moves no year 0" do
     @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.9002, lat: 50.3401),
                           properties: { "species_id" => plant_species(:apple).id, "planted_on" => "2020-05-01", "planted_on_precision" => "unknown" })

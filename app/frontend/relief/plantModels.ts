@@ -152,6 +152,8 @@ function blend(a: THREE.Color, b: string, t: number): THREE.Color {
 const pick = <T,>(list: readonly T[], seed: number): T => list[Math.abs(seed) % list.length]
 
 const ZERO = new THREE.Matrix4().makeScale(0, 0, 0)
+/** How much of a ghost plant shows: enough to read its size, not enough to take it for planted. */
+const GHOST_OPACITY = 0.55
 
 export class PlantLayer {
   group = new THREE.Group()
@@ -168,7 +170,11 @@ export class PlantLayer {
   private colors: Record<PlantStrata, string> = NATURAL_GREENS
   private frame = { x0: 0, z0: 0, zBase: 0, exaggeration: 1 }
 
-  constructor(plants: ScenePlant[], altitudes: Float32Array) {
+  /**
+   * `ghost`: drawn see-through, for a plant that is not on the map yet (an
+   * AI's draft, or the one being placed or moved in 3D).
+   */
+  constructor(plants: ScenePlant[], altitudes: Float32Array, { ghost = false }: { ghost?: boolean } = {}) {
     this.plants = plants
     this.altitudes = altitudes
     const counts: Record<Shape, number> = { trunk: 0, stems: 0, branches: 0, crown: 0, lobed: 0, cone: 0, weep: 0, dome: 0, column: 0, dots: 0 }
@@ -180,6 +186,11 @@ export class PlantLayer {
     for (const shape of Object.keys(counts) as Shape[]) {
       if (!counts[shape]) continue
       const material = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.95, metalness: 0, flatShading: shape !== 'trunk' && shape !== 'stems' && shape !== 'branches', side: shape === 'weep' ? THREE.DoubleSide : THREE.FrontSide })
+      if (ghost) {
+        material.transparent = true
+        material.opacity = GHOST_OPACITY
+        material.depthWrite = false
+      }
       const mesh = new THREE.InstancedMesh(shapeGeometry(shape), material, counts[shape])
       mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage)
       // The bounding sphere changes with every year: never culled.
@@ -293,6 +304,16 @@ export class PlantLayer {
       }
     })
     for (const mesh of this.meshes.values()) mesh.instanceMatrix.needsUpdate = true
+  }
+
+  /** Moves plant `index` (grid metres, ground altitude in metres), as the pointer carries it. */
+  moveTo(index: number, x: number, y: number, altitude: number) {
+    const plant = this.plants[index]
+    if (!plant) return
+    plant.x = x
+    plant.y = y
+    this.altitudes[index] = altitude
+    this.setYear(this.year)
   }
 
   /** The plant (index in `plants`) a ray hits first, or null. */

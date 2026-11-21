@@ -30,6 +30,9 @@ export type GrowthInputs = {
   flowering?: number[]
   /** Months (1–12) it bears fruit (or is harvested), from its sheet. */
   fruiting?: number[]
+  /** Its sheet's exposures (sun, partial-shade, shade) and soil moisture (dry, moist, wet, waterlogged). */
+  exposures?: string[]
+  soilMoisture?: string[]
 }
 
 /**
@@ -89,6 +92,9 @@ export type GrowingPlantData = GrowthInputs & {
   plantedLongAgo?: boolean
   /** A tree already on the land (« Arbre existant »), drawn at the size noted on it. */
   existing?: boolean
+  /** Proposed by an AI, not reviewed yet: a ghost in 3D, with its reason. */
+  draft?: boolean
+  rationale?: string | null
 }
 
 export type GrowingPatchData = {
@@ -219,6 +225,8 @@ export type ScenePlant = {
   /** Months (1–12) it flowers and bears fruit in. */
   flowering?: number[]
   fruiting?: number[]
+  /** An AI's proposal waiting for a human: drawn as a ghost, left out of the shade. */
+  draft?: boolean
 }
 
 /** The last year the slider reaches. */
@@ -620,6 +628,7 @@ export function scenePlants(meta: GridMeta, data: GrowingPlantsData): ScenePlant
       crownForm: crownFormOf(p.crownForm), measured: measuredOf(p.measures, p.plantedOn, !!p.plantedLongAgo),
       foliage: p.foliage, flowering: p.flowering ?? [], fruiting: p.fruiting ?? [],
       support: !!p.support, until: p.support && !p.plantedLongAgo ? p.supportUntil ?? null : null,
+      ...(p.draft ? { draft: true } : {}),
     })
   })
   const patchStart = startOf(null)
