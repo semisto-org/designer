@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-import { crownShadow, noonElevation, plantSizeAt, type GrowingPlant } from '../../../app/frontend/map/time/growth.ts'
+import { crownShadow, leafyOn, noonElevation, plantSizeAt, type GrowingPlant } from '../../../app/frontend/map/time/growth.ts'
 import { graftOf, plantForm, sizeAt, trainingOf } from '../../../app/frontend/relief/growth.ts'
 
 const walnut: GrowingPlant = {
@@ -74,4 +74,19 @@ test('the shared growth cases (checked by the Ruby port too) still hold', () => 
       assert.ok(Math.abs(size!.spread - expected.spread) < 1e-5, JSON.stringify(input))
     }
   }
+})
+
+test('in December a deciduous tree is bare: only the evergreens and the trees keeping dry leaves shade in full', () => {
+  const tree: GrowingPlant = { ...walnut, foliage: 'deciduous' }
+  assert.equal(leafyOn(tree, 'june', 50.5), true)
+  assert.equal(leafyOn(tree, 'december', 50.5), false)
+  assert.equal(leafyOn({ ...tree, foliage: 'evergreen' }, 'december', 50.5), true)
+  assert.equal(leafyOn({ ...tree, foliage: 'semi-evergreen' }, 'december', 50.5), true)
+  assert.equal(leafyOn({ ...tree, foliage: 'marcescent' }, 'december', 50.5), true)
+  // Unknown foliage: a conifer keeps its needles, a broadleaf loses its leaves.
+  assert.equal(leafyOn({ ...tree, foliage: null, growth: { ...tree.growth, crownForm: 'conical' } }, 'december', 50.5), true)
+  assert.equal(leafyOn({ ...tree, foliage: null }, 'december', 50.5), false)
+  // South of the equator, December is summer.
+  assert.equal(leafyOn(tree, 'december', -33), true)
+  assert.equal(leafyOn(tree, 'june', -33), false)
 })

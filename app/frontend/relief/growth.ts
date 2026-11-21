@@ -516,10 +516,15 @@ const SHADING_CROWN = 0.8
  * `base` holds the heights the sun already reads (terrain, surface model,
  * roofs), `altitudes` the ground under each plant. Cells are `cell` metres,
  * rows from north to south like the plants' `y`.
+ *
+ * `month` (1 = 1 January … 13 = 31 December), when given, is the day the
+ * sun is read for: a tree bare that day (a deciduous one from late November
+ * to April) lets it through its branches and casts no crown shadow, and a
+ * perennial died back to its tuft shades nothing around it.
  */
 export function plantShade(
   base: ArrayLike<number>, cols: number, rows: number, cell: number,
-  plants: ScenePlant[], altitudes: ArrayLike<number>, year: number,
+  plants: ScenePlant[], altitudes: ArrayLike<number>, year: number, month?: number,
 ): { heights: Float32Array; cover: Uint8Array; count: number } {
   const heights = base instanceof Float32Array ? base.slice() : Float32Array.from(base)
   const cover = new Uint8Array(cols * rows)
@@ -528,6 +533,7 @@ export function plantShade(
     const size = sizeAt(plant, year - plant.start)
     if (!size) return
     const shape = plantShape(plant.form, plant.strata, size.height, size.spread, plant.training, graftTrunk(plant), plant.crownForm ?? null)
+    if (month != null && shape.kind !== 'column' && !inLeaf(plant, month)) return
     const r = shape.radius
     // Smaller than a cell: its shadow is lost in the grid.
     if (r < cell / 2) return
@@ -671,6 +677,21 @@ export function calendarYear(origin: string, year: number): number {
  * open through April, turn in October, fall in November.
  */
 export type SeasonLook = { leaf: number; autumn: number; blossom: boolean; fruit: boolean }
+
+/**
+ * Whether a plant's leaves shade the ground in `month` (1 = 1 January …
+ * 13 = 31 December): an evergreen always, a semi-evergreen or a beech
+ * keeping its dry leaves too, a deciduous tree or a perennial only from
+ * budburst to leaf fall. A bare tree's branches let most of the sun through.
+ */
+export function inLeaf(plant: Pick<ScenePlant, 'foliage' | 'form' | 'strata' | 'crownForm'>, month: number): boolean {
+  return seasonLook(plant, month).leaf >= 0.5
+}
+
+/** A day as a season month: 21 December is 12.65, 21 June 6.67. */
+export function monthOfDay(month: number, day: number): number {
+  return month + (day - 1) / 31
+}
 
 /** The foliage a plant keeps in winter: its sheet's, else what its form usually does. */
 export function foliageOf(plant: Pick<ScenePlant, 'foliage' | 'form' | 'strata' | 'crownForm'>): 'deciduous' | 'evergreen' | 'semi-evergreen' | 'marcescent' {
