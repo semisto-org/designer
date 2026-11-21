@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { HarvestSection } from '@/harvest/HarvestSection'
 import { api } from '@/lib/api'
-import { featureTitle, kindLabel, layerLabel, speciesName } from '@/lib/elements'
+import { featureTitle, kindLabel, layerLabel, varietyName } from '@/lib/elements'
 import { isFruitStore } from '@/lib/fruitStore'
 import { isHarvestable } from '@/lib/harvests'
 import { formatDate, t, todayIso } from '@/lib/i18n'
@@ -14,9 +14,10 @@ import { entryReady, journalOf, OBSERVATION_KINDS, type JournalEntry, type Journ
 import { isVideo } from '@/lib/media'
 import { observationTime, seenLabel } from '@/lib/season'
 import { outbox } from '@/lib/outbox'
+import { inWinter, wintersInGround, type PlantedPrecision } from '@/lib/specimen'
 import type { Op } from '@/lib/outbox-core'
 import { takePhoto } from '@/lib/photos'
-import { canEdit, type Comment, type MapFeature, type Photo, type Survival } from '@/lib/types'
+import { canEdit, type Comment, type MapFeature, type Photo, type Planting, type Survival } from '@/lib/types'
 import { useOnline, useOutbox } from '@/state/sync'
 import { useMapBundle } from '@/state/useMapBundle'
 import { StoreSection } from '@/storage/StoreSection'
@@ -25,6 +26,7 @@ import { chooseMedia } from '@/ui/chooseMedia'
 import { Icon, type IconName } from '@/ui/Icon'
 import { Body, Button, Card, Chip, Input, Label, Notice, styles } from '@/ui/kit'
 import { RemoteImage } from '@/ui/RemoteImage'
+import { StrataPlate } from '@/ui/StrataPlate'
 import { toast } from '@/ui/Toast'
 import { colors, fonts, radius, space, type } from '@/ui/theme'
 
@@ -62,19 +64,26 @@ export default function FeatureScreen() {
     <ScrollView style={styles.screen} contentContainerStyle={[styles.content, { paddingBottom: 48 }]} keyboardShouldPersistTaps="handled"
       automaticallyAdjustKeyboardInsets>
       <Stack.Screen options={{ title: featureTitle(feature, bundle.planting) }} />
-      <Card style={{ gap: space.xs }}>
-        <Text style={s.kicker}>{layerLabel(feature.properties.layer)} · {kindLabel(feature.properties.kind)}</Text>
-        {isPlant && <Body>{speciesName(bundle.planting, feature.properties.species_id) ?? t('plant_feature.no_species')}</Body>}
-        {seen ? <Body>{sentence(seenLabel(seen))}</Body> : null}
-        {feature.properties.notes ? <Body muted>{feature.properties.notes}</Body> : null}
-        {feature.id < 0 && <Notice>{t('mobile.feature.not_sent')}</Notice>}
-      </Card>
+      {isPlant ? (
+        <Specimen feature={feature} planting={bundle.planting}>
+          {seen ? <Body>{sentence(seenLabel(seen))}</Body> : null}
+          {feature.properties.notes ? <Body muted>{feature.properties.notes}</Body> : null}
+          {feature.id < 0 && <Notice>{t('mobile.feature.not_sent')}</Notice>}
+        </Specimen>
+      ) : (
+        <Card style={{ gap: space.xs }}>
+          <Text style={s.kicker}>{layerLabel(feature.properties.layer)} · {kindLabel(feature.properties.kind)}</Text>
+          {seen ? <Body>{sentence(seenLabel(seen))}</Body> : null}
+          {feature.properties.notes ? <Body muted>{feature.properties.notes}</Body> : null}
+          {feature.id < 0 && <Notice>{t('mobile.feature.not_sent')}</Notice>}
+        </Card>
+      )}
+
+      {isPlant && <PlantSection mapId={mapId} feature={feature} editable={editable} ops={ops} photos={photos} harvestable={isHarvestable(feature, bundle.planting)} />}
 
       {isHarvestable(feature, bundle.planting) && <HarvestSection bundle={bundle} feature={feature} editable={editable} ops={ops} allOps={mapOps} />}
 
       {isFruitStore(feature.properties.kind) && <StoreSection mapId={mapId} feature={feature} editable={editable} ops={ops} />}
-
-      {isPlant && <PlantSection mapId={mapId} feature={feature} editable={editable} ops={ops} photos={photos} harvestable={isHarvestable(feature, bundle.planting)} />}
 
       <Text style={s.section}>{t('mobile.feature.photos')}</Text>
       {photos.length + pendingPhotos.length === 0 ? <Body muted>{t('mobile.feature.no_photos')}</Body> : (
@@ -98,38 +107,133 @@ export default function FeatureScreen() {
   )
 }
 
+/**
+ * Head of a plant's sheet, as a page of a naturalist's notebook: its number,
+ * its name large in Garamond, its Latin name, its strata in watercolour and
+ * how many winters it has spent in the ground.
+ */
+function Specimen({ feature, planting, children }: { feature: MapFeature; planting: Planting; children: React.ReactNode }) {
+  const p = feature.properties
+  const species = planting.species[String(p.species_id)]
+  const variety = varietyName(feature, planting)
+  const name = species ? species.commonName ?? species.latinName : p.name || t('plant_feature.no_species')
+  const strata = (p.strata as string | undefined) ?? species?.strata ?? null
+  const plantedOn = typeof p.planted_on === 'string' ? p.planted_on : null
+  const precision = (p.planted_on_precision === 'year' || p.planted_on_precision === 'unknown' ? p.planted_on_precision : null) as PlantedPrecision
+  const today = todayIso()
+  const winters = plantedOn ? wintersInGround(plantedOn, precision, today) : null
+  const age = !plantedOn ? t('plant_feature.specimen.not_planted')
+    : winters == null ? null
+      : winters === 0 ? t(inWinter(today) ? 'plant_feature.specimen.first_winter_now' : 'plant_feature.specimen.first_winter_ahead')
+        : t('plant_feature.specimen.winters', { count: winters })
+  return (
+    <Card style={{ gap: space.xs }}>
+      <View style={{ flexDirection: 'row', gap: space.sm }}>
+        <View style={{ flex: 1, gap: 2 }}>
+          {p.number != null && <Text style={s.kicker}>{String(p.number)}</Text>}
+          <Text style={s.specimenName} accessibilityRole="header">{name}</Text>
+          {variety && <Text style={s.specimenVariety}>‘{variety}’</Text>}
+          {species && species.latinName !== name && <Text style={s.latin}>{species.latinName}</Text>}
+        </View>
+        {strata && <StrataPlate strata={strata} />}
+      </View>
+      {strata && <Text style={s.kicker}>{t(`plants.strata.${strata}`)}</Text>}
+      {age && <Text style={[s.age, !plantedOn && { color: colors.loam500 }]}>{age}</Text>}
+      {plantedOn && <Body muted>{plantedLabel(plantedOn, precision)}</Body>}
+      {children}
+    </Card>
+  )
+}
+
+const plantedLabel = (plantedOn: string, precision: PlantedPrecision) =>
+  precision === 'unknown' ? t('plant_feature.planted_unknown')
+    : precision === 'year' ? t('plant_feature.planted_in', { year: plantedOn.slice(0, 4) })
+      : t('plant_feature.planted_on', { date: formatDate(plantedOn) })
+
+/** How many entries the sheet shows before « Toutes les notes ». */
+const RECENT = 3
+
+/**
+ * « Observations récentes »: the plant's last three entries, then « Noter
+ * une observation » (the form) and « Toutes les notes » (the frieze of its
+ * years). A plant not yet in the ground offers to mark it planted today.
+ */
 function PlantSection({ mapId, feature, editable, ops, photos, harvestable }: { mapId: number; feature: MapFeature; editable: boolean; ops: Op[]; photos: Photo[]; harvestable: boolean }) {
   const plantedOn = feature.properties.planted_on
+  const [noting, setNoting] = useState(false)
+  const [all, setAll] = useState(false)
+  const pending = ops.flatMap((op) => (op.type === 'createObservation' ? [op] : []))
+  const { data, offline } = useRemote<{ observations: Observation[] }>(plantedOn && feature.id > 0 ? `/maps/${mapId}/features/${feature.id}/plant_observations` : null, pending.length)
   const markPlanted = () => {
     outbox.add({
       type: 'updateFeature', mapId, featureId: feature.id, lockVersion: feature.properties.lockVersion,
       changes: { patch: { planted_on: todayIso() } },
     })
   }
+  if (!plantedOn) {
+    return (
+      <Card style={{ gap: space.md }}>
+        <Body muted>{t('plant_feature.specimen.plant_invite')}</Body>
+        {editable && <Button label={t('mobile.feature.planted_today')} icon="planted" onPress={markPlanted} />}
+      </Card>
+    )
+  }
+  const recent: RecentEntry[] = [
+    ...pending.map((op) => ({ key: op.id, observedOn: op.observedOn, kind: op.kind ?? 'follow_up', survival: op.survival, vigor: op.vigor, note: op.note, local: op.photo, thumb: null, pending: true })),
+    ...(data?.observations ?? []).map((o) => ({ key: String(o.id), observedOn: o.observedOn, kind: o.kind ?? 'follow_up', survival: o.survival, vigor: o.vigor, note: o.note, local: null, thumb: o.thumbUrl, pending: false })),
+  ]
   return (
     <>
-      <Text style={s.section}>{t('plant_observations.title')}</Text>
-      <Card style={{ gap: space.md }}>
-        {plantedOn
-          ? <Body>{feature.properties.planted_on_precision === 'unknown'
-              ? t('plant_feature.planted_unknown')
-              : feature.properties.planted_on_precision === 'year'
-                ? t('plant_feature.planted_in', { year: String(plantedOn).slice(0, 4) })
-                : t('plant_feature.planted_on', { date: formatDate(plantedOn) })}</Body>
-          : <>
-              <Body muted>{t('plant_observations.plant_first')}</Body>
-              {editable && <Button label={t('mobile.feature.planted_today')} onPress={markPlanted} />}
-            </>}
-        {plantedOn && editable && <ObservationForm mapId={mapId} featureId={feature.id} />}
-      </Card>
-      {plantedOn && <Journal mapId={mapId} feature={feature} photos={photos} harvestable={harvestable} ops={ops} />}
+      <Text style={s.section} accessibilityRole="header">{t(all ? 'plant_feature.specimen.all_title' : 'plant_feature.specimen.recent')}</Text>
+      {!all && (
+        <Card style={{ gap: space.md }}>
+          {offline && recent.length === 0 && <Body muted>{t('mobile.feature.history_offline')}</Body>}
+          {!offline && data && recent.length === 0 && <Body muted>{t('plant_feature.specimen.nothing_yet')}</Body>}
+          {recent.slice(0, RECENT).map((entry) => <RecentRow key={entry.key} entry={entry} />)}
+        </Card>
+      )}
+      {noting
+        ? <Card><ObservationForm mapId={mapId} featureId={feature.id} onDone={() => setNoting(false)} /></Card>
+        : (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: space.sm }}>
+            {editable && <Button icon="note" label={t('plant_feature.specimen.note')} onPress={() => setNoting(true)} />}
+            {(all || recent.length > RECENT) && (
+              <Button variant="secondary" label={all ? t('plant_feature.specimen.fewer') : t('plant_feature.specimen.all', { count: recent.length })}
+                onPress={() => setAll(!all)} />
+            )}
+          </View>
+        )}
+      {all && <Journal mapId={mapId} feature={feature} photos={photos} harvestable={harvestable} ops={ops} observations={data?.observations ?? null} offline={offline} />}
     </>
+  )
+}
+
+type RecentEntry = { key: string; observedOn: string; kind: string; survival: Survival | null; vigor: number | null; note: string | null; local: string | null; thumb: string | null; pending: boolean }
+
+/** One dated line: what was seen, the note in the notebook's hand, the photo beside it. */
+function RecentRow({ entry }: { entry: RecentEntry }) {
+  const what = [
+    entry.kind !== 'follow_up' ? t(`plant_observations.kinds.${entry.kind}`) : null,
+    entry.survival ? t(`plant_observations.survivals.${entry.survival}`) : null,
+    entry.vigor ? `${t('plant_observations.vigor')} ${entry.vigor}/5` : null,
+  ].filter(Boolean).join(' · ')
+  return (
+    <View style={s.entry2} accessible accessibilityLabel={[formatDate(entry.observedOn), what, entry.note].filter(Boolean).join(', ')}>
+      {entry.thumb || entry.local
+        ? <RemoteImage path={entry.thumb} local={entry.local} style={s.smallThumb} />
+        : <View style={[s.smallThumb, s.noThumb]}><Icon name="note" size={22} color={colors.loam400} /></View>}
+      <View style={{ flex: 1, gap: 2 }}>
+        <Text style={s.rowTitle}>{formatDate(entry.observedOn)}{entry.pending ? ` · ${t('mobile.feature.pending')}` : ''}</Text>
+        {what ? <Text style={s.rowMeta}>{what}</Text> : null}
+        {entry.note ? <Text style={s.entryNote} numberOfLines={3}>{entry.note}</Text> : null}
+      </View>
+    </View>
   )
 }
 
 // One tap says what is noted (reprise, floraison, taille, dégât…), then only
 // what that kind asks: the take for a follow-up, words for « Autre ».
-function ObservationForm({ mapId, featureId }: { mapId: number; featureId: number }) {
+function ObservationForm({ mapId, featureId, onDone }: { mapId: number; featureId: number; onDone: () => void }) {
   const [kind, setKind] = useState<ObservationKind>('follow_up')
   const [survival, setSurvival] = useState<Survival | null>(null)
   const [vigor, setVigor] = useState<number | null>(null)
@@ -145,6 +249,7 @@ function ObservationForm({ mapId, featureId }: { mapId: number; featureId: numbe
     })
     setSurvival(null); setVigor(null); setNote(''); setPhoto(null); setKind('follow_up')
     toast(t('plant_observations.saved'))
+    onDone()
   }
 
   return (
@@ -174,6 +279,7 @@ function ObservationForm({ mapId, featureId }: { mapId: number; featureId: numbe
           onPress={async () => { const taken = await takePhoto(); if (taken) setPhoto(taken.file) }} />
       </View>
       <Button style={{ marginTop: space.md }} label={t('plant_observations.save')} disabled={!ready} onPress={save} />
+      <Button variant="ghost" label={t('mobile.common.cancel')} onPress={onDone} />
     </View>
   )
 }
@@ -199,11 +305,13 @@ const ENTRY_ICONS: Record<ObservationKind, IconName> = {
  * in it, newest first, what was noted, harvested and photographed, down to
  * the day it went in. What waits in the outbox shows at once.
  */
-function Journal({ mapId, feature, photos, harvestable, ops }: { mapId: number; feature: MapFeature; photos: Photo[]; harvestable: boolean; ops: Op[] }) {
+function Journal({ mapId, feature, photos, harvestable, ops, observations, offline }: {
+  mapId: number; feature: MapFeature; photos: Photo[]; harvestable: boolean; ops: Op[]; observations: Observation[] | null; offline: boolean
+}) {
   const pending = ops.flatMap((op) => (op.type === 'createObservation' ? [op] : []))
   const pendingHarvests = ops.filter((op) => op.type === 'createHarvest').length
   const remote = feature.id > 0
-  const { data, offline } = useRemote<{ observations: Observation[] }>(remote ? `/maps/${mapId}/features/${feature.id}/plant_observations` : null, pending.length)
+  const data = observations ? { observations } : null
   const { data: harvests } = useRemote<{ harvests: JournalHarvest[] }>(remote && harvestable ? `/maps/${mapId}/features/${feature.id}/plant_harvests` : null, pendingHarvests)
   const years = useMemo(() => journalOf({
     plantedOn: feature.properties.planted_on,
@@ -351,6 +459,12 @@ const s = StyleSheet.create({
   mark: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.paper, borderWidth: 1.5, borderColor: colors.prune700 },
   markStrong: { backgroundColor: colors.leaf700, borderColor: colors.leaf700 },
   entryNote: { ...type.hand, fontSize: 19, lineHeight: 24, color: colors.loam800 },
+  specimenName: { ...type.display, color: colors.loam900 },
+  specimenVariety: { fontFamily: fonts.title, fontSize: 24, lineHeight: 28, color: colors.loam700 },
+  latin: { fontFamily: fonts.body, fontStyle: 'italic', fontSize: 15, color: colors.loam500 },
+  age: { ...type.hand, fontSize: 24, lineHeight: 28, color: colors.leaf700, transform: [{ rotate: '-1deg' }] },
+  entry2: { flexDirection: 'row', alignItems: 'flex-start', gap: space.md },
+  noThumb: { backgroundColor: colors.loam50, borderWidth: 1, borderColor: colors.loam200, alignItems: 'center', justifyContent: 'center' },
 })
 
 /** « Vu hier… »: the sheet's line starts a sentence. */

@@ -234,7 +234,6 @@ small-text	1	app/frontend/map/plants/AlertsList.tsx
 bare-button	1	app/frontend/map/plants/IdentifySection.tsx
 small-text	11	app/frontend/map/plants/IdentifySection.tsx
 bare-button	4	app/frontend/map/plants/ObservationsSection.tsx
-native-confirm	1	app/frontend/map/plants/ObservationsSection.tsx
 bare-button	2	app/frontend/map/plants/PaletteDrafts.tsx
 native-confirm	1	app/frontend/map/plants/PaletteDrafts.tsx
 small-text	3	app/frontend/map/plants/PaletteDrafts.tsx
@@ -245,8 +244,8 @@ small-text	13	app/frontend/map/plants/PatchSection.tsx
 small-text	12	app/frontend/map/plants/PlantListPanel.tsx
 bare-button	4	app/frontend/map/plants/PlantPeekOverlay.tsx
 bare-button	2	app/frontend/map/plants/PlantPhotosSection.tsx
-bare-button	4	app/frontend/map/plants/PlantSection.tsx
-small-text	5	app/frontend/map/plants/PlantSection.tsx
+bare-button	3	app/frontend/map/plants/PlantSection.tsx
+small-text	1	app/frontend/map/plants/PlantSection.tsx
 bare-button	1	app/frontend/map/plants/PlantsOverlay.tsx
 hex-color	5	app/frontend/map/plants/PlantsOverlay.tsx
 small-text	1	app/frontend/map/plants/PlantsOverlay.tsx

@@ -49,8 +49,11 @@ export type InspectorSection = {
   applies: (feature: MapFeature) => boolean
   component: ComponentType<{ feature: MapFeature }>
   order?: number
-  /** `top`: above the name and notes (a plant's photos). */
-  placement?: 'top'
+  /**
+   * `top`: above the name and notes (a plant's photos and recent observations);
+   * `fold`: with the name and notes, folded under « Modifier la fiche » (a plant's editable sheet).
+   */
+  placement?: 'top' | 'fold'
 }
 
 /**

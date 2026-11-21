@@ -1055,6 +1055,29 @@
     }
   },
   "plant_feature": {
+    "specimen": {
+      "species_sheet": "Fiche de l'espèce",
+      "not_planted": "Pas encore en terre",
+      "winters": {
+        "one": "Planté il y a 1 hiver",
+        "other": "Planté il y a %{count} hivers"
+      },
+      "first_winter_now": "Son premier hiver en terre",
+      "first_winter_ahead": "Son premier hiver l'attend",
+      "recent": "Observations récentes",
+      "all_title": "Toutes les notes",
+      "note": "Noter une observation",
+      "all": {
+        "one": "Toutes les notes (1)",
+        "other": "Toutes les notes (%{count})"
+      },
+      "fewer": "Seulement les récentes",
+      "nothing_yet": "Rien de noté pour l'instant. Va le voir : sa reprise, ses bourgeons, un dégât, tout compte.",
+      "photo_of": "Photo du %{date}",
+      "plant_invite": "Le jour où il entre en terre, son journal commence.",
+      "edit": "Modifier la fiche",
+      "details": "Détails de la fiche"
+    },
     "measures": {
       "title": "Mesuré sur place",
       "help": "Comment mesurer un arbre",

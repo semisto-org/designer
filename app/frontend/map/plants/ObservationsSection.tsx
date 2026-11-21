@@ -1,12 +1,14 @@
 import clsx from 'clsx'
-import { Camera, Trash2 } from 'lucide-react'
+import { Camera, NotebookPen, Shovel, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/Button'
+import { confirmAction } from '@/components/ui/confirm'
 import { Field, Input, Textarea } from '@/components/ui/Field'
 import { formatDate, todayIso } from '@/components/plants/format'
 import { api, ApiError } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
+import { numberProperty, ownProperties } from '@/map/plants/properties'
 import type { MapFeature } from '@/types'
 import { PLANT_OBSERVATION_KINDS, type PlantObservation, type PlantObservationKind } from '@/types/plants'
 
@@ -17,10 +19,15 @@ const SURVIVAL_TONES: Record<string, string> = {
   dead: 'bg-clay-500 text-white ring-clay-500',
 }
 
+/** How many entries the page shows before « Toutes les notes ». */
+const RECENT = 3
+
 /**
- * « Journal du plant »: dated entries of a planted plant, never rewritten
- * (take, flowering, pruning, damage…), each with an optional vigour, note
- * and photo. The latest take says the state of the plant.
+ * « Observations récentes », high on a plant's page: the last three entries
+ * of its journal (take, flowering, pruning, damage…), never rewritten, each
+ * with its date, its photo and its note, then « Noter une observation » and
+ * « Toutes les notes ». A plant not yet in the ground offers to mark it
+ * planted, since its journal starts that day.
  */
 export default function ObservationsSection({ feature }: { feature: MapFeature }) {
   const editor = useEditor()
@@ -28,8 +35,11 @@ export default function ObservationsSection({ feature }: { feature: MapFeature }
   const base = `/maps/${editor.map.id}/features/${feature.properties.id}/plant_observations`
   const [observations, setObservations] = useState<PlantObservation[] | null>(null)
   const [adding, setAdding] = useState(false)
+  const [all, setAll] = useState(false)
 
   useEffect(() => {
+    setAdding(false)
+    setAll(false)
     if (!plantedOn) return
     const controller = new AbortController()
     api<{ observations: PlantObservation[] }>(base, { signal: controller.signal })
@@ -39,7 +49,8 @@ export default function ObservationsSection({ feature }: { feature: MapFeature }
   }, [base, plantedOn])
 
   async function remove(observation: PlantObservation) {
-    if (!window.confirm(t('plant_observations.confirm_delete'))) return
+    const ok = await confirmAction({ title: t('plant_observations.confirm_delete'), confirmLabel: t('common.delete'), tone: 'danger' })
+    if (!ok) return
     try {
       const r = await api<{ observations: PlantObservation[] }>(`${base}/${observation.id}`, { method: 'DELETE' })
       setObservations(r.observations)
@@ -49,45 +60,112 @@ export default function ObservationsSection({ feature }: { feature: MapFeature }
     }
   }
 
+  if (!plantedOn) return <NotPlanted feature={feature} />
+
+  const shown = observations ? (all ? observations : observations.slice(0, RECENT)) : []
+  const more = (observations?.length ?? 0) > RECENT
+
   return (
-    <section className="space-y-3 border-t border-loam-100 pt-3 text-sm">
-      <h3 className="text-sm font-semibold uppercase tracking-wide text-loam-500">{t('plant_observations.title')}</h3>
-      {!plantedOn ? (
-        <p className="text-loam-500">{t('plant_observations.plant_first')}</p>
-      ) : (
-        <>
-          {observations && observations.length === 0 && <p className="text-loam-500">{t('plant_observations.intro')}</p>}
-          {observations && observations.length > 0 && (
-            <ul className="space-y-2">
-              {observations.map((o) => (
-                <li key={o.id} className="flex gap-2 rounded-lg bg-loam-50 p-2">
-                  {o.photoUrl && <a href={o.photoUrl} target="_blank" rel="noreferrer"><img src={o.thumbUrl ?? o.photoUrl} alt="" className="h-12 w-12 rounded object-cover" /></a>}
-                  <div className="min-w-0 flex-1">
-                    <p className="flex flex-wrap items-center gap-1.5">
-                      <span className="font-medium text-loam-800">{formatDate(o.observedOn)}</span>
-                      {o.kind !== 'follow_up' && <span className="rounded bg-white px-1.5 text-loam-700 ring-1 ring-inset ring-loam-200">{t(`plant_observations.kinds.${o.kind}`)}</span>}
-                      {o.survival && <span className={clsx('rounded px-1.5 ring-1 ring-inset', SURVIVAL_TONES[o.survival])}>{t(`plant_observations.survivals.${o.survival}`)}</span>}
-                      {o.vigor != null && <span className="text-loam-600">{t('plant_observations.vigor')} {o.vigor}/5</span>}
-                    </p>
-                    {o.note && <p className="mt-0.5 whitespace-pre-line text-loam-600">{o.note}</p>}
-                    {o.author && <p className="mt-0.5 text-loam-400">{t('plant_observations.by', { name: o.author })}</p>}
-                  </div>
-                  {editor.canEdit && (
-                    <button type="button" onClick={() => remove(o)} className="self-start rounded p-1 text-loam-400 hover:bg-loam-100" aria-label={t('plant_observations.delete')} title={t('plant_observations.delete')}>
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-          {editor.canEdit && (adding ? (
-            <ObservationForm base={base} plantedOn={feature.properties.planted_on_precision === 'unknown' ? undefined : plantedOn} onSaved={(list) => { setObservations(list); setAdding(false) }} onCancel={() => setAdding(false)} />
-          ) : (
-            <Button variant="secondary" size="sm" className="w-full" onClick={() => setAdding(true)}>{t('plant_observations.add')}</Button>
-          ))}
-        </>
+    <section aria-labelledby={`recent-${feature.properties.id}`} className="space-y-2 text-sm">
+      <h3 id={`recent-${feature.properties.id}`} className="font-serif text-xl text-loam-900">
+        {t(all ? 'plant_feature.specimen.all_title' : 'plant_feature.specimen.recent')}
+      </h3>
+      {observations && observations.length === 0 && !adding && (
+        <p className="text-loam-600">{t('plant_feature.specimen.nothing_yet')}</p>
       )}
+      {shown.length > 0 && (
+        // A ruled page: one dated line per entry.
+        <ol className="divide-y divide-loam-200 border-y border-loam-200">
+          {shown.map((o) => <ObservationRow key={o.id} observation={o} canDelete={editor.canEdit} onDelete={() => void remove(o)} />)}
+        </ol>
+      )}
+      {adding ? (
+        <ObservationForm base={base} plantedOn={feature.properties.planted_on_precision === 'unknown' ? undefined : plantedOn}
+          onSaved={(list) => { setObservations(list); setAdding(false) }} onCancel={() => setAdding(false)} />
+      ) : (
+        <div className="flex flex-wrap gap-2 pt-1">
+          {editor.canEdit && (
+            <Button size="sm" onClick={() => setAdding(true)}>
+              <NotebookPen className="h-4 w-4" aria-hidden />{t('plant_feature.specimen.note')}
+            </Button>
+          )}
+          {(more || all) && (
+            <Button variant="secondary" size="sm" aria-expanded={all} onClick={() => setAll(!all)}>
+              {all ? t('plant_feature.specimen.fewer') : t('plant_feature.specimen.all', { count: observations?.length ?? 0 })}
+            </Button>
+          )}
+        </div>
+      )}
+    </section>
+  )
+}
+
+/** One line of the journal: the date and what was seen, the note in the notebook's hand, the photo beside. */
+function ObservationRow({ observation: o, canDelete, onDelete }: { observation: PlantObservation; canDelete: boolean; onDelete: () => void }) {
+  const what = [
+    o.kind !== 'follow_up' ? t(`plant_observations.kinds.${o.kind}`) : null,
+    o.vigor != null ? `${t('plant_observations.vigor')} ${o.vigor}/5` : null,
+  ].filter(Boolean).join(' · ')
+  return (
+    <li className="group flex gap-3 py-2">
+      {o.photoUrl ? (
+        <a href={o.photoUrl} target="_blank" rel="noreferrer" className="shrink-0">
+          <img src={o.thumbUrl ?? o.photoUrl} alt={t('plant_feature.specimen.photo_of', { date: formatDate(o.observedOn) })} className="h-14 w-14 rounded-lg object-cover ring-1 ring-loam-200" />
+        </a>
+      ) : (
+        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-loam-50 text-loam-400 ring-1 ring-loam-200" aria-hidden>
+          <NotebookPen className="h-5 w-5" />
+        </span>
+      )}
+      <div className="min-w-0 flex-1">
+        <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+          <time dateTime={o.observedOn} className="font-medium text-loam-900">{formatDate(o.observedOn)}</time>
+          {o.survival && <span className={clsx('rounded-full px-2 ring-1 ring-inset', SURVIVAL_TONES[o.survival])}>{t(`plant_observations.survivals.${o.survival}`)}</span>}
+          {what && <span className="text-loam-600">{what}</span>}
+        </p>
+        {o.note && <p className="mt-0.5 line-clamp-3 whitespace-pre-line font-hand text-lg leading-snug text-loam-800">{o.note}</p>}
+        {o.author && <p className="mt-0.5 text-loam-500">{t('plant_observations.by', { name: o.author })}</p>}
+      </div>
+      {canDelete && (
+        <button type="button" onClick={onDelete} className="self-start rounded p-1 text-loam-400 opacity-0 hover:bg-loam-100 focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100" aria-label={t('plant_observations.delete')} title={t('plant_observations.delete')}>
+          <Trash2 className="h-4 w-4" />
+        </button>
+      )}
+    </li>
+  )
+}
+
+/** A plant still on paper: its journal starts the day it goes in the ground. */
+function NotPlanted({ feature }: { feature: MapFeature }) {
+  const editor = useEditor()
+  const [date, setDate] = useState(todayIso())
+  const speciesId = numberProperty(feature, 'species_id')
+  if (!editor.canEdit || speciesId == null) return null
+
+  async function mark(patch: Record<string, unknown>) {
+    const properties: Record<string, unknown> = { ...ownProperties(feature), ...patch }
+    if (properties.planted_on_precision == null) delete properties.planted_on_precision
+    try {
+      await editor.updateFeature(feature.properties.id, { properties })
+      editor.notify(t('plant_feature.planted'))
+    } catch (e) {
+      editor.notify(e instanceof Error ? e.message : String(e), 'error')
+    }
+  }
+
+  return (
+    <section className="space-y-2 rounded-xl bg-leaf-50 p-3 text-sm">
+      <p className="text-leaf-900">{t('plant_feature.specimen.plant_invite')}</p>
+      <Field label={t('plant_feature.planted_date')}>
+        <Input type="date" value={date} max={todayIso()} onChange={(e) => setDate(e.target.value)} />
+      </Field>
+      <Button variant="leaf" size="sm" className="w-full" disabled={!date} onClick={() => void mark({ planted_on: date, planted_on_precision: null })}>
+        <Shovel className="h-4 w-4" />{t('plant_feature.mark_planted')}
+      </Button>
+      <Button variant="ghost" size="sm" className="w-full" title={t('plant_feature.mark_planted_unknown_hint')}
+        onClick={() => void mark({ planted_on: todayIso(), planted_on_precision: 'unknown' })}>
+        {t('plant_feature.mark_planted_unknown')}
+      </Button>
     </section>
   )
 }

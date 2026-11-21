@@ -1,32 +1,33 @@
-import { ExternalLink, Shovel } from 'lucide-react'
+import { Shovel } from 'lucide-react'
 import { useState } from 'react'
-import { Button } from '@/components/ui/Button'
 import { Field, Input, Select } from '@/components/ui/Field'
-import { formatDecimal, plantedLabel, plantedPrecision, strataLabel, todayIso } from '@/components/plants/format'
+import { formatDecimal, plantedLabel, plantedPrecision } from '@/components/plants/format'
 import { ApiError } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import ShapeEditButton from '@/map/drawing/ShapeEditButton'
 import { useEditor } from '@/map/editor/EditorContext'
-import { GRAFTABLE_STRATA, graftProperties, graftProperty, isSupportPlant, numberProperty, ownProperties, SUPPORT_ROLES, TRAINABLE_STRATA, trainedCrown, trainingProperty } from '@/map/plants/properties'
+import { GRAFTABLE_STRATA, graftProperties, graftProperty, isSupportPlant, numberProperty, ownProperties, SUPPORT_ROLES, TRAINABLE_STRATA, trainingProperty } from '@/map/plants/properties'
 import { knownRootstock, rootstocksFor } from '@/map/plants/rootstocks'
 import { GRAFT_FORMS, GRAFT_TRUNK, ROOTSTOCK_VIGORS, TRUNK_RANGE, type GraftForm } from '@/relief/growth'
 import { usePlanting } from '@/map/plants/store'
-import { paletteItemOf, StrataDot } from '@/map/plants/strata'
+import { paletteItemOf } from '@/map/plants/strata'
 import { VarietyField } from '@/map/plants/VarietyField'
 import PlantMeasures, { MEASURED_STRATA } from '@/map/plants/PlantMeasures'
 import type { MapFeature } from '@/types'
 
 const TRAININGS = ['free', 'pollard', 'coppice', 'chop_and_drop'] as const
 
-/** Inspector section of a plant: its species (from the palette), crown, training and planting date. */
-
 /** How the plant came from the nursery, noted with the phone's « Planter ». */
 const NURSERY_FORMS = new Set(['bare_root', 'pot', 'root_ball'])
 
+/**
+ * The editable sheet of a plant, folded under its page (« Modifier la fiche »):
+ * species from the palette, variety, number, training, graft, measures and
+ * planting date. Its name, strata and age head the page (PlantHeading).
+ */
 export default function PlantSection({ feature }: { feature: MapFeature }) {
   const editor = useEditor()
   const { data } = usePlanting(editor.map.id)
-  const [date, setDate] = useState(todayIso())
   const [taken, setTaken] = useState<number | null>(null)
   const speciesId = numberProperty(feature, 'species_id')
   const varietyId = numberProperty(feature, 'variety_id')
@@ -81,29 +82,7 @@ export default function PlantSection({ feature }: { feature: MapFeature }) {
 
   return (
     <section className="space-y-3 border-t border-loam-100 pt-3 text-sm">
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-loam-500">{t('plant_feature.title')}</h3>
-      {species ? (
-        <div className="flex items-start gap-2">
-          <StrataDot strata={current?.effectiveStrata ?? species.strata} className="mt-1.5" />
-          <div className="min-w-0 flex-1">
-            <p className="font-medium text-loam-900">
-              {variety ? variety.commonName ?? `${species.commonName ?? species.latinName} '${variety.name}'` : species.commonName ?? species.latinName}
-            </p>
-            <p className="text-xs italic text-loam-500">{variety?.latinName ?? species.latinName}</p>
-            <p className="mt-1 text-xs text-loam-600">
-              {strataLabel(current?.effectiveStrata ?? species.strata)} · {t('plant_feature.crown', { value: formatDecimal(trainedCrown(species.crownM, training, strata, graft)) })}
-              {training !== 'free' && trainable && <span> ({t(`plant_feature.crown_${training}`)})</span>}
-              {graft && <span> ({t('plant_feature.crown_graft', { vigor: t(`plant_feature.vigor_names.${graft.vigor}`) })})</span>}
-              {species.crownIndicative && <span className="text-loam-400"> ({t('plant_feature.crown_indicative')})</span>}
-            </p>
-          </div>
-          <a href={`/plants/${species.slug}`} target="_blank" rel="noreferrer" className="rounded p-1 text-loam-400 hover:bg-loam-100" title={t('plant_feature.open_sheet')} aria-label={t('plant_feature.open_sheet')}>
-            <ExternalLink className="h-4 w-4" />
-          </a>
-        </div>
-      ) : (
-        <p className="rounded-lg bg-humus-50 p-2 text-xs text-humus-700">{t('plant_feature.no_species')}</p>
-      )}
+      {!species && <p className="rounded-lg bg-humus-50 p-2 text-sm text-humus-700">{t('plant_feature.no_species')}</p>}
 
       {editor.canEdit && species && <VarietyField species={species} variety={variety} onSave={save} />}
 
@@ -294,22 +273,6 @@ export default function PlantSection({ feature }: { feature: MapFeature }) {
           {editor.canEdit && (
             <button type="button" className="text-leaf-700 underline" onClick={() => save({ planted_on: null, planted_on_precision: null })}>{t('plant_feature.unmark')}</button>
           )}
-        </div>
-      ) : editor.canEdit && speciesId != null ? (
-        <div className="space-y-2">
-          <Field label={t('plant_feature.planted_date')}>
-            <Input type="date" value={date} max={todayIso()} onChange={(e) => setDate(e.target.value)} />
-          </Field>
-          <Button variant="leaf" size="sm" className="w-full" disabled={!date} onClick={() => save({ planted_on: date, planted_on_precision: null }).then(() => editor.notify(t('plant_feature.planted')))}>
-            <Shovel className="h-4 w-4" />{t('plant_feature.mark_planted')}
-          </Button>
-          <button
-            type="button" title={t('plant_feature.mark_planted_unknown_hint')}
-            className="w-full text-center text-sm text-leaf-800 underline"
-            onClick={() => save({ planted_on: todayIso(), planted_on_precision: 'unknown' }).then(() => editor.notify(t('plant_feature.planted')))}
-          >
-            {t('plant_feature.mark_planted_unknown')}
-          </button>
         </div>
       ) : null}
     </section>
