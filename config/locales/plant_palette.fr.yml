@@ -203,6 +203,7 @@ fr:
       label: "Regarder la palette"
       species: "Par espèce"
       plants: "Plant par plant"
+      year: "Au fil de l'année"
     plants:
       intro: "Chaque plant de la carte avec son numéro sur le plan. Tape un numéro et Entrée passe au plant suivant : si le numéro est déjà pris, les deux plants échangent leurs numéros."
       intro_read_only: "Chaque plant de la carte avec son numéro sur le plan."
@@ -276,6 +277,29 @@ fr:
         unknown_change: "Cette action n'existe pas."
         empty: "Choisis d'abord au moins une plante."
         invalid_value: "Cette valeur n'existe pas."
+    year:
+      title: "L'année de ta palette"
+      species: "Espèce"
+      flowering: "Floraison"
+      harvest: "Récolte"
+      now: "Nous sommes en %{month}"
+      empty: "Les espèces de ta palette n'ont pas encore de calendrier de floraison ou de récolte dans le catalogue."
+      source: "Mois de floraison et de récolte d'après le catalogue Semisto. Sur ton terrain, ils avancent ou reculent avec l'altitude, l'exposition et l'année : note ce que tu vois."
+    month:
+      eyebrow: "Ce mois-ci sur ton terrain"
+      title: "En %{month}"
+      flowering: "En fleur"
+      harvest: "À récolter"
+      pruning: "À tailler"
+      none_flowering: "Rien de ta palette ne fleurit ce mois-ci."
+      none_harvest: "Rien à récolter ce mois-ci."
+      more:
+        one: "et %{count} autre"
+        other: "et %{count} autres"
+      signs: "À aller voir dehors"
+      seen_on: "vu le %{date}"
+      to_see: "pas encore vu cette année"
+      outside: "Note-les depuis l'app Terranova sur ton téléphone, là où tu les vois : ils comptent dans ton carnet des saisons."
   activerecord:
     errors:
       models:

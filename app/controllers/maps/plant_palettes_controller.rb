@@ -23,7 +23,9 @@ module Maps
             canEdit: can_edit?,
             # A plant's name opens the editor's own sheet of it (palette/PlantFeatureSheet).
             editorMap: @map.as_inertia(Current.user).merge(readOnlyByPlan: @map.read_only_by_plan?),
-            mapEntitlements: map_entitlements.as_json
+            mapEntitlements: map_entitlements.as_json,
+            # « Au fil de l'année »: this month's plants and signs of the season.
+            thisMonth: Maps::ThisMonth.new(@map).as_json.deep_transform_keys { _1.to_s.camelize(:lower) }
           )
         end
         format.json { render json: palette }

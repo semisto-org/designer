@@ -56,6 +56,15 @@ En haut du tableau, **Plant par plant** remplace les espèces par chaque plant d
 - **Plantation** : une année (« 2015 »), une date (« 12/03/2024 »), ou rien quand personne ne sait quand il a été planté, comme pour les vieux arbres trouvés en arrivant ;
 - l'épingle ouvre le plant sur la carte.
 
+## Au fil de l'année
+
+Le troisième bouton en haut, **Au fil de l'année**, montre ta palette mois par mois.
+
+- **Ce mois-ci sur ton terrain** dit ce qui fleurit, ce qui se récolte et ce qui se taille ce mois-ci parmi tes plantes, puis les signes de saison qui valent une sortie (premier gel, chute des feuilles, débourrement…). Un signe marqué « pas encore vu cette année » est à aller observer : note-le depuis l'app Terranova sur ton téléphone, là où tu le vois.
+- **L'année de ta palette** aligne chaque espèce sur les douze mois : floraison en mauve, récolte en ocre, le mois en cours entouré. Clique sur un nom pour ouvrir sa fiche.
+
+Les mois viennent du catalogue. Sur ton terrain, ils avancent ou reculent avec l'altitude, l'exposition et l'année : ce que tu observes compte plus.
+
 ## Plusieurs plantes d'un coup
 
 Les éditeurs cochent les plantes à gauche du tableau (la case de l'en-tête les coche toutes ; Maj + clic coche toute une plage). Une barre apparaît en bas de la page :

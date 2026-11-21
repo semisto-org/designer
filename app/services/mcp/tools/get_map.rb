@@ -53,6 +53,9 @@ module Mcp
           discussion: discussion(map),
           observation_year: MapFeature::SeasonSign.observation_year(map),
           first_hour: first_hour(map),
+          # « Ce mois-ci sur ton terrain »: what the placed plants do this month
+          # and the season's signs to go and see, with when each was last seen.
+          this_month: Maps::ThisMonth.new(map).as_json,
           offer: offer(map),
           time_entries: time_entries(map),
           sectors: sectors(map),

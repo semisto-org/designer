@@ -17,6 +17,7 @@ import { PlantSheet } from '@/palette/PlantSheet'
 import type { PlantLine } from '@/palette/plants'
 import { PlantsTable } from '@/palette/PlantsTable'
 import { SuggestionsSheet } from '@/palette/Suggestions'
+import { YearView, type ThisMonth } from '@/palette/YearView'
 import {
   budgetQuantity, cellValue, crownArea, GROWTH_YEARS, normalizeSettings, sameSettings, scopeOf, toBuyQuantity, toCsv, UNTAGGED, viewGroups,
   type PaletteRow, type ViewSettings,
@@ -40,16 +41,22 @@ type Props = {
   /** What the editor's sheet of a plant needs (« Plant par plant »). */
   editorMap: MapData
   mapEntitlements: EntitlementsData
+  /** « Ce mois-ci sur ton terrain » (Maps::ThisMonth). */
+  thisMonth: ThisMonth
 }
 
-type Mode = 'species' | 'plants'
+type Mode = 'species' | 'plants' | 'year'
 type Palette = { rows: PaletteRow[]; plants: PlantLine[]; tags: string[] }
 type BatchResult = Palette & { changed: { species: number; plants: number }; undo: unknown }
 type Done = { message: string; undo: unknown | null }
 const modeKey = (mapId: number) => `palette-mode-${mapId}`
 const readMode = (mapId: number): Mode => {
   if (new URLSearchParams(window.location.search).has('plants')) return 'plants'
-  try { return window.localStorage.getItem(modeKey(mapId)) === 'plants' ? 'plants' : 'species' } catch { return 'species' }
+  if (new URLSearchParams(window.location.search).has('year')) return 'year'
+  try {
+    const stored = window.localStorage.getItem(modeKey(mapId))
+    return stored === 'plants' || stored === 'year' ? stored : 'species'
+  } catch { return 'species' }
 }
 
 const storageKey = (mapId: number) => `palette-view-${mapId}`
@@ -72,7 +79,7 @@ const forServer = (s: ViewSettings): ViewSettings => ({ ...s, filters: { ...s.fi
  * and the ones editors save for the map, Notion-like): budget, shopping list
  * for a planting day, follow-up… A plant's name opens its sheet.
  */
-export default function PlantPalettePage({ map, rows: initialRows, plants: initialPlants, tags: initialTags, views: initialViews, presets, schema, canEdit, editorMap, mapEntitlements }: Props) {
+export default function PlantPalettePage({ map, rows: initialRows, plants: initialPlants, tags: initialTags, views: initialViews, presets, schema, canEdit, editorMap, mapEntitlements, thisMonth }: Props) {
   const [rows, setRows] = useState(initialRows)
   const [plants, setPlants] = useState(initialPlants)
   const [mode, setMode] = useState<Mode>(() => (typeof window === 'undefined' ? 'species' : readMode(map.id)))
@@ -338,7 +345,9 @@ export default function PlantPalettePage({ map, rows: initialRows, plants: initi
       ) : (
         <>
           <ModeSwitch mode={mode} onChange={chooseMode} />
-          {mode === 'plants' ? (
+          {mode === 'year' ? (
+            <YearView thisMonth={thisMonth} rows={rows} onOpen={setOpen} />
+          ) : mode === 'plants' ? (
             <>
               {status && <p className="mb-3 text-sm text-leaf-800 print:hidden" role="status">{status}</p>}
               {error && <p className="mb-3 rounded-lg bg-clay-50 px-3 py-2 text-sm text-clay-700 print:hidden" role="alert">{error}</p>}
@@ -436,7 +445,7 @@ export default function PlantPalettePage({ map, rows: initialRows, plants: initi
         </>
       )}
 
-      {canEdit && (mode === 'species' ? selectedKeys.size : selectedPlants.size) > 0 ? (
+      {canEdit && mode !== 'year' && (mode === 'species' ? selectedKeys.size : selectedPlants.size) > 0 ? (
         <BatchBar
           kind={mode} count={mode === 'species' ? selectedKeys.size : selectedPlants.size} busy={busy} onApply={(change, value) => void applyBatch(change, value)}
           onClear={() => { setSelectedKeys(new Set()); setSelectedPlants(new Set()) }}
@@ -466,7 +475,7 @@ export default function PlantPalettePage({ map, rows: initialRows, plants: initi
 function ModeSwitch({ mode, onChange }: { mode: Mode; onChange: (mode: Mode) => void }) {
   return (
     <div role="group" aria-label={t('plant_palette.modes.label')} className="mb-3 inline-flex rounded-full bg-white p-1 ring-1 ring-inset ring-loam-200 print:hidden">
-      {(['species', 'plants'] as const).map((value) => (
+      {(['species', 'plants', 'year'] as const).map((value) => (
         <button
           key={value} type="button" onClick={() => onChange(value)} aria-pressed={mode === value}
           className={clsx('rounded-full px-3.5 py-1 text-sm font-medium transition-colors', mode === value ? 'bg-leaf-700 text-white' : 'text-loam-700 hover:bg-loam-50')}
