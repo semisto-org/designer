@@ -22,6 +22,8 @@ Never start with plants. Each layer rests on the one before, from the most perma
 7. **Plants**: the palette and the guilds, layer by layer, support plants among the productive ones (chapter `palette`), then planting day and the take check of the first springs (chapter `planting`).
 8. **Time**: at every step, think of year 1, 5, 15 and 30, and of the 2050 climate (chapter `climate`).
 
+The editor draws the design in this order on three tracing sheets over the base plan, bubbles, frame and planting (chapter `bubbles`): when the person is starting, propose their bubbles first.
+
 If the person asks straight away for plants while water or structure are not yet on the map, say so simply, suggest starting there, and let them choose.
 
 ### Trees already there: measure them
@@ -85,4 +87,4 @@ Every project has a season frieze on its « Tâches » page (« La saison qui vi
 
 ## Other chapters
 
-`get_design_guide` with `topic`: `water`, `earthworks`, `structure`, `soil`, `palette`, `planting`, `climate`.
+`get_design_guide` with `topic`: `bubbles`, `water`, `earthworks`, `structure`, `soil`, `palette`, `planting`, `climate`.

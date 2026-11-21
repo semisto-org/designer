@@ -1,7 +1,7 @@
 import { Bot, Camera, Waypoints, Compass, Target, Shovel, FileImage, Files, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, Receipt, MapPinned, Mountain, PiggyBank, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
 import { Apple, Archive, GitBranch, Presentation, Trees } from 'lucide-react'
 import { isAnnotationLayer } from '@/map/scenario'
-import { appliesToCatchment, appliesToEarthworks, appliesToElement, appliesToFruitStore, appliesToGpsPoint, appliesToInfiltration, appliesToKeyline, appliesToLinks, appliesToPhase, appliesToProjectState, appliesToStorm, appliesToVariant, appliesToZone } from '@/map/panels/applies'
+import { appliesToCatchment, appliesToEarthworks, appliesToElement, appliesToFruitStore, appliesToGpsPoint, appliesToInfiltration, appliesToKeyline, appliesToLinks, appliesToPhase, appliesToProjectState, appliesToStorm, appliesToTracing, appliesToVariant, appliesToZone } from '@/map/panels/applies'
 import { deferred } from '@/map/panels/deferred'
 import { isSector } from '@/map/sectors/SectorsOverlay'
 import { isLinkable as appliesToWaterSource } from '@/map/water/store'
@@ -55,6 +55,7 @@ import PresentationOverlay from '@/map/presentation/PresentationOverlay'
 import DrawnViewOverlay from '@/map/drawn/DrawnViewOverlay'
 import PlaceMarginOverlay from '@/map/drawn/PlaceMarginOverlay'
 import PhaseOverlay from '@/map/phases/PhaseOverlay'
+import TracingOverlay from '@/map/tracing/TracingOverlay'
 import MapOpeningProbe from '@/map/performance/MapOpeningProbe'
 import { appliesToFunctions } from '@/map/functions/store'
 
@@ -133,6 +134,7 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'keyline', applies: appliesToKeyline, component: deferred(() => import('@/map/water/KeylineSection'), 'none'), order: 23 },
   { id: 'storm', applies: appliesToStorm, component: deferred(() => import('@/map/water/StormSection'), 'none'), order: 18 },
   { id: 'functions', applies: appliesToFunctions, component: deferred(() => import('@/map/functions/FunctionsSection'), 'none'), order: 26 },
+  { id: 'tracing', applies: appliesToTracing, component: deferred(() => import('@/map/tracing/TracingSection'), 'none'), order: 26.5 },
 ]
 
 // Top bar actions (right side), e.g. share, export.
@@ -188,6 +190,7 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'presentation', component: PresentationOverlay, order: 95 },
   { id: 'drawn-view', component: DrawnViewOverlay, order: 96 },
   { id: 'design-phase', component: PhaseOverlay, order: 98 },
+  { id: 'tracing', component: TracingOverlay, order: 97 },
   { id: 'place-margin', component: PlaceMarginOverlay, order: 97 },
   { id: 'opening-probe', component: MapOpeningProbe, order: 200 },
 ]

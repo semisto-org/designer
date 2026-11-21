@@ -112,7 +112,8 @@ export class Drawer {
       modes: [
         new TerraDrawPolygonMode({ styles }),
         new TerraDrawRectangleMode({ styles }),
-        new TerraDrawFreehandMode({ styles }),
+        // Click, go round, click; or drag with a finger or a pencil (a bubble, map/tracing).
+        new TerraDrawFreehandMode({ styles, drawInteraction: 'click-move-or-drag' }),
         new TerraDrawLineStringMode({ styles: { lineStringColor: COLOR, lineStringWidth: 3 } }),
         new TerraDrawFreehandLineStringMode({
           minDistance: 6,

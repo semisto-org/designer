@@ -54,6 +54,8 @@ export async function exportMasterPlan(source: MapLibreMap, input: MasterInput, 
   const image = await renderMap(source, {
     center: input.center, scale: input.scale, frame: layout.frame, hiddenLayers: input.hiddenLayers,
     variant: input.variant, hideBoundary: input.hideBoundary, planLook: true,
+    // The bubbles were the sketch of the intentions: the master plan shows what came of them.
+    hiddenKinds: ['bubble'],
     inspect: (map) => {
       const widthCss = mmToCss(layout.frame.w)
       const ratio = layout.frame.w / widthCss

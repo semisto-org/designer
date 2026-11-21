@@ -12,6 +12,8 @@ class MasterPlanTest < ActiveSupport::TestCase
     pond = @map.features.create!(layer: "water", kind: "pond", name: "Mare", geometry: SHAPE, properties: { "planned" => true })
     @map.features.create!(layer: "water", kind: "pond", name: "Mare existante", geometry: SHAPE)
     @map.features.create!(layer: "networks", kind: "water_pipe", name: "Conduite", geometry: LINE, properties: { "planned" => true })
+    # A bubble was the sketch of an intention: the master plan shows what came of it.
+    @map.features.create!(layer: "drawings", kind: "bubble", name: "Garder l'eau", geometry: SHAPE)
     apple = PlantSpecies.create!(latin_name: "Malus masterplanii", plant_type: "tree")
     2.times { @map.features.create!(layer: "plants", kind: "plant", geometry: POINT, properties: { "species_id" => apple.id }) }
 

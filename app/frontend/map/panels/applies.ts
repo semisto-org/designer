@@ -82,3 +82,10 @@ export function appliesToLinks(feature: MapFeature): boolean {
 export function appliesToEarthworks(feature: MapFeature): boolean {
   return isDiggable(feature.properties.kind) || isReceiving(feature.properties.kind)
 }
+
+/** A bubble (map/tracing), or a free zone, line or note that can be laid on a tracing sheet. */
+export function appliesToTracing(feature: MapFeature): boolean {
+  const p = feature.properties
+  if (p.status === 'rejected' || p.kind === 'sector' || p.kind === 'permaculture_zone') return false
+  return p.kind === 'bubble' || p.layer === 'notes' || (p.layer === 'drawings' && ['zone', 'line', 'point'].includes(p.kind))
+}

@@ -161,7 +161,7 @@ function RoundingControl({ feature, disabled, onSave }: {
             : path && p.rounding == null ? { rounded: true, rounding: PATH_ROUNDING_DEFAULT } : { rounded: true })}
           className="mt-0.5 h-4 w-4 rounded border-loam-300 text-prune-600 focus:ring-prune-500"
         />
-        <span>{t(path ? 'zones.rounded_path' : p.kind === 'zone' ? 'zones.rounded' : 'zones.rounded_surface')}</span>
+        <span>{t(path ? 'zones.rounded_path' : p.kind === 'zone' || p.kind === 'bubble' ? 'zones.rounded' : 'zones.rounded_surface')}</span>
       </label>
       {rounded && (
         <div className="pl-6.5">
@@ -200,6 +200,7 @@ export default function ElementSection({ feature }: { feature: MapFeature }) {
   const ownColor = typeof feature.properties.style?.color === 'string'
   const computed = spec ? computedValues(feature, spec) : []
   const zone = isZoneKind(feature.properties.kind)
+  const bubble = feature.properties.kind === 'bubble'
   const surface = feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon'
   const line = feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString'
   // Zones take the soft palette of the plan; elements their own colour first.
@@ -292,12 +293,13 @@ export default function ElementSection({ feature }: { feature: MapFeature }) {
         <label className="flex items-start gap-2.5 text-sm text-loam-700">
           <input
             type="checkbox"
-            checked={stored.show_measure !== false}
+            checked={bubble ? stored.show_measure === true : stored.show_measure !== false}
             disabled={!editor.canEdit}
-            onChange={(e) => saveProperty('show_measure', e.target.checked ? null : false)}
+            // A bubble hides its area unless asked; a zone shows it unless told not to.
+            onChange={(e) => saveProperty('show_measure', bubble ? (e.target.checked ? true : null) : e.target.checked ? null : false)}
             className="mt-0.5 h-4 w-4 rounded border-loam-300 text-prune-600 focus:ring-prune-500"
           />
-          <span>{t(feature.properties.kind === 'zone' ? 'zones.show_area' : 'zones.show_length')}</span>
+          <span>{t(feature.properties.kind === 'line' ? 'zones.show_length' : 'zones.show_area')}</span>
         </label>
       )}
 

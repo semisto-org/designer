@@ -174,6 +174,12 @@ function ProjectFunctions({ data, challenges, entriesOf, focus, shown, mapId, ca
       {t('element_functions.project.open_sheet')}
     </ButtonLink>
   )
+  // The bubbles (map/tracing) drawn for a function: an intention, not an element serving it yet.
+  const { features } = useEditor()
+  const bubblesOf = (fn: ProjectFunction) => (fn.bubbles ?? [])
+    .map((id) => features.find((f) => f.properties.id === id))
+    .filter((f) => f != null)
+    .map((f) => `« ${f.properties.name?.trim() || t('editor.kinds.bubble')} »`)
   const sources = (['holder', 'place'] as const).map((source) => ({ source, rows: data.filter((f) => f.source === source) })).filter((g) => g.rows.length > 0)
 
   return (
@@ -200,7 +206,7 @@ function ProjectFunctions({ data, challenges, entriesOf, focus, shown, mapId, ca
                           <span className="text-sm font-semibold text-loam-900">{fn.name}</span>
                           {fn.status === 'covered' && <span className="shrink-0 text-sm text-loam-500">{t('element_functions.project.covered', { count: fn.count })}</span>}
                         </div>
-                        {fn.status === 'missing' && <p className="mt-0.5 text-sm text-humus-700">{t('element_functions.project.missing')}</p>}
+                        {fn.status === 'missing' && <p className="mt-0.5 text-sm text-humus-700">{t(bubblesOf(fn).length ? 'element_functions.project.missing_bubbled' : 'element_functions.project.missing', { bubbles: bubblesOf(fn).join(', ') })}</p>}
                         {fn.status === 'fragile' && <p className="mt-0.5 text-sm text-humus-700">{t('element_functions.project.fragile', { name: entries[0]?.label ?? '' })}</p>}
                         {entries.length > 0 && (
                           <ShowButton active={shown === `project:${fn.id}`} onClick={() => focus(entries, `project:${fn.id}`)} className="-ml-3 mt-0.5" />

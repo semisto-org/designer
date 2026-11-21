@@ -103,7 +103,7 @@ export function ZoneLayer({ children }: { children: ReactNode }) {
           />}
         {/* Last in the page so what unfolds from the middle (a picker, the time card) shows over the side cards. */}
         <div className="relative order-2 flex min-w-0 flex-1 flex-col">
-          <div ref={slot('toolbar')} data-zone="toolbar" className="flex justify-center px-2 pt-2 md:pt-3.5" />
+          <div ref={slot('toolbar')} data-zone="toolbar" className="flex flex-wrap items-start justify-center gap-2 px-2 pt-2 md:pt-3.5" />
           {/* Clear of the map's zoom controls on the right (and centred from md up). */}
           <div ref={slot('top')} data-zone="top" className="flex flex-col items-stretch gap-2 pl-2 pr-14 pt-2 md:items-center md:px-14" />
           <div className="min-h-0 flex-1" />

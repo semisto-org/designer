@@ -7,7 +7,7 @@ module Mcp
         ListTerritories, GetTerritory, GetHydrography, Geocode,
         SearchPlants, GetPlant, GetDesignGuide, GetHelp, GetMyPlan, ListTeams, GetProjectSheet, GetImplementationPlan, GetBioindicatorPhoto, GetSoilSamples, GetSoilReport, GetOffer, GetDocumentTheme,
         ListTasks, ListTimeEntries, ListDiscussion, GetNotifications, ListFeedback, ListHarvests, ListPlantObservations, ListStorageReadings, ListDocuments, GetDocument, ListSiteVisits, ListPhotos, GetPhoto, ListDronePilots, ListDroneMissions, ListPropagationRequests,
-        ProposeFeatures, ProposeSectors, ProposeZones, ProposeFeatureUpdates, ProposeDeletions, ProposePalette, ProposeProjectSheet, ProposePhases, ProposePresentationSlides, ProposeBioindicators, ProposeSoilResults, ProposeOfferLetter, ProposeDocumentTheme, WithdrawDraft,
+        ProposeFeatures, ProposeSectors, ProposeZones, ProposeBubbles, ProposeFeatureUpdates, ProposeDeletions, ProposePalette, ProposeProjectSheet, ProposePhases, ProposePresentationSlides, ProposeBioindicators, ProposeSoilResults, ProposeOfferLetter, ProposeDocumentTheme, WithdrawDraft,
         ProposeTerritoryItems, ProposeTerritoryUpdates, ProposeTerritoryDeletions, WithdrawTerritoryDrafts,
         CreateTasks, UpdateTasks, RecordTimeEntries, RecordProjectExpenses, RecordHarvests, RecordPlantObservations, RecordPlantLooks, RecordStorageReadings, AddDocument, UpdateDocument, ConvertDocumentToPdf, AddPhoto, UpdatePhotos, DeletePhotos, UpdatePaletteBudget,
         CreateUpload, AttachPhotos, AttachDocuments, ImportFromUrl, DeleteDocuments, RenameDocumentTag, PrepareOfflineSite

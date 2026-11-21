@@ -1,7 +1,8 @@
+import { PLANT_SHEET_SHOWN } from '@/map/tracing/sheets'
 import { circle } from '@turf/turf'
 import type { Feature, FeatureCollection, Point, Polygon } from 'geojson'
 import { MapPin, X } from 'lucide-react'
-import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl'
+import type { FilterSpecification, GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl'
 import { useEffect, useMemo, useRef } from 'react'
 import { t } from '@/lib/i18n'
 import { strataKey } from '@/map/drawing/hidden'
@@ -344,6 +345,13 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
     },
     paint: { 'text-color': ['case', PLANTED, ['get', 'ink'], '#1b1712'] },
   })
+  // The tracing sheets (map/tracing): a planned plant waits for the planting sheet.
+  for (const id of map.getLayersOrder()) {
+    const source = map.getLayer(id)?.source
+    if (source !== CROWNS && source !== LABELS && source !== NUMBERS && source !== TRUNKS) continue
+    const own = map.getFilter(id)
+    map.setFilter(id, (own ? ['all', own, PLANT_SHEET_SHOWN] : PLANT_SHEET_SHOWN) as FilterSpecification)
+  }
   raiseNumbers(map)
   // Over the zones and surfaces, whichever was added first.
   stackFeatureLayers(map)

@@ -29,7 +29,7 @@ class MapFeature < ApplicationRecord
   ANNOTATION_LAYERS = %w[drawings notes].freeze
   # The free shapes of the « Zone » tool, in the « Dessins » layer since
   # 2026-11-03; a client that still sends them to « notes » is redirected.
-  DRAWING_KINDS = %w[zone line].freeze
+  DRAWING_KINDS = %w[zone line bubble].freeze
   STATUSES = %w[active draft rejected].freeze
   SOURCES = %w[human ai].freeze
   # Constructions with a roof: volumes in the 3D view; planned, never public.

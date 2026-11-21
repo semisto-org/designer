@@ -65,7 +65,7 @@ class MasterPlan
     # What is numbered: the project (planned or a plan's zone), not single plants, never networks.
     def elements
       scope = map.features.active.in_design.where(layer: THEMES)
-      scope.reject { |f| f.layer == "plants" && f.plant? }.select { |f| f.layer == "drawings" || f.planned? }
+      scope.reject { |f| f.layer == "plants" && f.plant? }.select { |f| (f.layer == "drawings" && f.kind != "bubble") || f.planned? }
     end
 
     # Where each number is written: on the surface of an area, halfway along a line.

@@ -2,7 +2,7 @@ import { ZoneCard } from '@/map/layout/ZoneLayer'
 import { PRIORITY } from '@/map/layout/zones'
 import clsx from 'clsx'
 import type { Geometry } from 'geojson'
-import { Hand, LandPlot, Minus, MousePointer2, PenLine, Pencil, Plus, Ruler, Shapes, Spline, type LucideIcon } from 'lucide-react'
+import { Circle, Hand, LandPlot, Minus, MousePointer2, PenLine, Pencil, Plus, Ruler, Shapes, Spline, type LucideIcon } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { formatArea, formatLength, t, translations } from '@/lib/i18n'
@@ -23,6 +23,8 @@ import { drawingStore, revealForDrawing, startShapeEdit, useDrawingState, type D
 import { plantPeek } from '@/map/plants/peek'
 import { selectionMove } from '@/map/selection/move'
 import { ZoneTool } from '@/map/zones/ZoneTool'
+import { BubbleTool } from '@/map/tracing/BubbleTool'
+import { useSheet } from '@/map/tracing/store'
 import type { ElementSpec } from '@/types/drawing'
 
 function ToolButton({ icon: Icon, label, hint, active, onClick }: { icon: LucideIcon; label: string; hint: string; active: boolean; onClick: () => void }) {
@@ -99,6 +101,7 @@ export default function DrawingToolbar() {
   const latest = useRef<Editor>(editor)
   latest.current = editor
   const tool = useDrawingState((s) => s.tool)
+  const sheet = useSheet()
   const shapeEditId = useDrawingState((s) => s.shapeEditId)
   const [drawingSpec, setDrawingSpec] = useState<ElementSpec | null>(null)
   // Chosen in the picker: the element is drawn « En projet » (`planned: true`).
@@ -318,6 +321,9 @@ export default function DrawingToolbar() {
           {editor.canEdit && (
             <ToolButton icon={Shapes} label={t('drawing.toolbar.draw')} hint={t('drawing.toolbar.draw_hint')} active={tool === 'draw'} onClick={() => setTool(tool === 'draw' ? null : 'draw')} />
           )}
+          {editor.canEdit && sheet === 'bubbles' && editor.mode === 'project' && (
+            <ToolButton icon={Circle} label={t('tracing.bubble.tool')} hint={t('tracing.bubble.tool_hint')} active={tool === 'bubble'} onClick={() => setTool(tool === 'bubble' ? null : 'bubble')} />
+          )}
           {editor.canEdit && (
             <ToolButton icon={LandPlot} label={t('zones.tool')} hint={t('zones.tool_hint')} active={tool === 'zone'} onClick={() => setTool(tool === 'zone' ? null : 'zone')} />
           )}
@@ -367,6 +373,7 @@ export default function DrawingToolbar() {
             </HintBar>
           )}
           {tool === 'zone' && editor.canEdit && <ZoneTool onClose={close} />}
+          {tool === 'bubble' && editor.canEdit && <BubbleTool onClose={close} />}
           {tool === 'measure' && <MeasureTool onClose={close} />}
           {tool === 'sketch' && editor.canEdit && <SketchTool onClose={close} />}
           {tool === 'shape' && (

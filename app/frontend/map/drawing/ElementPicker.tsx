@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { t } from '@/lib/i18n'
 import { ELEMENT_LAYERS, elementFor } from '@/map/drawing/catalog'
+import { drawingStore } from '@/map/drawing/store'
 import { iconComponent } from '@/map/drawing/icons'
 import { useEditor } from '@/map/editor/EditorContext'
 import { canBePlanned, isAnnotationLayer } from '@/map/scenario'
@@ -62,7 +63,14 @@ export function ElementPicker({ onPick, onClose }: { onPick: (spec: ElementSpec,
   const planned = mode === 'project'
   const recent = loadRecent().filter((kind) => offered(elementFor(kind)!, mode))
   const layers = PICKER_LAYERS.filter((l) => l.elements.some((e) => offered(e, mode)))
-  const [layer, setLayer] = useState(() => elementFor(recent[0])?.layer ?? layers[0].layer)
+  // Opened from a tracing sheet (map/tracing): on that sheet's first layer, once.
+  const [layer, setLayer] = useState(() => {
+    const asked = drawingStore.get().pickerLayer
+    return (asked && layers.some((l) => l.layer === asked) ? asked : null) ?? elementFor(recent[0])?.layer ?? layers[0].layer
+  })
+  useEffect(() => {
+    if (drawingStore.get().pickerLayer) drawingStore.set({ pickerLayer: null })
+  }, [])
   const current = layers.find((l) => l.layer === layer) ?? layers[0]
   const pick = (spec: ElementSpec) => onPick(spec, planned && canBePlanned(spec.layer, spec.kind))
   const choose = (next: boolean) => setMode(next ? 'project' : 'existing')
