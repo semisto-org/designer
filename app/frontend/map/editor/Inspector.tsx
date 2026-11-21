@@ -1,4 +1,4 @@
-import { Copy, CopyCheck, Trash2, X } from 'lucide-react'
+import { ChevronRight, Copy, CopyCheck, Trash2, X } from 'lucide-react'
 import clsx from 'clsx'
 import { useEffect, useState, type ReactNode } from 'react'
 import { Button } from '@/components/ui/Button'
@@ -36,7 +36,10 @@ export function Inspector({ feature, frame = 'map', lead }: { feature: MapFeatur
   const m = measure(displayGeometry(feature))
   const applicable = INSPECTOR_SECTIONS.filter((s) => s.applies(feature)).sort((a, b) => (a.order ?? 50) - (b.order ?? 50))
   const topSections = applicable.filter((s) => s.placement === 'top')
-  const sections = applicable.filter((s) => s.placement !== 'top')
+  const foldSections = applicable.filter((s) => s.placement === 'fold')
+  const sections = applicable.filter((s) => s.placement !== 'top' && s.placement !== 'fold')
+  // A plant reads as a page of the notebook; what is typed into it waits folded, lower down.
+  const folded = isPlant(feature)
 
   // A sector, a zone or a sketch is made by its own tool, not copied.
   const duplicable = editor.canEdit && frame === 'map' && p.status === 'active' && elementFor(p.kind)?.pickable !== false
@@ -78,12 +81,27 @@ export function Inspector({ feature, frame = 'map', lead }: { feature: MapFeatur
     editor.updateFeature(p.id, patch).catch((e: Error) => editor.notify(e.message, 'error'))
   }
 
+  const fields = (
+    <>
+      <Field label={t('editor.inspector.name')}>
+        <Input value={name} disabled={!editor.canEdit} onChange={(e) => setName(e.target.value)} onBlur={() => save({ name })} />
+      </Field>
+      <Field label={t('editor.inspector.notes')}>
+        <Textarea rows={3} value={notes} disabled={!editor.canEdit} onChange={(e) => setNotes(e.target.value)} onBlur={() => save({ notes })} />
+      </Field>
+      <dl className="grid grid-cols-2 gap-2 text-sm">
+        {m.area != null && <div><dt className="text-xs text-loam-500">{t('editor.measure.area')}</dt><dd>{formatArea(m.area)}</dd></div>}
+        {m.length != null && <div><dt className="text-xs text-loam-500">{t(m.area != null ? 'editor.measure.perimeter' : 'editor.measure.length')}</dt><dd>{formatLength(m.length)}</dd></div>}
+      </dl>
+    </>
+  )
+
   const sheet = (
     <aside className={clsx('overflow-y-auto bg-white', frame === 'map'
       ? 'min-h-0 rounded-xl p-4 shadow-xl ring-1 ring-loam-200 md:w-80'
       : 'h-full w-full p-5')}>
       <div className="flex items-start justify-between gap-2">
-        <div>
+        <div className="min-w-0 flex-1">
           {/* A plant is named by its number and species, not « Plantes · Plante ». */}
           {isPlant(feature) ? <PlantHeading feature={feature} /> : (
             <p className="text-xs uppercase tracking-wide text-loam-400">
@@ -99,23 +117,24 @@ export function Inspector({ feature, frame = 'map', lead }: { feature: MapFeatur
       <div className="mt-3 space-y-3">
         {lead}
         {topSections.map((s) => <s.component key={s.id} feature={feature} />)}
-        <Field label={t('editor.inspector.name')}>
-          <Input value={name} disabled={!editor.canEdit} onChange={(e) => setName(e.target.value)} onBlur={() => save({ name })} />
-        </Field>
-        <Field label={t('editor.inspector.notes')}>
-          <Textarea rows={3} value={notes} disabled={!editor.canEdit} onChange={(e) => setNotes(e.target.value)} onBlur={() => save({ notes })} />
-        </Field>
-        <dl className="grid grid-cols-2 gap-2 text-sm">
-          {m.area != null && <div><dt className="text-xs text-loam-500">{t('editor.measure.area')}</dt><dd>{formatArea(m.area)}</dd></div>}
-          {m.length != null && <div><dt className="text-xs text-loam-500">{t(m.area != null ? 'editor.measure.perimeter' : 'editor.measure.length')}</dt><dd>{formatLength(m.length)}</dd></div>}
-        </dl>
+        {folded ? (
+          p.notes ? <p className="whitespace-pre-line text-sm text-loam-700">{p.notes}</p> : null
+        ) : fields}
         {p.rationale && (
           <div className="rounded-lg bg-prune-50 p-3 text-sm text-prune-800">
             <p className="text-xs font-semibold uppercase tracking-wide">{t('editor.inspector.rationale')}</p>
             <p className="mt-1 whitespace-pre-line">{p.rationale}</p>
           </div>
         )}
-        {sections.map((s) => <s.component key={s.id} feature={feature} />)}
+        {sections.filter((s) => !folded || (s.order ?? 50) < 60).map((s) => <s.component key={s.id} feature={feature} />)}
+        {/* A plant's sheet folds before its photos nearby and its discussion. */}
+        {folded && (
+          <SheetFold feature={feature}>
+            {fields}
+            {foldSections.map((s) => <s.component key={s.id} feature={feature} />)}
+          </SheetFold>
+        )}
+        {folded && sections.filter((s) => (s.order ?? 50) >= 60).map((s) => <s.component key={s.id} feature={feature} />)}
         {/* Picking several to move them together needs the map. */}
         {editor.canEdit && frame === 'map' && (
           <Button
@@ -156,4 +175,39 @@ export function Inspector({ feature, frame = 'map', lead }: { feature: MapFeatur
   if (frame !== 'map') return sheet
   // The right zone from md up, the one sheet on a phone; it outranks the discussion, which waits (map/layout/zones).
   return <ZoneCard id="inspector" zone={{ desktop: 'right', phone: 'sheet' }} priority={PRIORITY.inspector} className="max-h-[60%] md:max-h-full">{sheet}</ZoneCard>
+}
+
+const FOLD_KEY = 'terranova.plant-sheet-open'
+
+/**
+ * « Modifier la fiche »: a plant's editable fields, folded under its page.
+ * Open by default only where something is missing (no species yet); the
+ * person's own choice to keep it open is remembered on this browser.
+ */
+function SheetFold({ feature, children }: { feature: MapFeature; children: ReactNode }) {
+  const editor = useEditor()
+  const missing = editor.canEdit && feature.properties.species_id == null
+  const [open, setOpen] = useState(() => missing || readFold())
+  useEffect(() => { if (missing) setOpen(true) }, [missing, feature.properties.id])
+  return (
+    <details open={open} onToggle={(e) => {
+      const next = (e.currentTarget as HTMLDetailsElement).open
+      setOpen(next)
+      writeFold(next)
+    }} className="group border-t border-loam-200 pt-3">
+      <summary className="flex cursor-pointer list-none items-center gap-1.5 text-sm font-semibold text-prune-700 [&::-webkit-details-marker]:hidden">
+        <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" aria-hidden />
+        {t(editor.canEdit ? 'plant_feature.specimen.edit' : 'plant_feature.specimen.details')}
+      </summary>
+      <div className="mt-3 space-y-3">{children}</div>
+    </details>
+  )
+}
+
+function readFold(): boolean {
+  try { return window.localStorage.getItem(FOLD_KEY) === '1' } catch { return false }
+}
+
+function writeFold(open: boolean) {
+  try { window.localStorage.setItem(FOLD_KEY, open ? '1' : '0') } catch { /* private window: the choice lasts the visit */ }
 }
