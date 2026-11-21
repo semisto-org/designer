@@ -13,6 +13,7 @@ import { numberRanges } from '@/map/plants/labelRank'
 import { isPlant, numberProperty } from '@/map/plants/properties'
 import { drawsCrown, plantIsSupport, plantStrata, STRATA_COLORS, strataCounts, type StrataCount } from '@/map/plants/strata'
 import { PLAN_COLORS, PLAN_STRATA_COLORS } from '@/map/plants/strataColors'
+import { useDrawnView } from '@/map/drawn/DrawnViewOverlay'
 import { usePresentRender } from '@/map/presentation/render'
 import { isHiddenInRender, RIBBON_KINDS } from '@/map/presentation/renderRules'
 import { setPlantLabelStyle, usePlantLabelStyle } from '@/map/plants/labelStyle'
@@ -36,7 +37,7 @@ function storedOpen(): boolean | null {
 /** The plant numbers of one species (and variety) on the map, for the « Numéro » legend. */
 type NumberedGroup = { key: string; name: string; strata: Strata | null; numbers: number[] }
 
-type PlantLegend = { counts: StrataCount[]; unknown: number; planned: boolean; support: boolean; numbered: NumberedGroup[] }
+type PlantLegend = { counts: StrataCount[]; unknown: number; planned: boolean; planted: boolean; support: boolean; numbered: NumberedGroup[] }
 
 /**
  * The strata of the plants on the map, from the highest down (hidden ones
@@ -49,11 +50,12 @@ function usePlantStrata(): PlantLegend {
   const { data } = usePlanting(map.id)
   const hidden = useDrawingState((s) => s.hiddenLayers)
   const hiddenStrata = useDrawingState((s) => s.hiddenStrata)
-  if (hidden.includes('plants')) return { counts: [], unknown: 0, planned: false, support: false, numbered: [] }
+  if (hidden.includes('plants')) return { counts: [], unknown: 0, planned: false, planted: false, support: false, numbered: [] }
   const strata: Strata[] = []
   let unknown = 0
   const groups = new Map<string, NumberedGroup>()
   let planned = false
+  let planted = false
   let support = false
   for (const feature of features) {
     if (!isPlant(feature) || feature.properties.status === 'rejected' || !inMoment(feature.properties, moment, timeline.arrival, mode)) continue
@@ -78,10 +80,11 @@ function usePlantStrata(): PlantLegend {
     if (!s) continue
     strata.push(s)
     planned ||= isPlannedPlant(feature.properties)
+    planted ||= !isPlannedPlant(feature.properties)
     support ||= drawsCrown(s) && plantIsSupport(feature, data)
   }
   const numbered = [...groups.values()].sort((a, b) => Math.min(...a.numbers) - Math.min(...b.numbers))
-  return { counts: strataCounts(strata), unknown, planned, support, numbered }
+  return { counts: strataCounts(strata), unknown, planned, planted, support, numbered }
 }
 
 /**
@@ -168,11 +171,13 @@ export default function LegendOverlay() {
  * A click hides or shows that strata (crowns, points, names and numbers),
  * remembered per map like the « Calques ».
  */
-function StrataLegend({ counts, unknown, planned, support, numbered }: PlantLegend) {
+function StrataLegend({ counts, unknown, planned, planted, support, numbered }: PlantLegend) {
+  // « Vue dessinée »: the project is drawn solid, what is in the ground in grey.
+  const drawn = useDrawnView()
   const style = usePlantLabelStyle()
   const hidden = useDrawingState((s) => s.hiddenStrata)
   const rows = [
-    ...counts.map(({ strata, count }) => ({ key: strata as string, label: strataLabel(strata), color: STRATA_COLORS[strata] as string, crown: drawsCrown(strata), count })),
+    ...counts.map(({ strata, count }) => ({ key: strata as string, label: strataLabel(strata), color: (drawn ? PLAN_STRATA_COLORS[strata] : STRATA_COLORS[strata]) as string, crown: drawsCrown(strata), count })),
     ...(unknown > 0 ? [{ key: UNKNOWN_STRATA, label: t('plants.legend.unknown_strata'), color: '#6b665c', crown: true, count: unknown }] : []),
   ]
   return (
@@ -207,10 +212,16 @@ function StrataLegend({ counts, unknown, planned, support, numbered }: PlantLege
           )
         })}
       </ul>
-      {planned && (
+      {planned && !drawn && (
         <p className="mt-2 flex items-center gap-2 text-sm leading-tight text-loam-600">
           <CrownSwatch color="#6b665c" planned />
           {t('plants.legend.planned')}
+        </p>
+      )}
+      {drawn && planted && (
+        <p className="mt-2 flex items-center gap-2 text-sm leading-tight text-loam-600">
+          <Wash color={PLAN_COLORS.existingCrown} edge={PLAN_COLORS.existingEdge} opacity={0.5} shadow={false} />
+          {t('plants.legend.planted_drawn')}
         </p>
       )}
       {support && (

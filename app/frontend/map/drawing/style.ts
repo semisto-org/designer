@@ -11,7 +11,7 @@ import { composeFilter, hiddenTests } from '@/map/drawing/hidden'
 import { drawIcon, ICON_NAMES } from '@/map/drawing/icons'
 import { resolveMissingImages } from '@/map/layers/missingImages'
 import { FEATURES_SOURCE } from '@/map/layers/features'
-import { GROUND_IN_PROJECT_FACTOR, IN_PRESENT_RENDER, PLANNED_ELEMENT_EXPR, PLANNED_OPACITY, TO_REMOVE_EXPR, TO_REMOVE_OPACITY } from '@/map/scenario'
+import { GROUND_IN_PROJECT_FACTOR, IN_DRAWN_VIEW, IN_PLAN_LOOK, IN_PRESENT_RENDER, PLANNED_ELEMENT_EXPR, PLANNED_OPACITY, TO_REMOVE_EXPR, TO_REMOVE_OPACITY } from '@/map/scenario'
 import type { ElementSpec } from '@/types/drawing'
 import { ensureSupportHatch } from '@/map/plants/supportHatch'
 import { PLAN_COLORS, PLAN_STRATA_COLORS } from '@/map/plants/strataColors'
@@ -112,9 +112,12 @@ const pointKinds = LIBRARY.filter((e) => e.geometries.includes('Point'))
  * project while the editor shows « Projet » (unless selected).
  */
 const inRender = expr(IN_PRESENT_RENDER)
+/** Presenting the project, or designing it in the « vue dessinée » (map/drawn): the plan's look. */
+const planLook = expr(IN_PLAN_LOOK)
+const drawnView = expr(IN_DRAWN_VIEW)
 const isTechnical = expr(['in', ['get', 'kind'], ['literal', RENDER_HIDDEN_KINDS]])
 const visibleFactor = expr(['*',
-  ['case', editing, 0, ['all', inRender, isTechnical], 0, isDraft, 0.5, ['all', isPlannedElement, ['!', inRender]], PLANNED_OPACITY, isToRemove, TO_REMOVE_OPACITY, 1],
+  ['case', editing, 0, ['all', inRender, isTechnical], 0, isDraft, 0.5, ['all', isPlannedElement, ['!', planLook]], PLANNED_OPACITY, isToRemove, TO_REMOVE_OPACITY, 1],
   ['case', selected, 1, GROUND_IN_PROJECT_FACTOR]])
 /**
  * A planned element keeps its own dash if it has one, else draws dashed:
@@ -123,7 +126,7 @@ const visibleFactor = expr(['*',
 const plannedDash = expr(['case',
   isToRemove, ['literal', [0.6, 1.6]],
   // A designer's plan draws the project as it will be: solid.
-  inRender, ['case', isHedge, ['literal', [1, 0]], lineDash],
+  planLook, ['case', isHedge, ['literal', [1, 0]], lineDash],
   ['all', isPlannedElement, ['!', ['in', ['get', 'kind'], ['literal', LIBRARY.filter((e) => e.line?.dash).map((e) => e.kind)]]]], ['literal', [3, 2]],
   lineDash])
 
@@ -170,8 +173,8 @@ function drawingLayers(latitude: number): LayerSpecification[] {
       paint: {
         // « Rendu présentation »: water reads as water, a full soft blue; a
         // terrace or a yard is ground one walks on, the paths' sand.
-        'fill-color': expr(['case', ['all', inRender, isGround], PLAN_COLORS.terrace, ['all', inRender, isWater], PLAN_COLORS.water, featureColorExpr]),
-        'fill-opacity': expr(['case', ['all', inRender, isWater], ['*', 0.8, visibleFactor], ['all', inRender, isGround], ['*', 0.95, visibleFactor],
+        'fill-color': expr(['case', ['all', planLook, isGround], PLAN_COLORS.terrace, ['all', planLook, isWater], PLAN_COLORS.water, featureColorExpr]),
+        'fill-opacity': expr(['case', ['all', planLook, isWater], ['*', ['case', ['all', drawnView, ['!', isPlannedElement]], 0.3, 0.8], visibleFactor], ['all', planLook, isGround], ['*', 0.95, visibleFactor],
           ['*', ['+', fillOpacity, ['case', selected, 0.1, 0]], visibleFactor, ['case', ['in', ['get', 'kind'], ['literal', patterned.map((e) => e.kind)]], 0.6, 1]]]),
       },
     },
@@ -195,11 +198,11 @@ function drawingLayers(latitude: number): LayerSpecification[] {
         'circle-radius': expr(['interpolate', ['exponential', 2], ['zoom'], 12, crownRadius(12), 24, crownRadius(24)]),
         // « Rendu présentation »: as on a designer's plan, what is already
         // there is drawn in grey line, what the project brings in colour.
-        'circle-color': expr(['case', inRender, PLAN_EXISTING_CROWN, featureColorExpr]),
-        'circle-opacity': expr(['*', ['case', inRender, 0.22, selected, 0.3, 0.2], visibleFactor]),
-        'circle-stroke-color': expr(['case', inRender, PLAN_EXISTING_EDGE, featureColorExpr]),
-        'circle-stroke-width': expr(['case', inRender, 1.2, 1]),
-        'circle-stroke-opacity': expr(['*', ['case', inRender, 0.8, 0.7], visibleFactor]),
+        'circle-color': expr(['case', planLook, PLAN_EXISTING_CROWN, featureColorExpr]),
+        'circle-opacity': expr(['*', ['case', planLook, ['case', selected, 0.32, 0.22], selected, 0.3, 0.2], visibleFactor]),
+        'circle-stroke-color': expr(['case', planLook, PLAN_EXISTING_EDGE, featureColorExpr]),
+        'circle-stroke-width': expr(['case', selected, 2.5, planLook, 1.2, 1]),
+        'circle-stroke-opacity': expr(['*', ['case', planLook, 0.8, 0.7], visibleFactor]),
         'circle-pitch-alignment': 'map',
       },
     },
@@ -214,9 +217,9 @@ function drawingLayers(latitude: number): LayerSpecification[] {
       filter: ribbonFilter,
       layout: { 'line-cap': 'round', 'line-join': 'round' },
       paint: {
-        'line-color': expr(['case', inRender, PLAN_COLORS.pathEdge, featureColorExpr]),
+        'line-color': expr(['case', planLook, PLAN_COLORS.pathEdge, featureColorExpr]),
         'line-width': ribbonWidth(0.35),
-        'line-opacity': expr(['*', ['case', inRender, 0.55, 0.45], visibleFactor]),
+        'line-opacity': expr(['*', ['case', planLook, 0.55, 0.45], visibleFactor]),
         'line-blur': 1,
       },
     },
@@ -227,9 +230,9 @@ function drawingLayers(latitude: number): LayerSpecification[] {
       filter: ribbonFilter,
       layout: { 'line-cap': 'round', 'line-join': 'round' },
       paint: {
-        'line-color': expr(['case', inRender, PLAN_COLORS.pathFill, featureColorExpr]),
+        'line-color': expr(['case', planLook, PLAN_COLORS.pathFill, featureColorExpr]),
         'line-width': ribbonWidth(0),
-        'line-opacity': expr(['*', ['case', inRender, 0.95, selected, 0.75, 0.55], visibleFactor]),
+        'line-opacity': expr(['*', ['case', planLook, 0.95, selected, 0.75, 0.55], visibleFactor]),
       },
     },
     {
@@ -253,14 +256,14 @@ function drawingLayers(latitude: number): LayerSpecification[] {
       paint: {
         // « Rendu présentation »: water keeps its line in a deep slate blue; the
         // outline of any other surface is a fine ink line, its fill says the rest.
-        'line-color': expr(['case', ['all', inRender, isHedge], ['case', ['==', ['get', 'kind'], 'existing_hedge'], PLAN_COLORS.existingCrown, PLAN_STRATA_COLORS.sub_canopy],
-          ['all', inRender, isWater], PLAN_COLORS.waterEdge, ['all', inRender, isPolygon], PLAN_COLORS.ink, featureColorExpr]),
+        'line-color': expr(['case', ['all', planLook, isHedge], ['case', ['==', ['get', 'kind'], 'existing_hedge'], PLAN_COLORS.existingCrown, PLAN_STRATA_COLORS.sub_canopy],
+          ['all', planLook, isWater], PLAN_COLORS.waterEdge, ['all', planLook, isPolygon], PLAN_COLORS.ink, featureColorExpr]),
         'line-width': expr(['interpolate', ['linear'], ['zoom'], ...([[14, 0.4], [18, 1], [21, 1.6]] as [number, number][]).flatMap(([zoom, factor]) => [zoom,
-          ['case', ['all', inRender, isPolygon], ['case', isWater, 1.6, 0.8],
+          ['case', ['all', planLook, isPolygon], ['+', ['case', isWater, 1.6, 0.8], ['case', selected, 2, 0]],
             ['+', ['*', ['case', isPolygon, ['min', lineWidth, 2.5], lineWidth], factor], ['case', selected, 2, 0]]]])]),
-        'line-blur': expr(['case', ['all', inRender, isWater, isPolygon], 0.8, ['all', inRender, isHedge], 2, 0]),
+        'line-blur': expr(['case', ['all', planLook, isWater, isPolygon], 0.8, ['all', planLook, isHedge], 2, 0]),
         // A path is its ribbon; only what the project takes away keeps its dotted line on it.
-        'line-opacity': expr(['*', lineOpacity, visibleFactor, ['case', ['all', inRender, isRibbon], 0, ['all', isRibbon, ['!', isToRemove]], 0, ['all', inRender, isPolygon, ['!', isWater]], 0.5, 1]]),
+        'line-opacity': expr(['*', lineOpacity, visibleFactor, ['case', ['all', planLook, isRibbon], 0, ['all', isRibbon, ['!', isToRemove]], 0, ['all', planLook, isPolygon, ['!', isWater]], ['case', selected, 1, 0.5], 1]]),
         'line-dasharray': plannedDash as never,
       },
     },
@@ -290,10 +293,10 @@ function drawingLayers(latitude: number): LayerSpecification[] {
       paint: {
         'circle-radius': pointRadius,
         'circle-color': featureColorExpr,
-        'circle-opacity': expr(['case', ['all', inRender, isCrowned], 0, visibleFactor]),
+        'circle-opacity': expr(['case', ['all', planLook, isCrowned], 0, visibleFactor]),
         'circle-stroke-color': expr(['case', selected, '#1b1712', '#ffffff']),
         'circle-stroke-width': expr(['case', selected, 2.5, 1.5]),
-        'circle-stroke-opacity': expr(['case', ['all', inRender, isCrowned], 0, visibleFactor]),
+        'circle-stroke-opacity': expr(['case', ['all', planLook, isCrowned], 0, visibleFactor]),
       },
     },
     {
@@ -308,7 +311,7 @@ function drawingLayers(latitude: number): LayerSpecification[] {
         'icon-allow-overlap': true,
         'icon-ignore-placement': true,
       },
-      paint: { 'icon-opacity': expr(['case', ['all', inRender, isCrowned], 0, visibleFactor]) },
+      paint: { 'icon-opacity': expr(['case', ['all', planLook, isCrowned], 0, visibleFactor]) },
     },
     {
       id: 'drawing-measure-label',

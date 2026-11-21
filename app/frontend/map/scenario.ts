@@ -135,6 +135,25 @@ export const PRESENT_RENDER_STATE = 'presentRender'
 /** True while the plan rendering is on. */
 export const IN_PRESENT_RENDER = ['==', ['global-state', PRESENT_RENDER_STATE], true] as const
 
+/**
+ * Whether the editor draws the land as a designer's base plan while one
+ * designs (map/drawn), handed to the paint as the MapLibre global state
+ * `drawnView`.
+ */
+export const DRAWN_VIEW_STATE = 'drawnView'
+
+/** True while the drawn view is on. */
+export const IN_DRAWN_VIEW = ['==', ['global-state', DRAWN_VIEW_STATE], true] as const
+
+/**
+ * True while the map looks like a designer's plan: presenting the project,
+ * or designing it in the drawn view. Crowns as washes, what is there in
+ * grey, water in slate, paths as ribbons, the project drawn solid. What the
+ * working tool still needs (names, numbers, icons, measures) is left to the
+ * presentation alone, through IN_PRESENT_RENDER.
+ */
+export const IN_PLAN_LOOK = ['any', IN_PRESENT_RENDER, IN_DRAWN_VIEW] as const
+
 /** Opacity of what is on the ground while the editor shows the project: still there, behind it. */
 export const GROUND_IN_PROJECT_OPACITY = 0.45
 

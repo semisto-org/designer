@@ -52,6 +52,8 @@ import TransferNotice from '@/transfer/TransferNotice'
 import PlanImagesOverlay from '@/map/plan_images/PlanImagesOverlay'
 import EarthworksOverlay from '@/map/earthworks/EarthworksOverlay'
 import PresentationOverlay from '@/map/presentation/PresentationOverlay'
+import DrawnViewOverlay from '@/map/drawn/DrawnViewOverlay'
+import PlaceMarginOverlay from '@/map/drawn/PlaceMarginOverlay'
 import MapOpeningProbe from '@/map/performance/MapOpeningProbe'
 import { appliesToFunctions } from '@/map/functions/store'
 
@@ -182,5 +184,7 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'earthworks', component: EarthworksOverlay, order: 12 },
   { id: 'sectors', component: SectorsOverlay, order: 13 },
   { id: 'presentation', component: PresentationOverlay, order: 95 },
+  { id: 'drawn-view', component: DrawnViewOverlay, order: 96 },
+  { id: 'place-margin', component: PlaceMarginOverlay, order: 97 },
   { id: 'opening-probe', component: MapOpeningProbe, order: 200 },
 ]

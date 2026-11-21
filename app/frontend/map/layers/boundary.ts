@@ -2,7 +2,7 @@ import { type GeoJSONSource, type Map as MapLibreMap } from 'maplibre-gl'
 import type { MultiPolygon } from 'geojson'
 import { stackFeatureLayers } from '@/map/layers/stack'
 import { PLAN_COLORS } from '@/map/plants/strataColors'
-import { IN_PRESENT_RENDER } from '@/map/scenario'
+import { IN_PLAN_LOOK } from '@/map/scenario'
 
 export const BOUNDARY_SOURCE = 'boundary'
 
@@ -22,8 +22,8 @@ export function installBoundary(map: MapLibreMap, boundary: MultiPolygon | null)
   }
   map.addSource(BOUNDARY_SOURCE, { type: 'geojson', data })
   map.addSource(BOUNDARY_MASK_SOURCE, { type: 'geojson', data: mask })
-  const render = IN_PRESENT_RENDER as never
-  // « Rendu présentation »: around the terrain, the land fades into the
+  const render = IN_PLAN_LOOK as never
+  // « Rendu présentation » and « vue dessinée »: around the terrain, the land fades into the
   // paper, so the eye stays on the place being designed.
   map.addLayer({
     id: 'boundary-mask',
