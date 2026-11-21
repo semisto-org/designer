@@ -8,7 +8,8 @@ module Maps
     before_action :set_map
 
     def show
-      render json: MasterPlan.new(@map, team: editor?).as_json
+      variant = params[:variant_id].presence && @map.variants.find_by(id: params[:variant_id])
+      render json: MasterPlan.new(@map, team: editor?, variant:).as_json
     end
 
     private

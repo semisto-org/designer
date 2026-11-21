@@ -15,9 +15,12 @@ class MasterPlan
 
   # `team`: whether the reader may see the team's own work (the purpose of
   # the functional analysis); otherwise the person's own words are used.
-  def initialize(map, team: false)
+  # `variant`: the variant the printed map shows (the common project and
+  # it); without one, the design as retained.
+  def initialize(map, team: false, variant: nil)
     @map = map
     @team = team
+    @variant = variant
   end
 
   def as_json(*)
@@ -51,7 +54,7 @@ class MasterPlan
 
   # Single plants of the project, counted by species, most planted first.
   def palette
-    plants = map.features.active.in_design.where(layer: "plants", kind: MapFeature::PLANT).to_a.select(&:planned?)
+    plants = design.where(layer: "plants", kind: MapFeature::PLANT).to_a.select(&:planned?)
     counts = plants.group_by(&:plant_species_id).transform_values(&:size)
     species = PlantSpecies.where(id: counts.keys.compact).includes(:common_names).index_by(&:id)
     counts.filter_map do |id, count|
@@ -62,9 +65,14 @@ class MasterPlan
   end
 
   private
+    def design
+      scope = map.features.active
+      @variant ? scope.where(variant_id: [ nil, @variant.id ]) : scope.in_design
+    end
+
     # What is numbered: the project (planned or a plan's zone), not single plants, never networks.
     def elements
-      scope = map.features.active.in_design.where(layer: THEMES)
+      scope = design.where(layer: THEMES)
       scope.reject { |f| f.layer == "plants" && f.plant? }.select { |f| (f.layer == "drawings" && f.kind != "bubble") || f.planned? }
     end
 

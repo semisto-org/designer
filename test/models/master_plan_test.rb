@@ -32,4 +32,14 @@ class MasterPlanTest < ActiveSupport::TestCase
     assert_equal "Un jardin-forêt nourricier et pédagogique", MasterPlan.new(@map, team: true).mission
     assert_equal "Nourrir la famille", MasterPlan.new(@map).mission
   end
+
+  test "the plan of a variant numbers the common project and that variant, not the retained one" do
+    one = @map.variants.create!(name: "Projet 1")
+    two = @map.variants.create!(name: "Projet 2")
+    first = @map.features.create!(layer: "water", kind: "pond", name: "Mare 1", geometry: SHAPE, variant: one, properties: { "planned" => true })
+    second = @map.features.create!(layer: "water", kind: "pond", name: "Mare 2", geometry: SHAPE, variant: two, properties: { "planned" => true })
+    ids = ->(plan) { plan[:themes].flat_map { |t| t[:items].map { _1[:id] } } }
+    assert_includes ids.(MasterPlan.new(@map, variant: two).as_json), second.id
+    assert_not_includes ids.(MasterPlan.new(@map, variant: two).as_json), first.id
+  end
 end

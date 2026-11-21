@@ -23,6 +23,9 @@ export type MasterInput = {
   scale: number
   center: [number, number]
   hiddenLayers: string[]
+  hiddenKinds?: string[]
+  hiddenIds?: number[]
+  tag?: string | null
   hideBoundary?: boolean
   variant?: number | null
   author: string | null
@@ -53,9 +56,9 @@ export async function exportMasterPlan(source: MapLibreMap, input: MasterInput, 
   onProgress?.('map')
   const image = await renderMap(source, {
     center: input.center, scale: input.scale, frame: layout.frame, hiddenLayers: input.hiddenLayers,
-    variant: input.variant, hideBoundary: input.hideBoundary, planLook: true,
+    variant: input.variant, hideBoundary: input.hideBoundary, planLook: true, tag: input.tag, hiddenIds: input.hiddenIds,
     // The bubbles were the sketch of the intentions: the master plan shows what came of them.
-    hiddenKinds: ['bubble'],
+    hiddenKinds: [...(input.hiddenKinds ?? []), 'bubble'],
     inspect: (map) => {
       const widthCss = mmToCss(layout.frame.w)
       const ratio = layout.frame.w / widthCss

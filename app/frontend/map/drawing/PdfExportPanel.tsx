@@ -19,6 +19,8 @@ import { exportMasterPlan, type MasterPlanData } from '@/map/drawing/masterPlan'
 import { masterLayout } from '@/map/drawing/masterPlanLayout'
 import { api } from '@/lib/api'
 import { useShownVariant } from '@/map/variants/store'
+import { inVariant } from '@/map/variants/variants'
+import { inTag } from '@/map/tags/tags'
 import { showPrintFrame } from '@/map/drawing/style'
 import { usePlanting } from '@/map/plants/store'
 import { plantStrata } from '@/map/plants/strata'
@@ -100,7 +102,7 @@ export function PdfExportPanel({ onClose, initialKind = 'plan' }: { onClose: () 
   const fitted = scaleChoice === 'fit' && extent != null
   const scale = fitted ? fitScale(extent, layout.frame) : scaleChoice === 'fit' ? 500 : scaleChoice
   const center: [number, number] = fitted ? [(extent[0] + extent[2]) / 2, (extent[1] + extent[3]) / 2] : viewCenter
-  const frame = useMemo(() => frameGeometry(center, scale, layout.frame), [center[0], center[1], scale, paper, orientation]) // eslint-disable-line react-hooks/exhaustive-deps
+  const frame = useMemo(() => frameGeometry(center, scale, layout.frame), [center[0], center[1], scale, paper, orientation, master]) // eslint-disable-line react-hooks/exhaustive-deps
   const ground = groundSize(scale, layout.frame)
   const hiddenLayers = [...new Set([...hidden, ...(withNetworks && editor.canEdit ? [] : ['networks'])])]
   const legend = legendEntries(editor.features, hiddenLayers, showBoundary, variant?.id ?? null, { kinds: hiddenKinds, ids: hiddenIds, tag })
@@ -153,10 +155,18 @@ export function PdfExportPanel({ onClose, initialKind = 'plan' }: { onClose: () 
   async function generateMaster() {
     setStep({ step: 'map', page: 1, pages: 1 })
     try {
-      const plan = await api<MasterPlanData>(`/maps/${editor.map.id}/design/master_plan`)
+      const shown = variant?.id ?? null
+      const data = await api<MasterPlanData>(`/maps/${editor.map.id}/design/master_plan${shown ? `?variant_id=${shown}` : ''}`)
+      // Numbers only what the printed map draws: what « Calques » hides, or an étiquette leaves out, has no number.
+      const drawn = new Set(editor.features.filter((f) => !hiddenLayers.includes(f.properties.layer) && inVariant(f.properties, shown) && inTag(f, tag) &&
+        !hiddenIds.includes(f.properties.id) && !(f.properties.kind && hiddenKinds.includes(f.properties.kind))).map((f) => f.properties.id))
+      let number = 0
+      const plan = { ...data, themes: data.themes
+        .map((theme) => ({ ...theme, items: theme.items.filter((item) => drawn.has(item.id)).map((item) => ({ ...item, number: ++number })) }))
+        .filter((theme) => theme.items.length > 0) }
       await exportMasterPlan(instance, {
         title: title.trim() || editor.map.name,
-        paper, orientation, scale, center, hiddenLayers,
+        paper, orientation, scale, center, hiddenLayers, hiddenKinds, hiddenIds, tag,
         hideBoundary: !showBoundary,
         variant: variant?.id ?? null,
         author: currentUser?.name ?? null,
