@@ -43,26 +43,14 @@ export default function TracingOverlay() {
 }
 
 /**
- * What one draws or selects is never hidden: a new pond drawn while the
- * bubbles are on the table, or a plant picked in a list, lays its own
- * sheet on the table and says so.
+ * What one selects is never hidden: a plant picked in a list lays its own
+ * sheet on the table and says so (what one draws: liftSheetFor, called by
+ * the editor's createFeature).
  */
 function useSheetFollowsWork(sheet: Sheet | null) {
   const editor = useEditor()
-  const known = useRef<Set<number> | null>(null)
   const latest = useRef(editor)
   latest.current = editor
-
-  useEffect(() => {
-    const ids = new Set(editor.features.map((f) => f.properties.id))
-    const before = known.current
-    known.current = ids
-    if (!before || !sheet) return
-    const fresh = editor.features.filter((f) => !before.has(f.properties.id))
-    // One gesture adds one or a few elements; a batch (a variant shown, an AI's drafts, a sync) leaves the table as it is.
-    if (fresh.length === 0 || fresh.length > 3) return
-    raiseFor(fresh.map((f) => sheetOf(f.properties)), sheet, true)
-  }, [editor.features, sheet])
 
   // On a new selection only: choosing a lower sheet clears what it hides (TracingCard).
   const sheetNow = useRef(sheet)
@@ -73,14 +61,14 @@ function useSheetFollowsWork(sheet: Sheet | null) {
     const picked = [latest.current.selectedId, ...latest.current.selection]
       .map((id) => latest.current.features.find((f) => f.properties.id === id))
       .filter((f) => f != null)
-    raiseFor(picked.map((f) => sheetOf(f.properties)), on, false)
+    raiseFor(picked.map((f) => sheetOf(f.properties)), on)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editor.selectedId, editor.selection])
 
-  function raiseFor(sheets: (Sheet | null)[], on: Sheet, drawn: boolean) {
+  function raiseFor(sheets: (Sheet | null)[], on: Sheet) {
     const top = sheets.reduce<Sheet | null>((best, s) => (sheetRank(s) > sheetRank(best) ? s : best), null)
     if (!top || sheetRank(top) <= sheetRank(on)) return
     setSheet(top)
-    latest.current.notify(t(drawn ? 'tracing.raised_drawn' : 'tracing.raised_selected', { sheet: t(`tracing.sheets.${top}`) }))
+    latest.current.notify(t('tracing.raised_selected', { sheet: t(`tracing.sheets.${top}`) }))
   }
 }

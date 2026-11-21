@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { t } from '@/lib/i18n'
 import { ELEMENT_LAYERS, elementFor } from '@/map/drawing/catalog'
-import { drawingStore } from '@/map/drawing/store'
+import { drawingStore, useDrawingState } from '@/map/drawing/store'
 import { iconComponent } from '@/map/drawing/icons'
 import { useEditor } from '@/map/editor/EditorContext'
 import { canBePlanned, isAnnotationLayer } from '@/map/scenario'
@@ -68,9 +68,14 @@ export function ElementPicker({ onPick, onClose }: { onPick: (spec: ElementSpec,
     const asked = drawingStore.get().pickerLayer
     return (asked && layers.some((l) => l.layer === asked) ? asked : null) ?? elementFor(recent[0])?.layer ?? layers[0].layer
   })
+  // Asked again while the picker is open (another sheet's button): follow, then forget the request.
+  const asked = useDrawingState((s) => s.pickerLayer)
   useEffect(() => {
-    if (drawingStore.get().pickerLayer) drawingStore.set({ pickerLayer: null })
-  }, [])
+    if (!asked) return
+    if (layers.some((l) => l.layer === asked)) setLayer(asked)
+    drawingStore.set({ pickerLayer: null })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [asked])
   const current = layers.find((l) => l.layer === layer) ?? layers[0]
   const pick = (spec: ElementSpec) => onPick(spec, planned && canBePlanned(spec.layer, spec.kind))
   const choose = (next: boolean) => setMode(next ? 'project' : 'existing')

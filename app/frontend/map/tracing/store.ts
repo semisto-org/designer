@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react'
-import { isSheet, type Sheet } from './sheets'
+import { isSheet, sheetOf, sheetRank, type Sheet } from './sheets'
 
 /**
  * The tracing sheet on the table, chosen by this viewer for this map
@@ -51,4 +51,17 @@ function subscribe(listener: () => void) {
 
 export function useSheet(): Sheet | null {
   return useSyncExternalStore(subscribe, () => state.sheet, () => state.sheet)
+}
+
+/**
+ * What one just drew is never hidden: drawn on a sheet above the one on
+ * the table (a pond while the bubbles are out), it lays that sheet on the
+ * table. Returns the sheet laid, or null. Called by the editor for this
+ * person's own drawings only, never for a collaborator's.
+ */
+export function liftSheetFor(properties: Parameters<typeof sheetOf>[0]): Sheet | null {
+  const own = sheetOf(properties)
+  if (!state.sheet || !own || sheetRank(own) <= sheetRank(state.sheet)) return null
+  setSheet(own)
+  return own
 }

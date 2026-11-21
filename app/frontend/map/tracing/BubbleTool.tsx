@@ -51,7 +51,7 @@ export function BubbleTool({ onClose }: { onClose: () => void }) {
     revealForDrawing(BUBBLE_LAYER, BUBBLE_KIND)
     const color = nextZoneColor(used())
     setDrawing(true)
-    const geometry = await latest.current.draw('freehand', { color })
+    const geometry = await latest.current.draw('freehand', { color, dragToDraw: true })
     setDrawing(false)
     if (!geometry) return
     const label = name.trim()

@@ -39,6 +39,7 @@ import { DEFAULT_MOMENT, shownMoment, timeline as timelineOf } from '@/map/time/
 import { initTime, setMode, setMoment, setSeason, timeStore, useTime } from '@/map/time/store'
 import { modeForStage } from '@/map/time/mode'
 import { DrawnViewControl } from '@/map/drawn/DrawnViewControl'
+import { liftSheetFor } from '@/map/tracing/store'
 import { ModeSwitch } from '@/map/time/ModeSwitch'
 import { isPlanned } from '@/map/scenario'
 import type { EntitlementsData, MapData, MapFeature, MapStage, RegionLayerData } from '@/types'
@@ -421,6 +422,9 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
           setMode('project')
           notify(t('design_mode.switched'))
         }
+        // Drawn on a tracing sheet above the one on the table: lay that sheet, or it would vanish (map/tracing).
+        const lifted = timeStore.get().mode === 'project' ? liftSheetFor(feature.properties) : null
+        if (lifted) notify(t('tracing.raised_drawn', { sheet: t(`tracing.sheets.${lifted}`) }))
         return feature
       },
       async updateFeature(id: number, patch: FeaturePatch) {
