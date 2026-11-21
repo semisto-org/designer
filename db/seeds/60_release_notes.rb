@@ -17,6 +17,17 @@ release_notes = [
     screenshot_alt: "La rose des vents d'un terrain, avec la mesure faite sur place, et la fiche d'un pommier à l'abri d'une haie mais exposé à la bise de printemps."
   },
   {
+    key: "tracer-l-eau-en-3d", published_on: "2026-11-20",
+    title: "Trace ta baissière sur la pente, en 3D",
+    body: <<~TEXT,
+      Dans la vue 3D, onglet « Pluie », « Tracer l'eau sur la pente » : une ligne suit la courbe de niveau sous ton curseur, deux clics et ta baissière est posée, à niveau. Une mare ou une butte se pose de la même façon.
+
+      Le relief se creuse aussitôt, le bassin versant s'affiche en bleu, et « Faire pleuvoir dessus » montre l'ouvrage se remplir. Puis le terrain a le dernier mot : chaque nouvel ouvrage reçoit une tâche, aller voir où l'eau coule vraiment après la prochaine grosse averse.
+    TEXT
+    link_path: "/help/la-vue-3d-du-terrain", link_label: "Lire l'aide",
+    screenshot_alt: "Une baissière tracée sur la pente dans la vue 3D, son bassin versant en bleu, et la carte qui dit la pluie qui la remplit."
+  },
+  {
     key: "fenetre-sur-l-an-15", published_on: "2026-11-21",
     title: "Fenêtre sur l'an 15 : ta forêt future, dans le paysage",
     body: <<~TEXT,

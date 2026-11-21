@@ -15,7 +15,7 @@ import type { Geometry } from 'geojson'
 import { buildingLayer, drawnBuildings, mergeBuildings, modelBuildings, sharesPlace, type BuildingData, type BuildingLayer, type BuildingsResponse, type BuildingVolume } from './buildings.ts'
 import { CANOPY_MAX, CANOPY_RAMP, FROST_RAMP, HYPSOMETRY, SUN_RAMP, WETNESS_RAMP, hexToRgb, ramp, type RGB } from './colors.ts'
 import { applyDesigns, downsampleCrest, downsampleDesigned, ringCells, type Design, type Footprint, type GridPoint } from './design.ts'
-import { polygonMask, toGrid, type GridMeta } from './grid.ts'
+import { polygonMask, toGrid, toLngLat, type GridMeta } from './grid.ts'
 import { coldAirField, coldLayer, type ColdAirField } from './coldAir.ts'
 import { analyzeDrainage, decodeGrid, downsample, RainSimulation, type Drainage } from './hydro.ts'
 import type { BlocksInput } from './blocks.ts'
@@ -25,6 +25,8 @@ import { GRAFT_FORMS, GROWTH_YEARS, calendarYear, managedSize, plantShade, scene
 import { drawOverlay, type OverlayFeature, type OverlayOptions } from './overlay.ts'
 import { waterDesigns, type SoilEffect, type TankSummary } from './waterDesigns.ts'
 import { landcoverRoles } from './roles.ts'
+import { ContourField, type CellPoint } from './contourTrace.ts'
+import { WaterTool, type WaterSketch, type WaterToolKind, type WaterTrace } from './waterTool.ts'
 import type { CameraMode, ReliefScene, WalkKey } from './scene.ts'
 import type { FlyKey } from './flyKeys.ts'
 import { buildSoilMaps, calibrateRates, SOIL_STATES, UNKNOWN_CLASS, type SoilState } from './soil.ts'
@@ -189,6 +191,26 @@ export type BuildingsInfo = {
   modelled: number
 }
 
+/** A point of the terrain under the pointer, on the full grid. */
+export type GroundPoint = {
+  /** Fractional column and row of the full grid. */
+  col: number
+  row: number
+  /** Ground metres from the north-west corner: x east, y south. */
+  x: number
+  y: number
+  lng: number
+  lat: number
+  /** Altitude of the ground shown (works dug), in metres. */
+  altitude: number
+}
+
+/** A work traced in the 3D view, ready to be saved as a map feature. */
+export type TracedWork = { kind: WaterToolKind; geometry: Geometry; level: number | null; lengthM: number | null; radiusM: number | null }
+
+const SKETCH_COLORS: Record<WaterToolKind, string> = { swale: '#0e8fd6', pond: '#2b7bb9', mound: '#8b5e3c' }
+const GUIDE_COLOR = '#ffffff'
+
 const AXIS_FRAME_BUDGET_MS = 11
 const nextPaint = () => new Promise((resolve) => setTimeout(resolve, 30))
 
@@ -267,6 +289,12 @@ export class ReliefController {
   private plantShadeCache: { base: ArrayLike<number>; altitudes: Float32Array; year: number; heights: Float32Array; cover: Uint8Array } | null = null
   private sunReplay: { frame: number; timer: ReturnType<typeof setTimeout> | null } = { frame: 0, timer: null }
   walkMode: WalkMode = 'off'
+  /** « Tracer l'eau »: the tool in hand, and the smoothed heights its swales follow. */
+  private waterTool: WaterTool | null = null
+  private contourField: ContourField | null = null
+  /** An outline laid on the terrain (the catchment of a work just traced). */
+  private highlight: Geometry | null = null
+  private designKey = ''
   private walkExaggeration: number | null = null
 
   constructor(options: ControllerOptions) {
@@ -668,6 +696,7 @@ export class ReliefController {
    */
   setFeatures(features: OverlayFeature[]) {
     this.options.features = features
+    this.redigIfChanged()
     const drawn = drawnBuildings(features as never)
     this.buildingsData = mergeBuildings(this.mappedBuildings, drawn, this.modelled)
     this.layoutBuildings()
@@ -704,12 +733,35 @@ export class ReliefController {
   // ---- The map's water design, dug into the relief -------------------------
 
   private designsFromFeatures(): Design[] {
+    this.designKey = this.waterDesignKey()
     const { designs, tanks, strips, effects } = waterDesigns(this.meta, this.options.features)
     this.strips = strips
     this.designEffects = effects
     this.tanks = tanks
     this.heaped = new Set(designs.filter((design) => design.type === 'mound' || design.type === 'grade').map((design) => design.id))
     return designs
+  }
+
+  /** What of the features shapes the dug relief: a new swale or pond changes it. */
+  private waterDesignKey(): string {
+    const { designs, tanks, strips } = waterDesigns(this.meta, this.options.features)
+    return JSON.stringify([designs, tanks.map((tank) => [tank.id, tank.capacity, tank.roofArea]), strips.map((strip) => strip.id)])
+  }
+
+  /**
+   * A work traced here or edited on the map: dig the relief again, live,
+   * with the axes and the rain that run on it. Nothing to do when the water
+   * design did not change (a roof, a plant).
+   */
+  private redigIfChanged() {
+    if (!this.full || this.waterDesignKey() === this.designKey) {
+      this.drawOverlay()
+      return
+    }
+    this.designs = this.designsFromFeatures()
+    this.reshape()
+    void this.applyBase()
+    this.drawOverlay()
   }
 
   get hasDesigns() { return this.designs.length > 0 || this.strips.length > 0 || this.tanks.length > 0 }
@@ -934,6 +986,7 @@ export class ReliefController {
       features: this.options.features,
       boundary: this.options.boundary,
       colors: this.options.layerColors,
+      highlight: this.highlight,
     })
     this.scene.refreshOverlay()
   }
@@ -1570,6 +1623,99 @@ export class ReliefController {
       },
     }
     return this.nivaTerrainCache
+  }
+
+  // ---- « Tracer l'eau »: swales, ponds and mounds traced on the slope ---------
+
+  /** The terrain under a pointer, on the full grid, or null off the terrain. */
+  groundPoint(event: { clientX: number; clientY: number }): GroundPoint | null {
+    const hit = this.scene?.groundAt(event)
+    if (!hit || !this.full) return null
+    const col = Math.min(this.full.cols - 1, Math.max(0, hit.col * this.meshFactor))
+    const row = Math.min(this.full.rows - 1, Math.max(0, hit.row * this.meshFactor))
+    const x = col * this.cell
+    const y = row * this.cell
+    const [lng, lat] = toLngLat(this.meta, { x, y })
+    return { col, row, x, y, lng, lat, altitude: this.groundHeight({ c: col, r: row }) }
+  }
+
+  get waterKind(): WaterToolKind | null { return this.waterTool?.kind ?? null }
+  get waterPlacing(): boolean { return !!this.waterTool?.placing }
+
+  /** Take a tool in hand (null puts it down). */
+  setWaterTool(kind: WaterToolKind | null) {
+    this.waterTool = null
+    this.scene?.setSketch(null)
+    if (!kind || !this.full) return
+    this.contourField ??= new ContourField(this.full.heights, this.full.cols, this.full.rows, this.cell)
+    this.waterTool = new WaterTool(kind, this.contourField, this.cell)
+  }
+
+  /** The first click undone: the tool waits for a new start. */
+  resetWaterTool() {
+    this.waterTool?.reset()
+    this.scene?.setSketch(null)
+  }
+
+  /** The pointer moved: the sketch follows it. */
+  waterHover(event: { clientX: number; clientY: number }): WaterSketch | null {
+    const tool = this.waterTool
+    if (!tool) return null
+    const point = this.groundPoint(event)
+    if (!point) return tool.sketch
+    const sketch = tool.hover({ c: point.col, r: point.row })
+    this.drawSketch(sketch)
+    return sketch
+  }
+
+  /** A click while tracing: the start, then the work, done. */
+  waterClick(event: { clientX: number; clientY: number }): { sketch: WaterSketch; work: TracedWork | null } | null {
+    const tool = this.waterTool
+    if (!tool) return null
+    const point = this.groundPoint(event)
+    if (!point) return { sketch: tool.sketch, work: null }
+    const trace = tool.click({ c: point.col, r: point.row })
+    const sketch = tool.sketch
+    this.drawSketch(sketch)
+    return { sketch, work: trace ? this.tracedWork(trace, sketch) : null }
+  }
+
+  /** Lay an outline on the terrain (the catchment of a work), or clear it. */
+  setHighlight(geometry: Geometry | null) {
+    this.highlight = geometry
+    this.drawOverlay()
+  }
+
+  private tracedWork(trace: WaterTrace, sketch: WaterSketch): TracedWork {
+    const coordinates = trace.points.map((p) => toLngLat(this.meta, { x: p.c * this.cell, y: p.r * this.cell }))
+    if (trace.closed) coordinates[coordinates.length - 1] = coordinates[0]
+    const geometry: Geometry = trace.closed ? { type: 'Polygon', coordinates: [coordinates] } : { type: 'LineString', coordinates }
+    return { kind: trace.kind, geometry, level: trace.level, lengthM: sketch.lengthM, radiusM: sketch.radiusM }
+  }
+
+  private drawSketch(sketch: WaterSketch) {
+    const scene = this.scene
+    if (!scene) return
+    const toScene = (points: CellPoint[]) => points.map((p) => ({ x: p.c * this.cell, z: p.r * this.cell, y: this.groundHeight(p) }))
+    const lines: Parameters<ReliefScene['setSketch']>[0] = []
+    if (sketch.guide) lines.push({ points: toScene(sketch.guide), color: GUIDE_COLOR, width: 2.5, opacity: 0.9, dashed: sketch.kind === 'swale' })
+    if (sketch.trace) lines.push({ points: toScene(sketch.trace), color: SKETCH_COLORS[sketch.kind], width: 5 })
+    scene.setSketch(lines)
+  }
+
+  /** Altitude of the ground shown (bilinear on the dug relief). */
+  private groundHeight({ c, r }: CellPoint): number {
+    const full = this.full
+    const z = this.ground ?? full?.heights
+    if (!full || !z) return 0
+    const c0 = Math.min(full.cols - 2, Math.max(0, Math.floor(c)))
+    const r0 = Math.min(full.rows - 2, Math.max(0, Math.floor(r)))
+    const u = Math.min(1, Math.max(0, c - c0))
+    const v = Math.min(1, Math.max(0, r - r0))
+    const at = (cc: number, rr: number) => z[rr * full.cols + cc]
+    const top = at(c0, r0) + (at(c0 + 1, r0) - at(c0, r0)) * u
+    const bottom = at(c0, r0 + 1) + (at(c0 + 1, r0 + 1) - at(c0, r0 + 1)) * u
+    return top + (bottom - top) * v
   }
 
   // ---- The probe: what we know of the point touched ------------------------
