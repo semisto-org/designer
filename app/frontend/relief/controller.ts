@@ -22,7 +22,7 @@ import { analyzeDrainage, decodeGrid, downsample, RainSimulation, type Drainage 
 import type { BlocksInput } from './blocks.ts'
 import { createNivaState, stepNiva, type NivaMessage, type NivaState, type NivaTerrain } from './niva.ts'
 import type { NivaLights } from './nivaModel.ts'
-import { GRAFT_FORMS, GROWTH_YEARS, calendarYear, managedSize, plantShade, scenePlants, sizeAt, yearsBetween, type GrowingPlantsData, type PlantStrata, type PlantTraining, type ScenePlant, type GraftForm, type RootstockVigor } from './growth.ts'
+import { GRAFT_FORMS, GROWTH_YEARS, calendarYear, inLeaf, managedSize, monthOfDay, plantShade, scenePlants, sizeAt, yearsBetween, type GrowingPlantsData, type PlantStrata, type PlantTraining, type ScenePlant, type GraftForm, type RootstockVigor } from './growth.ts'
 import { drawOverlay, type OverlayFeature, type OverlayOptions } from './overlay.ts'
 import { waterDesigns, type SoilEffect, type TankSummary } from './waterDesigns.ts'
 import { landcoverRoles } from './roles.ts'
@@ -301,7 +301,7 @@ export class ReliefController {
   private plantAltitudes: Float32Array | null = null
   /** The plants raised onto the sun's heights, for the year (to a tenth) they were raised at. */
   private sunBaseCache: { surface: Float32Array; roofs: Float32Array; heights: Float32Array } | null = null
-  private plantShadeCache: { base: ArrayLike<number>; altitudes: Float32Array; year: number; heights: Float32Array; cover: Uint8Array } | null = null
+  private plantShadeCache: { base: ArrayLike<number>; altitudes: Float32Array; year: number; month: number; heights: Float32Array; cover: Uint8Array } | null = null
   private sunReplay: { frame: number; timer: ReturnType<typeof setTimeout> | null } = { frame: 0, timer: null }
   walkMode: WalkMode = 'off'
   /** « Tracer l'eau »: the tool in hand, and the smoothed heights its swales follow. */
@@ -438,17 +438,19 @@ export class ReliefController {
     const altitudes = this.plantAltitudes
     if (!this.plantsView.on || !this.plants.length || !altitudes) return { heights: base, cover: null, plantYear: null }
     const year = Math.round(this.plantYear * 10) / 10
+    // The leaves of the sun's day: in December a deciduous tree is bare.
+    const month = this.sunLeafMonth()
     const cached = this.plantShadeCache
-    if (cached?.base === base && cached.altitudes === altitudes && cached.year === year) {
+    if (cached?.base === base && cached.altitudes === altitudes && cached.year === year && cached.month === month) {
       return { heights: cached.heights, cover: cached.cover, plantYear: year }
     }
     const { cols, rows } = this.meta
     // An AI's draft is not on the map yet: it casts no shade.
     const kept = this.plants.flatMap((plant, i) => (plant.draft ? [] : [i]))
     const { heights, cover } = kept.length === this.plants.length
-      ? plantShade(base, cols, rows, this.cell, this.plants, altitudes, year)
-      : plantShade(base, cols, rows, this.cell, kept.map((i) => this.plants[i]), Float32Array.from(kept, (i) => altitudes[i]), year)
-    this.plantShadeCache = { base, altitudes, year, heights, cover }
+      ? plantShade(base, cols, rows, this.cell, this.plants, altitudes, year, month)
+      : plantShade(base, cols, rows, this.cell, kept.map((i) => this.plants[i]), Float32Array.from(kept, (i) => altitudes[i]), year, month)
+    this.plantShadeCache = { base, altitudes, year, month, heights, cover }
     return { heights, cover, plantYear: year }
   }
 
@@ -648,7 +650,12 @@ export class ReliefController {
     let shadow: Array<{ x: number; y: number; z: number }> = []
     if (this.options.location) {
       const [lng, lat] = this.location
-      const sun = noonSun({ year: new Date().getUTCFullYear(), month: 12, day: 21 }, lat, lng, sunPosition)
+      // Its noon shadow on 21 December, when the sun is lowest; a tree bare
+      // in winter shades in summer only: its shadow on 21 June.
+      // (The leaves' calendar is northern: the southern winter reads as its December.)
+      const south = lat < 0
+      const winter = inLeaf(carry.plant, monthOfDay(12, 21))
+      const sun = noonSun({ year: new Date().getUTCFullYear(), month: winter !== south ? 12 : 6, day: 21 }, lat, lng, sunPosition)
       const bottom = carry.plant.form === 'tree' ? Math.min(height * 0.35, 2.5) : 0
       shadow = crownShadow(point.x, point.y, radius, bottom, height, sun).map((p) => ({ ...p, z: terrain.height(p.x, p.y) }))
     }
@@ -1474,6 +1481,17 @@ export class ReliefController {
     const south = this.location[1] < 0
     const [month, day] = date === 'equinox' ? [3, 20] : (date === 'summer') !== south ? [6, 21] : [12, 21]
     return zonedTime(year, month, day, 0, 0, tz)
+  }
+
+  /**
+   * The sun's day as a month of the leaves' calendar (relief/growth.ts,
+   * northern seasons): south of the equator, December is their June.
+   */
+  sunLeafMonth(date: SunDate = this.sun.date): number {
+    const parts = new Intl.DateTimeFormat('en-CA', { timeZone: this.options.timezone, month: '2-digit', day: '2-digit' })
+      .formatToParts(this.sunDayStart(date))
+    const month = monthOfDay(Number(parts.find((p) => p.type === 'month')?.value), Number(parts.find((p) => p.type === 'day')?.value))
+    return this.location[1] < 0 ? ((month + 5) % 12) + 1 : month
   }
 
   /** The hour slider's range for the chosen day: sunrise to sunset, by 5 min. */

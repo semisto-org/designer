@@ -3,7 +3,7 @@
 // the shadow its crown casts at noon in June or December. Pure functions,
 // tested in test/frontend/time.
 
-import { crownFormOf, graftTrunk, plantForm, plantShape, sizeAt, type Graft, type Measured, type PlantStrata, type PlantTraining } from '../../relief/growth.ts'
+import { crownFormOf, graftTrunk, inLeaf, monthOfDay, plantForm, plantShape, sizeAt, type Graft, type Measured, type PlantStrata, type PlantTraining } from '../../relief/growth.ts'
 
 /** What the server says of a species or cultivar's growth on this map (PlantingState#growth). */
 export type GrowthEntry = { heightM: number; spreadM: number; maturityYears: number; indicative: boolean; crownForm?: string | null }
@@ -19,6 +19,8 @@ export type GrowingPlant = {
   supportUntil: number | null
   /** What someone measured on it, or null. */
   measured?: Measured | null
+  /** Deciduous, evergreen, semi-evergreen or marcescent, from its sheet (null: unknown). */
+  foliage?: string | null
 }
 
 /** The key PlantingState#growth uses for a species and its cultivar. */
@@ -52,6 +54,17 @@ const DECLINATION: Record<Season, number> = { june: 23.44, december: -23.44 }
 /** Height of the sun above the horizon at solar noon on the solstice (degrees). */
 export function noonElevation(lat: number, season: Season): number {
   return 90 - Math.abs(lat - DECLINATION[season])
+}
+
+/**
+ * Whether the plant is in leaf at noon on that solstice (the leaves'
+ * calendar of relief/growth.ts, flipped south of the equator): in December
+ * a deciduous tree is bare, its branches let most of the sun through.
+ */
+export function leafyOn(plant: Pick<GrowingPlant, 'strata' | 'plantType' | 'foliage'> & { growth?: Pick<GrowthEntry, 'crownForm'> }, season: Season, lat: number): boolean {
+  const winter = (season === 'december') !== lat < 0
+  const form = plantForm(plant.strata, plant.plantType)
+  return inLeaf({ foliage: plant.foliage ?? null, form, strata: plant.strata, crownForm: crownFormOf(plant.growth?.crownForm) }, winter ? monthOfDay(12, 21) : monthOfDay(6, 21))
 }
 
 /** Crowns lower than this leave the ground in the light, as in the 3D shade (relief/growth.ts). */

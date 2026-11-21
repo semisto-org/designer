@@ -27,10 +27,10 @@ fr:
       june: "Juin"
       december: "Décembre"
       june_hint: "L’ombre des plants à midi le 21 juin, le soleil au plus haut (%{angle}°). Touche à nouveau pour l’enlever."
-      december_hint: "L’ombre des plants à midi le 21 décembre, le soleil au plus bas (%{angle}°). Touche à nouveau pour l’enlever."
+      december_hint: "L’ombre des plants à midi le 21 décembre, le soleil au plus bas (%{angle}°). Les arbres caducs ont perdu leurs feuilles : seul un voile léger pour leurs branches. Touche à nouveau pour l’enlever."
       note:
         june: "En gris-prune, l’ombre de midi le 21 juin, sur un terrain plat."
-        december: "En gris-prune, l’ombre de midi le 21 décembre, sur un terrain plat : elle s’étire vers le nord."
+        december: "En gris-prune, l’ombre de midi le 21 décembre, sur un terrain plat : elle s’étire vers le nord. Les arbres caducs, nus en hiver, n’y laissent qu’un voile léger ; seuls les persistants et les marcescents gardent leur ombre."
     open: "Changer de moment"
     close: "Refermer la frise"
     put_away: "Replier la frise du temps"

@@ -25,7 +25,7 @@ Touche un élément pour ouvrir sa **fiche** : son nom, son espèce, ses notes, 
 
 En bas de la carte, la **Frise du temps** passe d'un moment à l'autre : **Arrivée** (le terrain avant le projet), **Aujourd'hui**, puis **An 5**, **An 15** et **An 30**. Repliée en pastille, elle se déplie d'une touche. Passe d'un moment à l'autre : les couronnes s'élargissent, l'ombre s'étend, et tu vois où il fera frais en été dans quinze ans.
 
-Le bouton **Ombre à midi** montre l'ombre des arbres le 21 juin et le 21 décembre : l'ombre d'hiver est bien plus longue, et c'est souvent elle qui explique la place d'un arbre.
+Le bouton **Ombre à midi** montre l'ombre des arbres le 21 juin et le 21 décembre : l'ombre d'hiver est bien plus longue, et c'est souvent elle qui explique la place d'un arbre persistant ; un arbre caduc, nu en décembre, n'y laisse qu'un voile léger.
 
 ## Poser une question
 

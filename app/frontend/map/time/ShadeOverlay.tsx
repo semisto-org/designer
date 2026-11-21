@@ -8,7 +8,7 @@ import { useEditor } from '@/map/editor/EditorContext'
 import { isPlant } from '@/map/plants/properties'
 import { usePlanting } from '@/map/plants/store'
 import { plantStrata } from '@/map/plants/strata'
-import { crownShadow } from '@/map/time/growth'
+import { crownShadow, leafyOn } from '@/map/time/growth'
 import { inMoment } from '@/map/time/moment'
 import { growingPlant, sizeAtMoment } from '@/map/time/plants'
 
@@ -44,12 +44,14 @@ function useUnion(wanted: boolean): Union | null {
 /**
  * One wash of shade: overlapping shadows merged, so where two trees shade the
  * same ground it is not darker. Until `union` arrives, drawn one by one.
+ * `bare`: the shadows of trees without their leaves, a much lighter wash.
  */
-function merged(rings: [number, number][][], union: Union | null): Shadows {
-  const polygons = rings.map((ring) => polygon([ring]))
+function merged(rings: [number, number][][], union: Union | null, bare = false): Shadows {
+  const polygons = rings.map((ring) => polygon([ring], { bare }))
   if (!union || polygons.length < 2 || polygons.length > MERGE_LIMIT) return featureCollection(polygons)
   try {
     const one = union(featureCollection(polygons))
+    if (one) one.properties = { bare }
     return featureCollection(one ? [one as Feature<Polygon | MultiPolygon>] : polygons)
   } catch {
     return featureCollection(polygons)
@@ -65,8 +67,8 @@ function install(map: MapLibreMap, data: Shadows) {
   // Under the crowns (and every other feature), over the base map and the region's layers.
   const before = ['plant-crowns-reach', 'plant-crowns-fill', 'features-fill', 'features-line'].find((id) => map.getLayer(id))
   map.addSource(SOURCE, { type: 'geojson', data })
-  map.addLayer({ id: FILL, type: 'fill', source: SOURCE, paint: { 'fill-color': SHADE_COLOR, 'fill-opacity': 0.28 } }, before)
-  map.addLayer({ id: LINE, type: 'line', source: SOURCE, paint: { 'line-color': SHADE_COLOR, 'line-opacity': 0.45, 'line-width': 1, 'line-dasharray': ['literal', [3, 2]] } }, before)
+  map.addLayer({ id: FILL, type: 'fill', source: SOURCE, paint: { 'fill-color': SHADE_COLOR, 'fill-opacity': ['case', ['get', 'bare'], 0.07, 0.28] } }, before)
+  map.addLayer({ id: LINE, type: 'line', source: SOURCE, paint: { 'line-color': SHADE_COLOR, 'line-opacity': ['case', ['get', 'bare'], 0.25, 0.45], 'line-width': 1, 'line-dasharray': ['literal', [3, 2]] } }, before)
 }
 
 function safeInstall(map: MapLibreMap, data: Shadows) {
@@ -80,7 +82,9 @@ function safeInstall(map: MapLibreMap, data: Shadows) {
 /**
  * The noon shade of the time strip (map/time): under each crown, the shadow
  * it casts at solar noon on 21 June or 21 December, at the size the plant
- * has at the moment shown. Nothing while no season is picked.
+ * has at the moment shown. In December a deciduous tree has lost its
+ * leaves: only a light wash for its branches, so the ground it leaves to
+ * the winter sun reads as such. Nothing while no season is picked.
  */
 export default function ShadeOverlay() {
   const editor = useEditor()
@@ -94,6 +98,7 @@ export default function ShadeOverlay() {
   const shadows = useMemo<Shadows>(() => {
     if (!shade || hidden.includes('plants')) return featureCollection([])
     const rings: [number, number][][] = []
+    const bare: [number, number][][] = []
     for (const feature of features) {
       if (!isPlant(feature) || feature.geometry.type !== 'Point' || feature.properties.status === 'rejected') continue
       if (!inMoment(feature.properties, moment, timeline.arrival, mode)) continue
@@ -103,9 +108,9 @@ export default function ShadeOverlay() {
       const size = sizeAtMoment(feature, plant, moment, timeline)
       if (!plant || !size) continue
       const ring = crownShadow(feature.geometry.coordinates as [number, number], plant, size, shade)
-      if (ring) rings.push(ring)
+      if (ring) (leafyOn(plant, shade, feature.geometry.coordinates[1]) ? rings : bare).push(ring)
     }
-    return merged(rings, union)
+    return featureCollection([...merged(bare, union, true).features, ...merged(rings, union).features])
   }, [features, moment, timeline, shade, mode, data, hidden, hiddenStrata, union])
 
   const latest = useRef(shadows)

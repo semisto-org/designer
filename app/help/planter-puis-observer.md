@@ -68,7 +68,7 @@ Sous chaque arrêt, la date exacte s'affiche en survolant. Les années déjà de
 
 ### L'ombre de midi, en juin et en décembre
 
-À droite de la frise, **Juin** et **Décembre** dessinent sous les couronnes l'ombre qu'elles portent à midi le 21 juin (le soleil au plus haut) ou le 21 décembre (au plus bas), à la taille qu'ont les plants au moment choisi. Compare An 5 et An 30 en décembre : tu vois où le potager ou la serre passeront à l'ombre quand les arbres auront grandi. Touche à nouveau le mois pour enlever l'ombre. C'est l'ombre sur un terrain plat, sans le relief ni les bâtiments : la vue 3D, depuis le [panneau Eau et relief](action:panel/relief), montre l'ombre heure par heure avec le relief.
+À droite de la frise, **Juin** et **Décembre** dessinent sous les couronnes l'ombre qu'elles portent à midi le 21 juin (le soleil au plus haut) ou le 21 décembre (au plus bas), à la taille qu'ont les plants au moment choisi. Compare An 5 et An 30 en décembre : tu vois où le potager ou la serre passeront à l'ombre quand les arbres auront grandi. En décembre, les arbres caducs ont perdu leurs feuilles : leur ombre n'est plus qu'un voile léger, celui des branches, et seuls les persistants, les semi-persistants et les marcescents (un jeune hêtre, une charmille qui gardent leurs feuilles sèches) gardent une ombre pleine. Touche à nouveau le mois pour enlever l'ombre. C'est l'ombre sur un terrain plat, sans le relief ni les bâtiments : la vue 3D, depuis le [panneau Eau et relief](action:panel/relief), montre l'ombre heure par heure avec le relief.
 
 ### Les autres éléments
 

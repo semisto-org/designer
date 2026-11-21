@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  CHOP_MATURITY, CLEAR_TRUNK, GRAFT_CROWN, GRAFT_TRUNK, MANAGED_MATURITY, crownFormOf, foliageOf, measuredOf, seasonLook, seasonOfMonth, sizeJitter, todaysSeasonMonth, SEASON_MONTH, trunkRadius, MANAGED_SIZE, PLANTING_SIZE, VIGOR_SIZE, calendarYear, graftOf, growthShare, insideRing, managedSize, plantForm, plantShade, plantShape, scatter, scenePlants, sizeAt, trainingOf, yearsBetween,
+  CHOP_MATURITY, CLEAR_TRUNK, GRAFT_CROWN, GRAFT_TRUNK, MANAGED_MATURITY, crownFormOf, foliageOf, inLeaf, monthOfDay, measuredOf, seasonLook, seasonOfMonth, sizeJitter, todaysSeasonMonth, SEASON_MONTH, trunkRadius, MANAGED_SIZE, PLANTING_SIZE, VIGOR_SIZE, calendarYear, graftOf, growthShare, insideRing, managedSize, plantForm, plantShade, plantShape, scatter, scenePlants, sizeAt, trainingOf, yearsBetween,
   type GrowingPlantsData, type GrowthInputs, type ScenePlant,
 } from '../../../app/frontend/relief/growth.ts'
 import type { GridMeta } from '../../../app/frontend/relief/grid.ts'
@@ -387,4 +387,27 @@ test('the 3D opens on the season of today', () => {
   assert.equal(seasonOfMonth(4), 'spring')
   assert.equal(todaysSeasonMonth(new Date(2026, 10, 20)), SEASON_MONTH.autumn)
   assert.equal(todaysSeasonMonth(new Date(2026, 6, 1)), SEASON_MONTH.summer)
+})
+
+test('on a winter day a bare deciduous tree lets the sun through, an evergreen still shades', () => {
+  const cols = 21
+  const rows = 21
+  const base = new Float32Array(cols * rows).fill(100)
+  const oak: ScenePlant = {
+    x: 10, y: 10, form: 'tree', strata: 'canopy', heightM: 12, spreadM: 8, maturityYears: 15, training: 'free',
+    start: 0, plant: 0, patch: null, seed: 1, foliage: 'deciduous',
+  }
+  const altitudes = Float32Array.of(100)
+  const centre = 10 * cols + 10
+  const december = monthOfDay(12, 21)
+  assert.ok(Math.abs(december - 12.65) < 0.01)
+  assert.equal(plantShade(base, cols, rows, 1, [oak], altitudes, 40, december).count, 0)
+  assert.equal(plantShade(base, cols, rows, 1, [oak], altitudes, 40, monthOfDay(3, 20)).count, 0)
+  assert.equal(plantShade(base, cols, rows, 1, [oak], altitudes, 40, monthOfDay(6, 21)).cover[centre], 1)
+  for (const foliage of ['evergreen', 'semi-evergreen', 'marcescent']) {
+    assert.equal(plantShade(base, cols, rows, 1, [{ ...oak, foliage }], altitudes, 40, december).cover[centre], 1, foliage)
+  }
+  // Without a day, every crown shades (as before).
+  assert.equal(plantShade(base, cols, rows, 1, [oak], altitudes, 40).cover[centre], 1)
+  assert.equal(inLeaf(oak, december), false)
 })
