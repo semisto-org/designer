@@ -30,6 +30,19 @@ class Maps::PlantPalettesControllerTest < ActionDispatch::IntegrationTest
     assert props["mapEntitlements"].is_a?(Hash)
   end
 
+  test "« Au fil de l'année » gets this month's plants and signs of the season" do
+    sign_in_as users(:alice)
+    travel_to Time.zone.local(2026, 9, 10, 10) do
+      get map_plant_palette_path(@map), headers: inertia_headers
+    end
+    month = response.parsed_body.dig("props", "thisMonth")
+    assert_equal 9, month["month"]
+    assert_equal "septembre", month["monthName"]
+    assert_equal 1, month.dig("plants", "harvest", "count")
+    assert_equal %w[morning_mist wild_fruit browsing], month["signs"].map { _1["sign"] }
+    assert_equal false, month["signs"].first["seenThisYear"]
+  end
+
   test "strangers see nothing" do
     sign_in_as users(:bob)
     get map_plant_palette_path(@map), as: :json
