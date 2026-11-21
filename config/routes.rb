@@ -241,6 +241,8 @@ Rails.application.routes.draw do
         get :storm
       end
       resource :terrain, only: %i[show create]
+      # « Fenêtre sur l'an 15 »: the design's plants grown into the camera's view.
+      resource :window, only: :show
       resource :water_settings, only: :update
       resources :water_sources, only: %i[index create update destroy]
       resources :water_links, only: :show

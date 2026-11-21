@@ -15,7 +15,7 @@ installStaleChunkReload(pendingWrites)
 // editor (maps/show) and public map views draw their own full-screen chrome,
 // everything else uses AppLayout. A page can still set `Page.layout`.
 // ImpersonationFrame wraps them all: the « connecté en tant que » banner.
-const FULL_SCREEN = ['maps/show', 'public_maps/show', 'public_maps/relief', 'maps/reliefs/show', 'maps/documents/show', 'trials/show', 'territories/show']
+const FULL_SCREEN = ['maps/show', 'public_maps/show', 'public_maps/relief', 'maps/reliefs/show', 'maps/windows/show', 'maps/documents/show', 'trials/show', 'territories/show']
 
 // Events the server measured on the way here (ApplicationController#track_event).
 router.on('navigate', (event) => {

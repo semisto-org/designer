@@ -1,6 +1,6 @@
 import { Link } from '@inertiajs/react'
 import { area as turfArea } from '@turf/turf'
-import { Box, Download, Loader2, RotateCcw } from 'lucide-react'
+import { Box, Download, Loader2, RotateCcw, Trees } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { PlanGate } from '@/components/billing/PlanGate'
 import { Button, buttonClass } from '@/components/ui/Button'
@@ -120,6 +120,13 @@ function ReliefPanelContent() {
                 <Link href={`/maps/${mapId}/relief`} className={buttonClass('primary', 'md', 'flex-1')}>
                   <Box className="h-4 w-4" />
                   {t('relief.panel_ui.open_3d')}
+                </Link>
+              )}
+              {ready && (
+                // On the land: the camera shows the design's trees grown (« Fenêtre sur l'an 15 »).
+                <Link href={`/maps/${mapId}/window`} className={buttonClass('secondary', 'md', 'flex-1')} title={t('window.page.open_window_hint')}>
+                  <Trees className="h-4 w-4" />
+                  {t('window.page.open_window')}
                 </Link>
               )}
               {editor.canEdit && !running && !gridError && (
