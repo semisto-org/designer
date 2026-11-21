@@ -8,6 +8,7 @@ import { HelpButton } from '@/components/help/HelpButton'
 import { Button } from '@/components/ui/Button'
 import { IconButton } from '@/components/ui/IconButton'
 import { Flash } from '@/components/ui/Flash'
+import { toast } from '@/components/ui/toast'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { LAYER_COLORS } from '@/map/layers/features'
@@ -15,7 +16,7 @@ import { CANOPY_MAX, CANOPY_RAMP, FROST_RAMP, HYPSOMETRY, SUN_RAMP, WETNESS_RAMP
 import {
   ReliefController, type BaseLayer, type DesignSummary, type LoadingStep, type NivaInfo, type NivaKey, type ProbeInfo,
   type RainSettings, type RainStats, type SunDate, type SunInfo, type SunMode,
-  type BuildingPick, type BuildingsInfo, type PlantInfo, type WalkMode,
+  type BuildingPick, type BuildingsInfo, type PlantInfo, type TracedWork, type WalkMode,
 } from '@/relief/controller'
 import { NIGHT_LENGTH, nightClock } from '@/relief/coldAir'
 import { Compass } from '@/relief/Compass'
@@ -25,10 +26,11 @@ import { RoofCard } from '@/relief/RoofCard'
 import { PlantingCard, checksText, type LastPlanted, type PlantTool } from '@/relief/PlantingCard'
 import { growthKey } from '@/map/time/growth'
 import { scheduleReload, usePlanting } from '@/map/plants/store'
-import { toast } from '@/components/ui/toast'
 import { confirmAction } from '@/components/ui/confirm'
 import { ApiError } from '@/lib/api'
 import type { PaletteItem, PlantingState } from '@/types/plants'
+import { WaterToolCard, WaterToolPicker, type CatchmentInfo, type TracedResult } from '@/relief/WaterToolCard'
+import type { WaterSketch, WaterToolKind } from '@/relief/waterTool'
 import { PresentationTimeControl } from '@/relief/PresentationTimeControl'
 import { GROWTH_YEARS, calendarYear, plantForm, yearsBetween, type GrowingPlantsData, type ScenePlant } from '@/relief/growth'
 import type { WalkKey } from '@/relief/scene'
@@ -216,6 +218,12 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
   // The building clicked (its roof card), and the map's features as edited here.
   const [roofPick, setRoofPick] = useState<BuildingPick | null>(null)
   const featureList = useRef<MapFeature[]>(features)
+  // « Tracer l'eau »: the tool in hand, the sketch under the cursor, the work just traced.
+  const [waterKind, setWaterKind] = useState<WaterToolKind | null>(null)
+  const [waterSketch, setWaterSketch] = useState<WaterSketch | null>(null)
+  const [waterSaving, setWaterSaving] = useState(false)
+  const [waterResult, setWaterResult] = useState<TracedResult | null>(null)
+  const hoverFrame = useRef(0)
   const plantToday = useMemo(
     () => Math.min(GROWTH_YEARS, Math.max(0, yearsBetween(growingPlants.origin, growingPlants.today))),
     [growingPlants.origin, growingPlants.today],
@@ -248,6 +256,7 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
   async function carry(plant: ScenePlant, needs: { exposures: string[]; soilMoisture: string[]; flowering?: number[] }) {
     const c = controller.current
     if (!c) return
+    if (c.waterKind) closeWater()
     setPlantInfo(null)
     setRoofPick(null)
     setProbe(null)
@@ -298,7 +307,8 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
     return () => window.removeEventListener('keydown', onKey)
   }, [plantTool]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  function onPointerMove(event: React.PointerEvent) {
+  /** Hovering while carrying a plant: the ghost and its ring follow the pointer. */
+  function hoverPlant(event: React.PointerEvent) {
     const tool = plantToolRef.current
     if (!tool || tool.step !== 'carry' || event.pointerType === 'touch') return
     const info = controller.current?.hoverCarry(event) ?? null
@@ -704,6 +714,13 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
     const start = pointer.current
     pointer.current = null
     if (!start || Math.hypot(event.clientX - start[0], event.clientY - start[1]) > 5) return
+    // Tracing a work: the click is the tool's, before plants and buildings.
+    if (controller.current?.waterKind && !waterSaving) {
+      const answer = controller.current.waterClick(event)
+      if (answer) setWaterSketch({ ...answer.sketch })
+      if (answer?.work) void saveWork(answer.work)
+      return
+    }
     if (plantToolRef.current?.step === 'carry') {
       await putDown(event)
       return
@@ -738,6 +755,129 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
     const info = await controller.current?.probe(event)
     setProbe(info ?? null)
   }
+
+  // ---- « Tracer l'eau »: a swale on the contour, a pond, a mound, dug live.
+  function startWater(kind: WaterToolKind) {
+    const c = controller.current
+    if (!c) return
+    if (plantToolRef.current) stopPlantTool()
+    c.setWaterTool(kind)
+    c.setHighlight(null)
+    setWaterKind(kind)
+    setWaterSketch(null)
+    setWaterResult(null)
+    setProbe(null)
+    setPlantInfo(null)
+    setRoofPick(null)
+    if (walk !== 'off') c.stopWalk()
+    // On a phone the sheet would hide the slope to touch.
+    if (isCompact()) setPanelOpen(false)
+  }
+
+  function closeWater() {
+    controller.current?.setWaterTool(null)
+    controller.current?.setHighlight(null)
+    setWaterKind(null)
+    setWaterSketch(null)
+    setWaterResult(null)
+  }
+
+  function onPointerMove(event: React.PointerEvent) {
+    const c = controller.current
+    if (!c?.waterKind) { hoverPlant(event); return }
+    if (waterSaving || event.buttons) return
+    const { clientX, clientY } = event
+    cancelAnimationFrame(hoverFrame.current)
+    hoverFrame.current = requestAnimationFrame(() => {
+      const sketch = c.waterHover({ clientX, clientY })
+      setWaterSketch(sketch ? { ...sketch } : null)
+    })
+  }
+
+  const WORKS: Record<WaterToolKind, { layer: string; properties: Record<string, unknown> }> = {
+    swale: { layer: 'water', properties: { width_m: 1, depth_m: 0.4, topsoil_to: 'berm', subsoil_to: 'berm' } },
+    pond: { layer: 'water', properties: { depth_m: 1, purpose: 'wildlife' } },
+    mound: { layer: 'structures', properties: { height_m: 0.8 } },
+  }
+
+  async function saveWork(work: TracedWork) {
+    const c = controller.current
+    if (!c) return
+    setWaterSaving(true)
+    const { layer, properties } = WORKS[work.kind]
+    try {
+      const saved = await api<MapFeature & { rainCheck?: { taskId: number; title: string } | null }>(`/maps/${map.id}/features`, {
+        method: 'POST',
+        body: {
+          feature: {
+            layer, kind: work.kind, geometry: work.geometry,
+            properties: { ...properties, ...(work.level != null ? { contour_level_m: Math.round(work.level * 100) / 100 } : {}), traced_in: '3d' },
+          },
+        },
+      })
+      const { rainCheck = null, ...feature } = saved
+      c.setWaterTool(null)
+      setWaterKind(null)
+      setWaterSketch(null)
+      setWaterResult({ feature, kind: work.kind, catchment: work.kind === 'mound' ? null : 'loading', rainCheck })
+      onFeature(feature)
+      setRoofPick(null)
+      setDesignCount((count) => count + 1)
+      if (work.kind !== 'mound') {
+        try {
+          const catchment = await api<CatchmentInfo>(`/maps/${map.id}/relief/catchment?feature_id=${feature.properties.id}`)
+          controller.current?.setHighlight(catchment.geometry)
+          setWaterResult((current) => (current?.feature.properties.id === feature.properties.id ? { ...current, catchment } : current))
+        } catch {
+          setWaterResult((current) => (current?.feature.properties.id === feature.properties.id ? { ...current, catchment: 'failed' } : current))
+        }
+      }
+    } catch {
+      toast(t('relief.water_tool.failed'), { tone: 'error' })
+      c.resetWaterTool()
+      setWaterSketch(null)
+    } finally {
+      setWaterSaving(false)
+    }
+  }
+
+  /** The work traced taken back: to the trash, as « Supprimer » on the map. */
+  async function undoWork() {
+    const result = waterResult
+    if (!result) return
+    const id = result.feature.properties.id
+    try {
+      await api(`/maps/${map.id}/features/${id}`, { method: 'DELETE' })
+      featureList.current = featureList.current.filter((f) => f.properties.id !== id)
+      controller.current?.setFeatures(featureList.current as unknown as OverlayFeature[])
+      setDesignCount((count) => Math.max(0, count - 1))
+      startWater(result.kind)
+    } catch {
+      toast(t('relief.water_tool.undo_failed'), { tone: 'error' })
+    }
+  }
+
+  /** Rain on the work just traced: the rain tab, and the shower starts (or pauses). */
+  function rainOnWork() {
+    setTab('rain')
+    if (!rain.dig) updateRain({ dig: true })
+    togglePlay()
+  }
+
+  useEffect(() => {
+    if (!waterKind) return
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      if (controller.current?.waterPlacing) {
+        controller.current.resetWaterTool()
+        setWaterSketch(null)
+      } else {
+        closeWater()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [waterKind])
 
   /** A building's roof changed or a neighbour was taken over: the 3D follows, and its card. */
   function onFeature(feature: MapFeature) {
@@ -835,7 +975,7 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
     <div className="relative h-dvh w-full overflow-hidden bg-[#dfe9ee]">
       <div
         ref={container}
-        className={clsx('absolute inset-0', (niva.mode === 'placing' || walk === 'placing' || plantTool?.step === 'carry') && 'cursor-crosshair', walking && 'cursor-grab active:cursor-grabbing')}
+        className={clsx('absolute inset-0', (niva.mode === 'placing' || walk === 'placing' || waterKind || plantTool?.step === 'carry') && 'cursor-crosshair', walking && 'cursor-grab active:cursor-grabbing')}
         onPointerDown={(event) => { pointer.current = [event.clientX, event.clientY] }}
         onPointerUp={onPointerUp}
         onPointerMove={onPointerMove}
@@ -1000,7 +1140,7 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
                           <p className="text-sm text-loam-600">{t('relief.planting.section_intro')}</p>
                           <Button
                             variant={plantTool ? 'primary' : 'secondary'} size="sm" className="w-full" aria-pressed={!!plantTool}
-                            onClick={() => (plantTool ? stopPlantTool() : setPlantTool({ step: 'choose' }))}
+                            onClick={() => (plantTool ? stopPlantTool() : (closeWater(), setPlantTool({ step: 'choose' })))}
                           >
                             <Sprout className="h-4 w-4" />{t('relief.planting.start')}
                           </Button>
@@ -1033,6 +1173,13 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
                   simCell={controller.current ? controller.current.cell * controller.current.simFactor : terrain.cellSizeM}
                   onPlay={togglePlay}
                   onReset={resetRain}
+                  tools={canEdit && (
+                    <div>
+                      <SectionTitle>{t('relief.water_tool.section')}</SectionTitle>
+                      <p className="mb-2 text-sm text-loam-500">{t('relief.water_tool.section_hint')}</p>
+                      <WaterToolPicker value={waterKind} onChange={startWater} />
+                    </div>
+                  )}
                 />
               ) : tab === 'night' ? (
                 <NightTab
@@ -1069,6 +1216,22 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
         )}
       </aside>
 
+      {(waterKind || waterResult) && (
+        <WaterToolCard
+          mapId={map.id}
+          kind={waterKind}
+          sketch={waterSketch}
+          saving={waterSaving}
+          result={waterResult}
+          designs={designs}
+          playing={playing}
+          onKind={startWater}
+          onClose={closeWater}
+          onUndo={() => void undoWork()}
+          onRain={rainOnWork}
+          onRestart={() => { controller.current?.resetWaterTool(); setWaterSketch(null) }}
+        />
+      )}
       {plantInfo && (
         <PlantCard info={plantInfo} onClose={() => setPlantInfo(null)}>
           {plantInfo.draft && (
@@ -1340,7 +1503,7 @@ function BaseLegend({ base, zRange, landcoverClasses }: {
 
 // ---- Rain tab -------------------------------------------------------------------
 
-function RainTab({ rain, update, playing, stats, designs, designCount, soilModel, landcover, simCell, onPlay, onReset }: {
+function RainTab({ rain, update, playing, stats, designs, designCount, soilModel, landcover, simCell, onPlay, onReset, tools }: {
   rain: RainSettings
   update: (patch: Partial<RainSettings>) => void
   playing: boolean
@@ -1352,11 +1515,14 @@ function RainTab({ rain, update, playing, stats, designs, designCount, soilModel
   simCell: number
   onPlay: () => void
   onReset: () => void
+  /** « Tracer l'eau » (editors): a swale, a pond or a mound traced on the slope. */
+  tools?: ReactNode
 }) {
   const started = !!stats && stats.time > 0
   const signed = (volume: number) => (Math.abs(volume) < 0.05 ? formatVolume(0) : `${volume < 0 ? '−' : '+'}${formatVolume(Math.abs(volume))}`)
   return (
     <>
+      {tools}
       <div>
         <SectionTitle>{t('relief.page.rain.intensity')}</SectionTitle>
         <ChoiceGroup

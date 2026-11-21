@@ -1,0 +1,64 @@
+# « Tracer l'eau » in the 3D view (relief/WaterToolCard.tsx): swales on the
+# contour, ponds and mounds traced on the slope, dug live; and the task each
+# new earthwork gets, to go and see it under the next heavy rain
+# (Earthworks::RainCheck).
+fr:
+  relief:
+    water_tool:
+      section: "Tracer l'eau sur la pente"
+      section_hint: "La baissière suit la courbe de niveau sous ton curseur, le relief se creuse aussitôt et la pluie montre si elle se remplit."
+      kinds:
+        swale: "Baissière"
+        pond: "Mare"
+        mound: "Butte"
+      title: "Tracer l'eau sur la pente"
+      intro: "Le relief se creuse en direct : trace, puis fais pleuvoir pour voir où l'eau s'arrête."
+      steps:
+        swale:
+          start: "Survole la pente : la ligne blanche suit la courbe de niveau. Clique (ou touche) là où la baissière commence."
+          end: "La baissière reste à niveau. Clique là où elle s'arrête. Échap pour recommencer."
+        pond:
+          start: "Clique (ou touche) au centre de la mare."
+          end: "Éloigne-toi du centre, puis clique au bord de la mare."
+        mound:
+          start: "Clique (ou touche) au centre de la butte."
+          end: "Éloigne-toi du centre, puis clique au pied de la butte."
+      level: "Courbe à %{altitude} m"
+      length: "%{length} m de long"
+      diameter: "%{diameter} m de diamètre"
+      flat: "Pas de courbe de niveau ici : le terrain est plat, ou c'est le bord du relief."
+      restart: "Recommencer"
+      saving: "Creusement en cours…"
+      close: "Fermer"
+      failed: "L'ouvrage n'a pas pu être enregistré. Réessaie."
+      undo_failed: "L'ouvrage n'a pas pu être retiré. Réessaie."
+      done:
+        swale: "Baissière tracée"
+        pond: "Mare creusée"
+        mound: "Butte posée"
+        dug: "Elle est sur ta carte, et le relief est creusé avec : les axes d'écoulement passent déjà par elle."
+      catchment:
+        loading: "Calcul du bassin versant…"
+        failed: "Le bassin versant n'a pas pu être calculé ici."
+        area: "Bassin versant : %{area} de pente lui envoient leur eau (en bleu sur le relief)."
+        fill: "Elle contient %{capacity} : %{rain} mm de pluie sur ce bassin suffisent à la remplir."
+        year: "En une année moyenne, il y tombe %{volume} d'eau."
+      rain: "Faire pleuvoir dessus"
+      rain_pause: "Mettre la pluie en pause"
+      filled: "%{water} sur %{capacity} (%{percent} %)"
+      outside:
+        swale: "Avant de creuser, va piqueter cette courbe sur place avec un niveau (cadre en A ou niveau à eau) : le relief est juste à quelques centimètres près, et c'est le terrain qui a le dernier mot."
+        pond: "Avant de creuser, va voir où l'eau stagne déjà après une pluie et sonde le sol à %{depth} : une argile qui tient ou un sable qui file ?"
+        mound: "Avant de monter la butte, va voir sur place où l'eau passe : en travers de la pente elle la retient, dans l'axe elle la laisse filer."
+      rain_check: "Tâche ajoutée : « %{title} »."
+      open_on_map: "Voir sur la carte"
+      undo: "Retirer"
+  earthworks:
+    rain_check:
+      list: "Vérifier sous la pluie"
+      title: "%{work} : aller voir l'eau après la prochaine grosse averse"
+      notes:
+        default: "Pendant une forte pluie ou juste après, regarde où l'eau arrive, où elle s'arrête et où elle déborde. Note-le avec « Pendant l'averse » dans l'app Terranova sur ton téléphone : tu compareras avec ce que prévoyait le relief."
+        swale: "Pendant une forte pluie ou juste après, regarde si l'eau remplit la baissière sur toute sa longueur, à niveau, ou si elle se rassemble et déborde par un point bas. Note-le avec « Pendant l'averse » dans l'app Terranova sur ton téléphone : tu compareras avec ce que prévoyait le relief."
+        pond: "Pendant une forte pluie ou juste après, regarde d'où l'eau arrive dans la mare, jusqu'où elle monte et où part le trop-plein. Note-le avec « Pendant l'averse » dans l'app Terranova sur ton téléphone : tu compareras avec ce que prévoyait le relief."
+        mound: "Pendant une forte pluie ou juste après, regarde par où l'eau contourne la butte et si elle ravine ses flancs. Note-le avec « Pendant l'averse » dans l'app Terranova sur ton téléphone : tu compareras avec ce que prévoyait le relief."

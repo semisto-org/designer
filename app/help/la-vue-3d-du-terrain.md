@@ -18,6 +18,17 @@ La vue 3D montre ton terrain en relief, à partir du relief téléchargé dans l
 
 La **rose des vents**, en haut à droite, tourne avec la caméra et montre toujours le nord ; un clic dessus remet la vue face au nord.
 
+### Tracer l'eau sur la pente
+
+Dans l'onglet **Pluie**, si tu peux modifier la carte, **Tracer l'eau sur la pente** dessine un ouvrage directement sur le relief :
+
+- **Baissière** : survole la pente, une ligne blanche suit la courbe de niveau sous ton curseur. Clique là où la baissière commence, puis là où elle s'arrête : elle reste à niveau, même si ta main dévie vers le bas. La carte affiche sa longueur et l'altitude de sa courbe.
+- **Mare** et **Butte** : clique au centre, puis au bord.
+
+L'ouvrage arrive aussitôt sur ta carte, et le relief se creuse avec lui (ou se lève, pour une butte) : les axes d'écoulement passent déjà par lui. Pour une baissière ou une mare, le **bassin versant** s'affiche en bleu, avec la pluie qui suffit à la remplir. **Faire pleuvoir dessus** lance l'averse et montre l'ouvrage se remplir. **Retirer** le met à la corbeille si tu t'es trompé, **Voir sur la carte** ouvre sa fiche pour régler sa largeur ou sa profondeur. Échap recommence le tracé en cours.
+
+Chaque nouvel ouvrage reçoit une tâche : **aller voir l'eau après la prochaine grosse averse**. Le relief est un modèle, juste à quelques centimètres près. Avant de creuser, piquette la courbe sur place avec un cadre en A ou un niveau à eau ; après l'averse, note ce que tu as vu avec **Pendant l'averse** dans l'app Terranova sur ton téléphone. Voir [Le bassin versant et l'infiltration](/help/le-bassin-versant-et-l-infiltration).
+
 ### Les bâtiments, ceux d'aujourd'hui et ceux à venir
 
 **Bâtiments en volume** (onglet **Vue**) lève les bâtiments autour du terrain, d'après OpenStreetMap. Ceux que tu as dessinés sur ta carte (bâtiment, abri, cabane ou remise, serre, cave ou fruitier, poulailler) se lèvent aussi, à la hauteur notée dans leur fiche, et remplacent celui d'OpenStreetMap qu'ils recouvrent. Un bâtiment **en projet** a un toit mauve : il n'existe pas encore, mais son ombre compte déjà dans l'onglet **Soleil**. Regarde-la en décembre avant de placer le potager ou les fruitiers à son pied. Pour le dessiner, voir [Dessiner l'existant](/help/dessiner-l-existant).

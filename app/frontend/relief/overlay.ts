@@ -63,12 +63,14 @@ export type OverlayFeature = Feature<Geometry, { color?: unknown; layer?: string
  */
 export function drawOverlay(
   canvas: HTMLCanvasElement, meta: GridMeta,
-  { drainage, options, features, boundary, colors }: {
+  { drainage, options, features, boundary, colors, highlight = null }: {
     drainage: Drainage | null
     options: OverlayOptions
     features: OverlayFeature[]
     boundary: Geometry | null
     colors: Record<string, string>
+    /** An outline laid over everything (the catchment of a work just traced). */
+    highlight?: Geometry | null
   },
 ) {
   const context = canvas.getContext('2d')
@@ -102,6 +104,23 @@ export function drawOverlay(
       context.fillStyle = color
       drawGeometry(context, feature.geometry ? displayGeometry(feature) : null, project, pxPerMetre)
     }
+    context.globalAlpha = 1
+  }
+  if (highlight) {
+    context.setLineDash([])
+    traceRings(context, highlight, project)
+    context.fillStyle = '#0e8fd6'
+    context.globalAlpha = 0.16
+    context.fill('evenodd')
+    context.globalAlpha = 0.95
+    context.strokeStyle = '#ffffff'
+    context.lineWidth = Math.max(4, pxPerMetre * 1.1)
+    context.stroke()
+    context.strokeStyle = '#0e8fd6'
+    context.lineWidth = Math.max(2, pxPerMetre * 0.6)
+    context.setLineDash([Math.max(5, pxPerMetre * 2), Math.max(4, pxPerMetre * 1.5)])
+    context.stroke()
+    context.setLineDash([])
     context.globalAlpha = 1
   }
   if (boundary) {
