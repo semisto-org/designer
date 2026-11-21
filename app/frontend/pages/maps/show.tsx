@@ -13,7 +13,7 @@ import { formatArea, t } from '@/lib/i18n'
 import { useMediaQuery } from '@/lib/useMediaQuery'
 import { MapView } from '@/map/MapView'
 import { boxSelect } from '@/map/boxSelect'
-import { featureAt, hitsAt, hitsIn } from '@/map/featurePick'
+import { clickClaimed, featureAt, hitsAt, hitsIn } from '@/map/featurePick'
 import { useMapInstance } from '@/map/MapContext'
 import { Drawer, type DrawOptions, type DrawShape, type PointTool } from '@/map/editor/draw'
 import { EditorContext, type Editor, type FeaturePatch, type NewFeature, type NotifyAction, type SavedFeature } from '@/map/editor/EditorContext'
@@ -273,7 +273,7 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
       setSelectedId(null)
     }
     const onClick = (e: MapMouseEvent) => {
-      if (busy()) return
+      if (busy() || clickClaimed(e.point)) return
       if (canEdit && (e.originalEvent.shiftKey || multiSelectRef.current)) return toggleAt(e.point)
       const id = featureAt(instance, e.point, areaOf)
       if (id == null) return plantPeek.close()

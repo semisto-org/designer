@@ -30,6 +30,7 @@ const ARTICLE_BY_PANEL: Record<string, string> = {
   'water-sources': 'dessiner-l-existant',
   earthworks: 'gerer-la-terre-excavee',
   variants: 'comparer-des-variantes',
+  'design-phases': 'ranger-une-phase',
   functions: 'les-fonctions-des-elements',
   'drawing-alerts': 'les-alertes-reglementaires',
   finances: 'le-tableau-financier',

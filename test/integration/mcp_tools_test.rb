@@ -1067,4 +1067,32 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     _text, error = call_tool(@owner, "get_plant", { plant_id: species.id })
     assert error
   end
+
+  test "get_design_phases lists the phases put away and compares one with today, networks left out" do
+    shape = { "type" => "Polygon", "coordinates" => [ [ [ 4.907, 50.341 ], [ 4.9072, 50.341 ], [ 4.9072, 50.3412 ], [ 4.907, 50.341 ] ] ] }
+    pond = @map.features.create!(layer: "water", kind: "pond", name: "Mare du haut", geometry: shape, properties: { "planned" => true })
+    phase = MapPhase.put_away!(@map, name: "Esquisse", notes: "Mare en haut", next_name: "Avant-projet")
+    pond.trash!
+
+    data, error = call_tool(@viewer, "get_design_phases", { map_id: @map.id })
+    refute error
+    assert_equal "Avant-projet", data["current"]
+    assert_equal [ "Esquisse" ], data["phases"].map { _1["name"] }
+
+    data, error = call_tool(@viewer, "get_design_phases", { map_id: @map.id, phase_id: phase.id })
+    refute error
+    ids = data.dig("phase", "features").map { _1["id"] }
+    assert_includes ids, pond.id
+    assert_not_includes ids, @pipe.id
+    assert_nil data.dig("phase", "counts", "by_layer", "networks")
+    assert_equal [ pond.id ], data.dig("compare", "removed")
+    assert_equal "get_design_phases", AiAction.last.tool
+
+    _text, error = call_tool(@viewer, "get_design_phases", { map_id: @map.id, phase_id: phase.id + 1000 })
+    assert error
+
+    data, error = call_tool(@viewer, "get_map", { map_id: @map.id })
+    refute error
+    assert_equal "Avant-projet", data.dig("design_phases", "current")
+  end
 end
