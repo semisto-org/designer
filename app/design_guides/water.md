@@ -80,6 +80,8 @@ Time matters for each of them: a check dam fills with silt in a few years and be
 
 The relief in Terranova is a model, and so is the rain simulation: they give orders of magnitude, not a structural design. Before digging a pond or a long swale, the person should test infiltration on site (an `infiltration_test`, below), check the regulations (ponds, watercourses, wetlands, distances to boundaries) and, for large works, ask a professional. The benefits of regenerative hydrology on a whole landscape are still debated by scientists; on one's own land, slowing and infiltrating water is rarely a mistake.
 
+Every new swale, keyline, ditch, pond, mound or small structure gets a task on its map, « … : aller voir l'eau après la prochaine grosse averse » (Earthworks::RainCheck), whoever traced it: in the 3D view, on the map, on the phone, or a draft of yours accepted. `get_feature` gives it as `rain_check`, with the number of downpour notes (`storm_observation`, read with `get_storm_observations`) made since the work was traced. While that number is 0, the work has not been seen under rain: say so, and before proposing the next work downhill, or plants on a mound, invite the person to go and watch where the water really runs. A swale is staked on the land with an A-frame or a water level before it is dug: the line traced on a one-metre relief is a few centimetres off at best.
+
 ## The climate ahead
 
 Summer droughts are getting longer and winter rains more intense. Designing water means preparing for both: infiltrate the winter surplus so it serves in summer, and plan where the water of an exceptional storm will pass without damage.

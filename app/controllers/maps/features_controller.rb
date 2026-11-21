@@ -18,7 +18,11 @@ module Maps
       if planting_from_the_land(feature).save
         # A note taken on a visit with the phone: the visit begins with it.
         SiteVisit.for_note!(feature, by: Current.user)
-        render json: feature.as_geojson, status: :created
+        # A new swale, pond or mound: go and see it under the next heavy rain.
+        rain_check = Earthworks::RainCheck.add!(feature, by: Current.user)
+        json = feature.as_geojson
+        json = json.merge(rainCheck: { taskId: rain_check.id, title: rain_check.title }) if rain_check
+        render json:, status: :created
       else
         render_errors feature
       end
