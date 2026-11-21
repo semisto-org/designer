@@ -39,6 +39,17 @@ release_notes = [
     screenshot_alt: "Une photo d'un terrain en pente, avec les arbres du design peints à l'an 15 et leur nom écrit à la main."
   },
   {
+    key: "ce-mois-ci-sur-ton-terrain", published_on: "2026-11-21",
+    title: "Ce mois-ci sur ton terrain",
+    body: <<~TEXT,
+      Dans la palette végétale, un nouvel onglet « Au fil de l'année » : ce qui fleurit, ce qui se récolte et ce qui se taille ce mois-ci parmi tes plantes, puis les signes de saison qui valent une sortie, premier gel, givre qui reste, chute des feuilles… Ceux que tu n'as pas encore vus cette année sont marqués : va les observer, et note-les depuis ton téléphone, là où tu les vois.
+
+      En dessous, chaque espèce de ta palette sur les douze mois, le mois en cours entouré : tu vois ce qui arrive, et quand aller regarder. Ton IA le sait aussi : demande-lui ce que ton terrain attend de toi ce mois-ci.
+    TEXT
+    link_path: "/help/la-palette-vegetale-en-tableau", link_label: "Lire l'aide",
+    screenshot_alt: "L'onglet « Au fil de l'année » de la palette : en novembre, les plantes en fleur et à récolter, les signes de saison à aller voir, et le calendrier des espèces sur douze mois."
+  },
+  {
     key: "app-terrain-en-test", published_on: "2026-11-11",
     title: "Bientôt : l'app de terrain, pensée pour dehors",
     body: <<~TEXT
