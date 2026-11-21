@@ -127,6 +127,9 @@ module Relief
             # What it needs, to say in 3D whether a spot suits it (relief/plantFit.ts).
             exposures: species&.exposures.presence || [],
             soilMoisture: species&.soil_moisture.presence || [],
+            # Its colours and proportions (PlantLook): foliage tone, leaf
+            # texture, crown density, flower, fruit, bark and autumn colours.
+            look: PlantLook.values(species),
             **PlantGrowth.inputs(strata:, species:, variety:)
           }
         end

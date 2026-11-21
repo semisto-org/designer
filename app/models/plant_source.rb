@@ -20,7 +20,10 @@ module PlantSource
     "usda" => { license: "domaine public US" },
     "wikipedia" => { license: "CC BY-SA 4.0" },
     "designer" => { license: nil },
-    "user" => { license: nil }
+    "user" => { license: nil },
+    # A value an AI read on a page (its upstream source, with the page's
+    # address) at a catalogue reviewer's request: always « to verify ».
+    "ai" => { license: nil }
   }.freeze
 
   module_function

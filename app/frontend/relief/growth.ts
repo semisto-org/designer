@@ -7,6 +7,7 @@
 
 import type { Position } from 'geojson'
 import { toGrid, type GridMeta } from './grid.ts'
+import { lookOf, type PlantLookTraits } from './plantLook.ts'
 
 export type PlantStrata = 'canopy' | 'sub_canopy' | 'shrub' | 'herbaceous' | 'ground_cover' | 'vine' | 'root' | 'aquatic'
 
@@ -33,6 +34,8 @@ export type GrowthInputs = {
   /** Its sheet's exposures (sun, partial-shade, shade) and soil moisture (dry, moist, wet, waterlogged). */
   exposures?: string[]
   soilMoisture?: string[]
+  /** How it looks (PlantLook): foliage tone, leaf texture, crown density, flower, fruit, bark and autumn colours. */
+  look?: PlantLookTraits
 }
 
 /**
@@ -225,6 +228,8 @@ export type ScenePlant = {
   /** Months (1–12) it flowers and bears fruit in. */
   flowering?: number[]
   fruiting?: number[]
+  /** Its colours and proportions, from its sheet or its genus (plantLook.ts). */
+  look?: PlantLookTraits
   /** An AI's proposal waiting for a human: drawn as a ghost, left out of the shade. */
   draft?: boolean
 }
@@ -626,7 +631,7 @@ export function scenePlants(meta: GridMeta, data: GrowingPlantsData): ScenePlant
       x, y, form, strata: p.strata, heightM: p.heightM, spreadM: p.spreadM,
       maturityYears: p.maturityYears, training, graft: training === 'free' ? graftOf(form, p.graft) : null, start: p.plantedLongAgo ? -p.maturityYears : startOf(p.plantedOn), plant: index, patch: null, seed: p.id * 7919,
       crownForm: crownFormOf(p.crownForm), measured: measuredOf(p.measures, p.plantedOn, !!p.plantedLongAgo),
-      foliage: p.foliage, flowering: p.flowering ?? [], fruiting: p.fruiting ?? [],
+      foliage: p.foliage, flowering: p.flowering ?? [], fruiting: p.fruiting ?? [], look: lookOf(p.look),
       support: !!p.support, until: p.support && !p.plantedLongAgo ? p.supportUntil ?? null : null,
       ...(p.draft ? { draft: true } : {}),
     })
@@ -642,7 +647,7 @@ export function scenePlants(meta: GridMeta, data: GrowingPlantsData): ScenePlant
         plants.push({
           ...point, form: plantForm(line.strata, line.plantType), strata: line.strata, heightM: line.heightM,
           spreadM: line.spreadM, maturityYears: line.maturityYears, training: 'free', start: patchStart, plant: null, crownForm: crownFormOf(line.crownForm),
-          foliage: line.foliage, flowering: line.flowering ?? [], fruiting: line.fruiting ?? [],
+          foliage: line.foliage, flowering: line.flowering ?? [], fruiting: line.fruiting ?? [], look: lookOf(line.look),
           patch: [patchIndex, lineIndex], seed: Math.round(point.x * 1000 + point.y * 7),
         })
       }

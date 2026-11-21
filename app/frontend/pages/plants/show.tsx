@@ -11,7 +11,19 @@ import { SpeciesTags } from '@/components/plants/SpeciesTags'
 import { countryNames, formatDecimal, metres, strataLabel, vocab } from '@/components/plants/format'
 import { t } from '@/lib/i18n'
 import { STRATA_COLORS } from '@/map/plants/strata'
-import type { CatalogueRegion, ObservationStats, Provenance, SharedPlace, SpeciesPlantings, SpeciesSheet } from '@/types/plants'
+import { AUTUMN_COLORS, BARK_COLORS, FLOWER_COLORS, FOLIAGE_TONES, FRUIT_COLORS } from '@/relief/plantLook'
+import type { CatalogueRegion, LookTrait, ObservationStats, Provenance, SharedPlace, SpeciesPlantings, SpeciesSheet } from '@/types/plants'
+
+/** The look the 3D gives the plant, with the swatch it paints (relief/plantLook.ts). */
+const LOOK_ROWS: { trait: LookTrait; field: string; swatches?: Record<string, string> }[] = [
+  { trait: 'foliageTone', field: 'foliage_tone', swatches: FOLIAGE_TONES },
+  { trait: 'leafTexture', field: 'leaf_texture' },
+  { trait: 'crownDensity', field: 'crown_density' },
+  { trait: 'flowerColor', field: 'flower_color', swatches: FLOWER_COLORS },
+  { trait: 'fruitColor', field: 'fruit_color', swatches: FRUIT_COLORS },
+  { trait: 'barkColor', field: 'bark_color', swatches: BARK_COLORS },
+  { trait: 'autumnColor', field: 'autumn_color', swatches: AUTUMN_COLORS },
+]
 
 type Props = {
   species: SpeciesSheet; observations: ObservationStats | null; plantings: SpeciesPlantings; region: CatalogueRegion | null
@@ -120,6 +132,29 @@ export default function PlantShow({ species: s, observations, plantings, region,
             <Row label={t('plants.fields.soil_ph')} value={list('soil_ph', s.soilPh)} provenance={p('soil_ph')} />
             <Row label={t('plants.fields.soil_richness')} value={s.soilRichness && vocab('soil_richness', s.soilRichness)} provenance={p('soil_richness')} />
             <Row label={t('plants.fields.watering_need')} value={rating(s.wateringNeed)} provenance={p('watering_need')} />
+          </Section>
+          <Section title={t('plants.show.look_title')}>
+            <p className="pb-1 text-sm text-loam-500">{t('plants.show.look_intro')}</p>
+            <dl className="divide-y divide-loam-100">
+              {LOOK_ROWS.map(({ trait, field, swatches }) => {
+                const known = s.look?.[trait]
+                const label = known && vocab(field, known.value)
+                const swatch = known && swatches?.[known.value]
+                return (
+                  <Row
+                    key={trait}
+                    label={t(`plants.fields.${field}`)}
+                    value={label && (
+                      <span className="inline-flex items-center gap-1.5">
+                        {swatch && <span aria-hidden className="inline-block h-3 w-3 rounded-full ring-1 ring-loam-300" style={{ backgroundColor: swatch }} />}
+                        {known.indicative ? t('plants.show.look_indicative', { value: label }) : label}
+                      </span>
+                    )}
+                    provenance={known?.indicative ? undefined : p(field)}
+                  />
+                )
+              })}
+            </dl>
           </Section>
         </div>
 

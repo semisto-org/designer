@@ -203,7 +203,7 @@ fr:
           map_id: "Carte dont le terrain sert à juger chaque plante (list_maps). Facultatif."
       get_plant:
         title: "Fiche d'une plante"
-        description: "La fiche d'une espèce du catalogue : nom latin, noms communs, port, silhouette à l'air libre (crownForm ; crownFormIndicative quand c'est celle du genre), strate, exigences et usages, avec la provenance de chaque donnée. sharedGardens dit où d'autres jardiniers l'ont en terre et ont choisi de le montrer (« Dans d'autres jardins ») : pour chaque lieu, sa région, une distance arrondie à 5 km depuis la carte la plus proche de l'utilisateur (nearMap), s'il accepte les demandes de multiplication, et ses plants (variété, nombre, année de plantation, requested si une demande de l'utilisateur attend). Jamais le nom de la carte, son adresse ni ses personnes : ne cherche pas à les deviner. Pour demander des greffons, des boutures ou des graines, envoie la personne sur la fiche de la plante (/plants/plant_id), bouton « Demander »."
+        description: "La fiche d'une espèce du catalogue : nom latin, noms communs, port, silhouette à l'air libre (crownForm ; crownFormIndicative quand c'est celle du genre), ce que la vue 3D en peint (look : foliageTone teinte du feuillage, leafTexture finesse des feuilles, crownDensity densité de la couronne, flowerColor, fruitColor, barkColor et autumnColor, chacun avec value et indicative quand c'est l'allure habituelle du genre, à confirmer), strate, exigences et usages, avec la provenance de chaque donnée. sharedGardens dit où d'autres jardiniers l'ont en terre et ont choisi de le montrer (« Dans d'autres jardins ») : pour chaque lieu, sa région, une distance arrondie à 5 km depuis la carte la plus proche de l'utilisateur (nearMap), s'il accepte les demandes de multiplication, et ses plants (variété, nombre, année de plantation, requested si une demande de l'utilisateur attend). Jamais le nom de la carte, son adresse ni ses personnes : ne cherche pas à les deviner. Pour demander des greffons, des boutures ou des graines, envoie la personne sur la fiche de la plante (/plants/plant_id), bouton « Demander »."
         params:
           plant_id: "Identifiant de la plante, donné par search_plants."
       get_design_guide:
@@ -324,6 +324,15 @@ fr:
           observation_kind_filter: "Seulement les entrées de ce type."
           observations_since: "Seulement les entrées datées de ce jour ou après (AAAA-MM-JJ)."
           limit: "Nombre maximal d'entrées (200 par défaut, 500 au plus)."
+      record_plant_looks:
+        title: "Compléter l'allure des plantes en 3D"
+        description: "Complète, dans le catalogue, l'allure d'une ou plusieurs espèces telle que la vue 3D la peint : foliage_tone (dark_green, green, light_green, grey_green, blue_green, yellow_green doré, purple pourpre), leaf_texture (fine, medium, coarse : de petites feuilles fines comme un bouleau aux grandes feuilles d'un noyer), crown_density (light, medium, dense : un févier laisse passer le ciel, un hêtre non), flower_color, fruit_color, bark_color (grey, silver, brown, red_brown, white, dark) et autumn_color (yellow, orange, red, purple, brown, none quand les feuilles tombent vertes). Réservé aux relecteurs du catalogue de Semisto, quand la personne te le demande. Chaque plante cite la page où tu as lu ses valeurs (source : le site, par exemple wikipedia ou un site de pépinière ; url : la page) : n'écris que ce que la page dit, jamais une supposition. PFAF n'est jamais une source. Les valeurs arrivent « à vérifier » (source « Lu par une IA »), avec la page citée, sur la fiche de la plante. Seules les valeurs vides sont remplies : une valeur déjà là revient dans kept (current, proposed), pour que la personne décide. L'allure habituelle du genre (look.indicative dans get_plant) n'est pas une valeur : tu peux la confirmer en la citant. Commence par les espèces des palettes et des plants en terre. 50 plantes au plus par appel. Demande l'accès « brouillons »."
+        params:
+          look_plants: "Les plantes à compléter, de 1 à 50."
+          plant_id: "Identifiant de la plante, donné par search_plants."
+          look_values: "Les traits lus sur la page, au moins un ; ceux que la page ne dit pas sont absents."
+          look_source: "Le site où tu les as lus (wikipedia, tela_botanica, un nom de pépinière…), en minuscules."
+          look_url: "L'adresse de la page (https://…)."
       record_plant_observations:
         title: "Écrire dans le journal des plants"
         description: "Ajoute des entrées datées au journal des plants, directement (ce ne sont pas des brouillons), quand la personne te dit ce qui leur est arrivé : « le 3 avril, les pommiers 7 et 9 étaient en pleine floraison », « le 12 a perdu une charpentière dans la tempête », « le 21 est mort ». Une entrée ne touche jamais aux précédentes : c'est l'historique du plant. Chaque entrée vaut pour un ou plusieurs plants, désignés par feature_ids ou par leur numéro sur le plan (numbers) ; tous doivent exister et être plantés (une date de plantation, même « date inconnue »), sinon l'entrée est refusée avec sa raison. kind follow_up : la reprise, survival obligatoire (established repris, struggling en difficulté, dead mort) ; pour un suivi de santé, sain se note established, inquiétant ou malade struggling avec une note qui le dit (et une entrée disease pour la maladie), mort dead. Les autres types (flowering, pruning, damage, disease, intervention, other) prennent une note (obligatoire pour other) et peuvent dire aussi survival et vigor. Les fruits vus et cueillis vont dans record_harvests, les actions à faire dans create_tasks. N'invente rien : ne note que ce que la personne a dit, et demande la date si elle ne la donne pas (pour un historique sans date précise, le 1er janvier de l'année, en le disant dans la note). 100 entrées au plus par appel. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte."
@@ -708,6 +717,7 @@ fr:
       review_zones: "Les zones attendent la revue d'un humain dans l'éditeur (panneau « Zones »). Ce sont des repères : invite la personne à les redessiner après avoir observé où elle passe vraiment chaque jour."
       review_sectors: "Les secteurs attendent la revue d'un humain dans l'éditeur de la carte (panneau « Secteurs »), qui accepte, ajuste ou refuse chacun."
       tasks_written: "Les tâches sont sur la page « Tâches » de la carte (url)."
+      plant_looks_written: "Les valeurs sont sur la fiche de chaque plante (url), « à vérifier » avec la page citée ; la vue 3D les peint déjà. Les valeurs déjà là (kept) n'ont pas bougé : montre-les à la personne."
       observations_written: "Les entrées sont dans le « Journal du plant », sur la fiche de chaque plant (cliquer le plant sur la carte, url)."
       time_written: "Les heures sont dans « Mes heures » (url), marquées « Noté par ton IA » : la personne peut les relire, les modifier ou les supprimer."
       expenses_written: "Les dépenses sont dans « Temps et dépenses » du projet (url), marquées « Notée par ton IA » : rappelle à la personne d'y joindre le ticket."
@@ -786,6 +796,9 @@ fr:
       no_identifiable_layer: "Aucune couche interrogeable ne correspond, pour la région de cette carte."
       plants_unavailable: "Le catalogue des plantes n'est pas encore disponible sur Semisto Terranova."
       plant_not_found: "Plante %{id} introuvable dans le catalogue."
+      catalogue_reviewers_only: "Réservé aux relecteurs du catalogue de Semisto."
+      look_source_invalid: "Source « %{source} » refusée : donne le site où tu as lu les valeurs, en minuscules (PFAF ne peut pas être une source)."
+      look_url_invalid: "Donne l'adresse de la page où tu as lu les valeurs (https://…)."
       photo_not_found: "Photo %{id} introuvable sur cette carte. get_map donne les photos à analyser (bioindicators.photos)."
       photo_unreadable: "La photo %{id} n'a pas pu être lue."
       guide_not_found: "Chapitre « %{topic} » introuvable. Chapitres : %{topics}."
@@ -1082,6 +1095,7 @@ fr:
         one: "a noté 1 récolte"
         other: "a noté %{count} récoltes"
       list_plant_observations: "a lu le journal des plants"
+      record_plant_looks: "a complété l'allure de plantes du catalogue"
       record_plant_observations:
         one: "a ajouté 1 entrée au journal des plants"
         other: "a ajouté %{count} entrées au journal des plants"

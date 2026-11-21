@@ -11,12 +11,19 @@
 // its branches; perennials die back to a tuft; flowers and fruits are dots
 // on the crown in their months (from the plant's sheet).
 //
+// Each species wears its own look (plantLook.ts): the tone of its foliage,
+// its bark, the colour of its flowers, fruits and autumn leaves, a crown a
+// little airier or fuller, and facets that say how big its leaves are
+// (chunky for a walnut, finer for a birch). The shapes stay shared, so a
+// species costs a colour, not a mesh.
+//
 // Plants live outside the exaggerated group of the terrain: they keep their
 // real size and stand on the exaggerated relief, like the Niva. Only
 // scene.ts imports this module.
 
 import * as THREE from 'three'
 import { foliageOf, graftTrunk, plantShape, seasonLook, sizeAt, sizeJitter, todaysSeasonMonth, trunkRadius, type CrownLook, type PlantStrata, type ScenePlant } from './growth.ts'
+import { autumnColor, autumnStrength, barkColor, densityOf, flowerColor, foliageColor, fruitColor, type LeafTexture } from './plantLook.ts'
 
 /** Foliage greens per strata, as they look in summer (the 3D is not the legend). */
 export const NATURAL_GREENS: Record<PlantStrata, string> = {
@@ -29,20 +36,23 @@ export const NATURAL_GREENS: Record<PlantStrata, string> = {
   root: '#8ea25a',
   aquatic: '#5b8e6a',
 }
-const BARK = '#6e5a44'
 /** Bare twigs in winter, a perennial's dry tuft. */
 const TWIGS = '#7d6c5c'
 const STRAW = '#a8976a'
-/** Autumn: amber, rust or gold, one per tree. */
-const AUTUMN = ['#c8802a', '#b5502a', '#d4a636']
-/** Flowers: white to pale pink. Fruits: red on a tree, deep berry on a bush. */
-const BLOSSOM = ['#f6f3ea', '#f3dbe3', '#efc6d4']
-const FRUIT_TREE = '#c4452e'
-const FRUIT_BUSH = '#7a2f52'
 
-type Shape = 'trunk' | 'stems' | 'branches' | 'crown' | 'lobed' | 'cone' | 'weep' | 'dome' | 'column' | 'dots'
+type Shape = 'trunk' | 'stems' | 'branches' | 'crown' | 'crownFine' | 'crownCoarse' | 'lobed' | 'lobedFine' | 'lobedCoarse'
+  | 'cone' | 'weep' | 'dome' | 'column' | 'dots'
+const SHAPES: Shape[] = ['trunk', 'stems', 'branches', 'crown', 'crownFine', 'crownCoarse', 'lobed', 'lobedFine', 'lobedCoarse', 'cone', 'weep', 'dome', 'column', 'dots']
 
-const LOOK_SHAPE: Record<CrownLook, Shape> = { ball: 'crown', lobed: 'lobed', cone: 'cone', weep: 'weep' }
+/**
+ * The leafy shape of a crown: its silhouette, faceted after its leaves
+ * (big chunky facets for big leaves, small ones for fine leaves).
+ */
+function leafShape(look: CrownLook, texture: LeafTexture | undefined): Shape {
+  if (look === 'cone' || look === 'weep') return look
+  const base = look === 'lobed' ? 'lobed' : 'crown'
+  return texture === 'fine' ? `${base}Fine` : texture === 'coarse' ? `${base}Coarse` : base
+}
 
 /** Several geometries as one (positions and normals only, non-indexed). */
 function merged(parts: THREE.BufferGeometry[]): THREE.BufferGeometry {
@@ -82,6 +92,16 @@ function spherePoints(count: number, lowest: number): THREE.Vector3[] {
   return points
 }
 
+function lobed(detail: number): THREE.BufferGeometry {
+  return merged([
+    new THREE.IcosahedronGeometry(0.78, detail).translate(0, 0.05, 0),
+    new THREE.IcosahedronGeometry(0.5, detail).translate(-0.48, -0.18, 0.2),
+    new THREE.IcosahedronGeometry(0.48, detail).translate(0.5, -0.12, -0.2),
+    new THREE.IcosahedronGeometry(0.46, detail).translate(0.08, 0.45, 0.12),
+    new THREE.IcosahedronGeometry(0.42, detail).translate(-0.12, -0.35, -0.48),
+  ])
+}
+
 function shapeGeometry(shape: Shape): THREE.BufferGeometry {
   switch (shape) {
     case 'trunk': return new THREE.CylinderGeometry(0.7, 1, 1, 6).translate(0, 0.5, 0)
@@ -106,14 +126,12 @@ function shapeGeometry(shape: Shape): THREE.BufferGeometry {
     // Flowers or fruits: small balls on the surface of the unit sphere.
     case 'dots': return merged(spherePoints(18, -0.5).map((p) => new THREE.IcosahedronGeometry(0.1, 0).translate(p.x, p.y, p.z)))
     case 'crown': return new THREE.IcosahedronGeometry(1, 1)
+    case 'crownFine': return new THREE.IcosahedronGeometry(1, 2)
+    case 'crownCoarse': return new THREE.IcosahedronGeometry(1, 0)
     // A spreading crown: a broad lobe and smaller ones around, inside the unit sphere.
-    case 'lobed': return merged([
-      new THREE.IcosahedronGeometry(0.78, 1).translate(0, 0.05, 0),
-      new THREE.IcosahedronGeometry(0.5, 1).translate(-0.48, -0.18, 0.2),
-      new THREE.IcosahedronGeometry(0.48, 1).translate(0.5, -0.12, -0.2),
-      new THREE.IcosahedronGeometry(0.46, 1).translate(0.08, 0.45, 0.12),
-      new THREE.IcosahedronGeometry(0.42, 1).translate(-0.12, -0.35, -0.48),
-    ])
+    case 'lobed': return lobed(1)
+    case 'lobedFine': return lobed(2)
+    case 'lobedCoarse': return lobed(0)
     case 'cone': return new THREE.ConeGeometry(1, 2, 8, 2).translate(0, 0, 0)
     // Hanging twigs: a dome open underneath, its skirt falling to the bottom of the crown.
     case 'weep': return new THREE.LatheGeometry([
@@ -139,7 +157,7 @@ function shapesOf(plant: ScenePlant): Shape[] {
   if (shape.trunk > 0) shapes.push('trunk')
   if (shape.stems) shapes.push('stems')
   if (foliageOf(plant) !== 'evergreen') shapes.push('branches')
-  shapes.push(LOOK_SHAPE[shape.look])
+  shapes.push(leafShape(shape.look, plant.look?.leafTexture))
   if (showy && shape.look !== 'cone') shapes.push('dots')
   return shapes
 }
@@ -148,8 +166,6 @@ function shapesOf(plant: ScenePlant): Shape[] {
 function blend(a: THREE.Color, b: string, t: number): THREE.Color {
   return t <= 0 ? a : a.lerp(new THREE.Color(b), Math.min(1, t))
 }
-
-const pick = <T,>(list: readonly T[], seed: number): T => list[Math.abs(seed) % list.length]
 
 const ZERO = new THREE.Matrix4().makeScale(0, 0, 0)
 /** How much of a ghost plant shows: enough to read its size, not enough to take it for planted. */
@@ -177,7 +193,7 @@ export class PlantLayer {
   constructor(plants: ScenePlant[], altitudes: Float32Array, { ghost = false }: { ghost?: boolean } = {}) {
     this.plants = plants
     this.altitudes = altitudes
-    const counts: Record<Shape, number> = { trunk: 0, stems: 0, branches: 0, crown: 0, lobed: 0, cone: 0, weep: 0, dome: 0, column: 0, dots: 0 }
+    const counts = Object.fromEntries(SHAPES.map((shape) => [shape, 0])) as Record<Shape, number>
     for (const plant of plants) {
       const slots: Partial<Record<Shape, number>> = {}
       for (const shape of shapesOf(plant)) slots[shape] = counts[shape]++
@@ -206,25 +222,31 @@ export class PlantLayer {
   }
 
   /**
-   * Foliage colour per strata, each plant a little lighter or darker and a
-   * touch warmer or cooler, then dressed for the month shown.
+   * Foliage colour: in the natural view the species' own tone (else its
+   * strata's green), in the strata view the strata's colour; each plant a
+   * little lighter or darker and a touch warmer or cooler, then dressed for
+   * the month shown with its bark, flowers, fruits and autumn colour.
    */
   setColors(colors: Record<PlantStrata, string>) {
     this.colors = colors
+    const natural = colors === NATURAL_GREENS
     const color = new THREE.Color()
     const hsl = { h: 0, s: 0, l: 0 }
     this.plants.forEach((plant, index) => {
       const season = seasonLook(plant, this.month)
+      const look = plant.look
       for (const [shape, slot] of Object.entries(this.slots[index]) as [Shape, number][]) {
-        if (shape === 'trunk' || shape === 'stems') color.set(BARK)
-        else if (shape === 'branches') color.set(TWIGS)
-        else if (shape === 'dots') color.set(season.blossom ? pick(BLOSSOM, plant.seed) : plant.form === 'tree' ? FRUIT_TREE : FRUIT_BUSH)
+        if (shape === 'trunk' || shape === 'stems') color.set(barkColor(look))
+        // Twigs take a little of their bark (a birch stands pale in winter).
+        else if (shape === 'branches') blend(color.set(TWIGS), barkColor(look), 0.45)
+        else if (shape === 'dots') color.set(season.blossom ? flowerColor(look, plant.seed) : fruitColor(look, plant.form === 'tree'))
         else {
-          color.set(colors[plant.strata] ?? NATURAL_GREENS.shrub).getHSL(hsl)
+          color.set((natural && foliageColor(look)) || colors[plant.strata] || NATURAL_GREENS.shrub).getHSL(hsl)
           const jitter = ((plant.seed % 97) / 97 - 0.5) * 0.08
           const warmth = ((plant.seed % 89) / 89 - 0.5) * 0.04
-          color.setHSL(hsl.h + jitter * 0.3 + warmth, Math.min(1, Math.max(0, hsl.s + warmth)), Math.min(0.85, Math.max(0.08, hsl.l + jitter)))
-          blend(color, pick(AUTUMN, plant.seed), season.autumn * 0.85)
+          const lighter = natural ? densityOf(look).lightness : 0
+          color.setHSL(hsl.h + jitter * 0.3 + warmth, Math.min(1, Math.max(0, hsl.s + warmth)), Math.min(0.85, Math.max(0.08, hsl.l + jitter + lighter)))
+          blend(color, autumnColor(look, plant.seed), season.autumn * autumnStrength(look))
           if (shape === 'dome' || shape === 'column') blend(color, shape === 'dome' ? STRAW : TWIGS, 1 - season.leaf)
         }
         this.meshes.get(shape)!.setColorAt(slot, color)
@@ -286,9 +308,11 @@ export class PlantLayer {
           if (shape.trunk > 0) set('trunk', -0.1, trunkRadius(plant, size, year - plant.start), shape.trunk + shape.half * 0.4 + 0.1)
           if (shape.stems) set('stems', -0.05, Math.max(0.3, shape.radius * 0.6), shape.centre)
           set('branches', shape.centre, shape.radius, shape.half)
-          const look = LOOK_SHAPE[shape.look]
+          const look = leafShape(shape.look, plant.look?.leafTexture)
+          // An airy crown is a little narrower, a dense one a little fuller.
+          const density = densityOf(plant.look).scale
           // The cone's unit geometry is 2 tall, centred: scaled to the crown's height.
-          if (leaves > 0) set(look, shape.centre, shape.radius * leaves, shape.half * leaves)
+          if (leaves > 0) set(look, shape.centre, shape.radius * leaves * density, shape.half * leaves)
           if (season.blossom || season.fruit) set('dots', shape.centre, shape.radius * 1.02, shape.half * 1.02)
           break
         }
