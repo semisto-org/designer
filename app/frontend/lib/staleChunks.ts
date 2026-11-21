@@ -8,6 +8,15 @@ const STORAGE_KEY = 'terranova:stale-chunk-reload-at'
 // the error tracker instead of reloading forever.
 const GUARD_MS = 10_000
 
+// Set once the page is reloading: cancelling Vite's preload error makes the
+// pending import resolve to nothing, so Inertia throws « Page not found »
+// on the way out. lib/sentry.ts drops events from that moment on.
+let reloading = false
+
+export function reloadingForFreshBuild(): boolean {
+  return reloading
+}
+
 type Env = {
   storage: Pick<Storage, 'getItem' | 'setItem'>
   reload: () => void
@@ -32,6 +41,7 @@ export function handleStaleChunk(event: { preventDefault: () => void }, env: Env
   } catch {
     // ignore
   }
+  reloading = true
   event.preventDefault()
   env.reload()
   return true
