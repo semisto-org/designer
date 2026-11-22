@@ -1,3 +1,5 @@
+import type { FeatureCollection, Geometry } from 'geojson'
+
 /**
  * Variants of a map's project (« Projet 1 », « Projet 2 »), server model
  * MapVariant. What is still a project belongs to every variant (no
@@ -6,7 +8,16 @@
  * variant's own elements. One variant is retained: the one the palette,
  * quantities, offer, implementation plan, 3D and public map count.
  */
-export type MapVariant = { id: number; name: string; notes: string | null; position: number; retained: boolean }
+export type MapVariant = {
+  id: number
+  name: string
+  notes: string | null
+  position: number
+  retained: boolean
+  /** Who started it: each designer sketches in a variant of their own (« Esquisse de Julie »). */
+  author?: string | null
+  authorId?: number | null
+}
 
 export function retainedVariant(variants: MapVariant[]): MapVariant | null {
   return variants.find((v) => v.retained) ?? variants[0] ?? null
@@ -44,4 +55,19 @@ export function ownCounts(features: { properties: { variant_id?: unknown; status
     if (own != null && f.properties.status !== 'rejected') counts.set(own, (counts.get(own) ?? 0) + 1)
   }
   return counts
+}
+
+/** The elements of `other` alone (its own, not the common project already on show), for the map layers. */
+export function comparedCollection(features: { geometry: Geometry; properties: { id: number; layer: string; kind?: string; variant_id?: unknown; status?: unknown } }[], other: number): FeatureCollection<Geometry> {
+  return {
+    type: 'FeatureCollection',
+    features: features
+      .filter((f) => variantOf(f.properties) === other && f.properties.status !== 'rejected')
+      .map((f) => ({
+        type: 'Feature',
+        id: f.properties.id,
+        geometry: f.geometry,
+        properties: { id: f.properties.id, layer: f.properties.layer, state: 'same', stroke: f.properties.kind === 'sketch' || undefined },
+      })),
+  }
 }

@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import { api } from '@/lib/api'
-import type { DesignPhase, OpenPhase } from './types'
+import { phaseRetained, type DesignPhase, type OpenPhase } from './types'
 
 /**
  * The design phases of the open map (from the server), and the one put
@@ -16,9 +16,11 @@ type State = {
   fade: number
   /** The phase element the viewer clicked on the map. */
   picked: number | null
+  /** The variant of the open phase on show (a phase keeps every designer's sketch); null: it kept none. */
+  variant: number | null
 }
 
-let state: State = { mapId: null, current: '', phases: [], loaded: false, open: null, fade: 0.6, picked: null }
+let state: State = { mapId: null, current: '', phases: [], loaded: false, open: null, fade: 0.6, picked: null, variant: null }
 const listeners = new Set<() => void>()
 
 function emit(patch: Partial<State>) {
@@ -59,9 +61,11 @@ export async function loadPhases(mapId: number) {
 /** Reopens a phase put away, read-only, over today's map. */
 export async function openPhase(mapId: number, id: number) {
   const data = await api<OpenPhase>(`/maps/${mapId}/design/phases/${id}`)
-  if (state.mapId === mapId) emit({ open: data, picked: null })
+  if (state.mapId === mapId) emit({ open: data, picked: null, variant: phaseRetained(data) })
 }
 
-export const closePhase = () => emit({ open: null, picked: null })
+export const closePhase = () => emit({ open: null, picked: null, variant: null })
+/** Shows another variant of the open phase: another designer's sketch of that time. */
+export const showPhaseVariant = (variant: number | null) => emit({ variant, picked: null })
 export const pickPhaseElement = (id: number | null) => emit({ picked: id })
 export const setPhaseFade = (fade: number) => emit({ fade: Math.min(1, Math.max(0, fade)) })

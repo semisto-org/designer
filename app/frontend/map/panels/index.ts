@@ -55,6 +55,7 @@ import PresentationOverlay from '@/map/presentation/PresentationOverlay'
 import DrawnViewOverlay from '@/map/drawn/DrawnViewOverlay'
 import PlaceMarginOverlay from '@/map/drawn/PlaceMarginOverlay'
 import PhaseOverlay from '@/map/phases/PhaseOverlay'
+import CompareOverlay from '@/map/variants/CompareOverlay'
 import TracingOverlay from '@/map/tracing/TracingOverlay'
 import MapOpeningProbe from '@/map/performance/MapOpeningProbe'
 import { appliesToFunctions } from '@/map/functions/store'
@@ -190,6 +191,7 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'presentation', component: PresentationOverlay, order: 95 },
   { id: 'drawn-view', component: DrawnViewOverlay, order: 96 },
   { id: 'design-phase', component: PhaseOverlay, order: 98 },
+  { id: 'variant-compare', component: CompareOverlay, order: 98.5 },
   { id: 'tracing', component: TracingOverlay, order: 97 },
   { id: 'place-margin', component: PlaceMarginOverlay, order: 97 },
   { id: 'opening-probe', component: MapOpeningProbe, order: 200 },

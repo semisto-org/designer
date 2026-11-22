@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { t } from '@/lib/i18n'
 import { useEditor, type Editor } from '@/map/editor/EditorContext'
 import { saveFeature } from '@/map/drawing/save'
+import { useSheet } from '@/map/tracing/store'
 
 // Inks (from Terranova's sketch layer): white with a dark halo reads on
 // aerial photos and on light maps alike.
@@ -17,13 +18,18 @@ const previewColor = (ink: string) => (ink === '#ffffff' ? '#5b5781' : ink)
 /**
  * Freehand sketch (Terra Draw freehand line): stroke after stroke until
  * "Terminer". The strokes of one ink form one sketch, saved in the notes
- * layer as a (multi) line.
+ * layer as a (multi) line. In « Projet », a sketch is design work: it goes
+ * on the tracing sheet on the table (bubbles, frame, planting) and into the
+ * variant shown, and a phase put away keeps it, for the designers who
+ * design with a pencil rather than by placing elements.
  */
 export function SketchTool({ onClose }: { onClose: () => void }) {
   const editor = useEditor()
   const latest = useRef<Editor>(editor)
   latest.current = editor
   const [ink, setInk] = useState(INKS[0])
+  const sheet = useSheet()
+  const onSheet = editor.mode === 'project' ? sheet : null
   const sketchId = useRef<number | null>(null)
   const session = useRef(0)
 
@@ -42,16 +48,17 @@ export function SketchTool({ onClose }: { onClose: () => void }) {
       session.current++
       latest.current.cancelDraw()
     }
-    // A new ink starts a new sketch.
+    // A new ink, or another sheet on the table, starts a new sketch.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ink])
+  }, [ink, onSheet])
 
   async function addStroke(stroke: LineString) {
     const editor = latest.current
     const existing = sketchId.current != null ? editor.features.find((f) => f.properties.id === sketchId.current) : null
     if (!existing) {
       try {
-        const feature = await editor.createFeature({ layer: 'notes', kind: 'sketch', geometry: stroke, style: { color: ink } })
+        const properties = onSheet ? { tracing: onSheet } : undefined
+        const feature = await editor.createFeature({ layer: 'notes', kind: 'sketch', geometry: stroke, style: { color: ink }, ...(properties ? { properties } : {}) })
         sketchId.current = feature.properties.id
         editor.notify(t('drawing.sketch.saved'))
       } catch (error) {

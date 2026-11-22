@@ -9,6 +9,9 @@ class MapVariant < ApplicationRecord
   MAX_PER_MAP = 10
 
   belongs_to :map, touch: true
+  # Who started it: several designers sketch the same place, each in a
+  # variant of their own (« Esquisse de Julie »), before a common one.
+  belongs_to :created_by, class_name: "User", optional: true
   has_many :features, class_name: "MapFeature", foreign_key: :variant_id, inverse_of: :variant, dependent: :nullify
 
   validates :name, presence: true, length: { maximum: 60 }
@@ -39,21 +42,26 @@ class MapVariant < ApplicationRecord
   # is shared already): the designer's way to try another idea.
   def duplicate!(name:, by: nil)
     transaction do
-      copy = map.variants.create!(name:, notes:)
-      features.where(status: "active").order(:id).find_each do |feature|
-        map.features.create!(
-          layer: feature.layer, kind: feature.kind, name: feature.name, notes: feature.notes,
-          geometry: feature.geometry, style: feature.style, tags: feature.tags, source: "human",
-          properties: feature.properties.except("number", "phase_id"), variant: copy,
-          created_by: by, updated_by: by
-        )
-      end
+      copy = map.variants.create!(name:, notes:, created_by: by)
+      features.where(status: "active").order(:id).find_each { |feature| self.class.copy_feature!(feature, into: copy, by:) }
       copy
     end
   end
 
+  # A copy of one element in another variant, or in the common project
+  # (`into` nil): an idea taken from a teammate's sketch into the shared
+  # one, while their sketch keeps it.
+  def self.copy_feature!(feature, into:, by: nil)
+    feature.map.features.create!(
+      layer: feature.layer, kind: feature.kind, name: feature.name, notes: feature.notes,
+      geometry: feature.geometry, style: feature.style, tags: feature.tags, source: "human",
+      properties: feature.properties.except("number", "phase_id"), variant: into,
+      created_by: by, updated_by: by
+    )
+  end
+
   def as_json(*)
-    { id:, name:, notes:, position:, retained: retained? }
+    { id:, name:, notes:, position:, retained: retained?, author: created_by&.display_name, authorId: created_by_id }
   end
 
   private

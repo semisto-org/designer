@@ -1096,6 +1096,30 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_equal "Avant-projet", data.dig("design_phases", "current")
   end
 
+  test "get_design_phases reads each designer's sketch kept with a phase" do
+    shape = { "type" => "Polygon", "coordinates" => [ [ [ 4.907, 50.341 ], [ 4.9072, 50.341 ], [ 4.9072, 50.3412 ], [ 4.907, 50.341 ] ] ] }
+    julie = @map.variants.create!(name: "Esquisse de Julie")
+    mine = @map.variants.create!(name: "Esquisse de Michael")
+    pond = @map.features.create!(layer: "water", kind: "pond", geometry: shape, properties: { "planned" => true }, variant: julie)
+    stroke = @map.features.create!(layer: "notes", kind: "sketch", geometry: { "type" => "LineString", "coordinates" => [ [ 4.907, 50.341 ], [ 4.9072, 50.3412 ] ] }, variant: mine)
+    phase = MapPhase.put_away!(@map, name: "Esquisses")
+
+    data, error = call_tool(@viewer, "get_design_phases", { map_id: @map.id })
+    refute error
+    assert_equal [ "Esquisse de Julie", "Esquisse de Michael" ], data["phases"].first["variants"].map { _1["name"] }
+
+    data, _error = call_tool(@viewer, "get_design_phases", { map_id: @map.id, phase_id: phase.id })
+    ids = data.dig("phase", "features").map { _1["id"] }
+    assert_includes ids, pond.id
+    assert_not_includes ids, stroke.id
+
+    data, _error = call_tool(@viewer, "get_design_phases", { map_id: @map.id, phase_id: phase.id, variant_id: mine.id })
+    ids = data.dig("phase", "features").map { _1["id"] }
+    assert_includes ids, stroke.id
+    assert_not_includes ids, pond.id
+    assert_equal mine.id, data.dig("phase", "variant_id")
+  end
+
   test "get_master_plan numbers the project as the printed plan does, without the networks" do
     shape = { "type" => "Polygon", "coordinates" => [ [ [ 4.907, 50.341 ], [ 4.9072, 50.341 ], [ 4.9072, 50.3412 ], [ 4.907, 50.341 ] ] ] }
     pond = @map.features.create!(layer: "water", kind: "pond", name: "Mare du haut", geometry: shape, properties: { "planned" => true })

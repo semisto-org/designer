@@ -10,6 +10,7 @@ import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { isPlanned } from '@/map/scenario'
 import { deletePhase, putAwayPhase, renameCurrentPhase, updatePhase } from './api'
+import { useVariants } from '@/map/variants/store'
 import { closePhase, loadPhases, openPhase, usePhases } from './store'
 import { phaseDate, PHASE_NAMES, type DesignPhase } from './types'
 
@@ -44,6 +45,7 @@ export default function DesignPhasesPanel() {
   const setMode = editor.setMode
   useEffect(() => setMode('project'), [setMode])
 
+  const withVariants = useVariants((s) => s.variants.length > 0)
   const planned = editor.features.filter((f) => f.properties.status === 'active' && isPlanned(f.properties)).length
 
   async function run(work: () => Promise<unknown>) {
@@ -152,6 +154,11 @@ export default function DesignPhasesPanel() {
                     {phase.putAwayBy ? ` · ${phase.putAwayBy}` : ''}
                     {' · '}{t('design_phases.planned_count', { count: phase.counts.planned ?? 0 })}
                   </p>
+                  {phase.variants && phase.variants.length > 0 && (
+                    <p className="mt-1 text-sm text-loam-600">
+                      {t('design_phases.variants_kept', { count: phase.variants.length, names: phase.variants.map((v) => (v.author ? `${v.name} (${v.author})` : v.name)).join(', ') })}
+                    </p>
+                  )}
                   {phase.notes && <p className="mt-1 font-hand text-lg leading-tight text-prune-700">{phase.notes}</p>}
                   <Button size="sm" variant={isOpen ? 'primary' : 'secondary'} className="mt-2" disabled={busy} onClick={() => void reopen(phase)}>
                     <Eye className="h-4 w-4" aria-hidden />{isOpen ? t('design_phases.hide') : t('design_phases.reopen')}
@@ -163,7 +170,7 @@ export default function DesignPhasesPanel() {
         </section>
       )}
 
-      <PutAwayDialog open={putting} current={current} busy={busy} onClose={() => setPutting(false)} onSubmit={async (values) => {
+      <PutAwayDialog open={putting} current={current} busy={busy} withVariants={withVariants} onClose={() => setPutting(false)} onSubmit={async (values) => {
         if (await run(() => putAwayPhase(editor, values))) {
           setPutting(false)
           editor.notify(t('design_phases.put_away_done', { name: values.name || current }))
@@ -173,10 +180,11 @@ export default function DesignPhasesPanel() {
   )
 }
 
-function PutAwayDialog({ open, current, busy, onClose, onSubmit }: {
+function PutAwayDialog({ open, current, busy, withVariants, onClose, onSubmit }: {
   open: boolean
   current: string
   busy: boolean
+  withVariants: boolean
   onClose: () => void
   onSubmit: (values: { name: string; notes: string; nextName: string }) => void
 }) {
@@ -209,6 +217,7 @@ function PutAwayDialog({ open, current, busy, onClose, onSubmit }: {
     >
       <div className="space-y-3">
         <p className="text-sm text-loam-600">{t('design_phases.dialog_intro')}</p>
+        {withVariants && <p className="text-sm text-loam-600">{t('design_phases.put_away_keeps')}</p>}
         <Field label={t('design_phases.name_label')}>
           <Input value={name} maxLength={60} onChange={(event) => setName(event.target.value)} />
         </Field>

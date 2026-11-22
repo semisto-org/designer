@@ -15,7 +15,7 @@ Ouvre « Phases du projet » dans l'étape Concevoir. La phase en cours porte un
 2. Écris ce qui a été décidé : pourquoi ces choix, ce que le client a dit, ce qui reste ouvert. Tu le reliras dans six mois.
 3. Choisis le nom de la phase suivante (Esquisse, Avant-projet, Projet détaillé, Plan de plantation, ou le tien).
 
-Terranova garde une copie du projet tel qu'il est, avec l'existant. Tu continues sur la même carte : rien ne bouge.
+Terranova garde une copie du projet tel qu'il est, avec l'existant et les croquis au crayon. S'il y a des variantes (l'esquisse de chaque designer, plusieurs propositions), **toutes sont rangées avec la phase**. Tu continues sur la même carte : rien ne bouge.
 
 Avant de ranger, va marcher le terrain avec la carte sur ton téléphone. Se tenir là où passera le chemin vaut mieux qu'un plan relu à l'écran.
 
@@ -27,6 +27,8 @@ Avant de ranger, va marcher le terrain avec la carte sur ton téléphone. Se ten
 
 - En **rouge pointillé**, ce qui a été retiré depuis.
 - En **ocre**, ce qui a été déplacé ou modifié depuis.
+
+Si la phase a gardé plusieurs esquisses ou propositions, choisis dans la carte de phase laquelle poser sur la carte. Voir [Esquisser à plusieurs designers](/help/esquisser-a-plusieurs).
 
 Une phase rangée ne change plus. Une idée abandonnée te manque ? Clique sur l'élément sur la carte, ou dans la liste de la carte de phase, puis sur « Reprendre sur la carte » : une copie revient dans la phase en cours.
 

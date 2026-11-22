@@ -34,3 +34,11 @@ Once the person has kept their bubbles, translate them, sheet by sheet:
 - A bubble with nothing inside it after the frame is an intention not yet translated: say so, and propose for it or ask whether it still holds.
 
 Keep the bubbles once the design is drawn: they explain it. The master plan leaves them out (`get_master_plan`); a pre-design presentation shows them.
+
+## Several designers, several sketches
+
+When two or three designers work on one place, each usually sketches in a variant of their own (`get_map` → `variants`, `author` says who started it, often named « Esquisse de Julie »). Some place elements, others only draw freehand with a pencil (`layer: notes`, `kind: sketch`, on a tracing sheet through `properties.tracing`): read both as design work, a stroke is an intention as much as a bubble.
+
+- To help the team converge, compare the sketches: what comes back in all of them belongs in the common project; what only one has is a choice to put to the team, or a separate proposal for the client.
+- Propose in the variant the person names (`propose_features` with `variant_id`), never across someone else's sketch without being asked.
+- Copying an idea from one sketch to another, or into the common project, is the person's gesture (inspector, section « Variante », or « Poser sur la table »); a phase put away keeps every sketch (`get_design_phases` with `variant_id`).
