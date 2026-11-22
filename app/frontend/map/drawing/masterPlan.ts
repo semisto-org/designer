@@ -32,7 +32,11 @@ export type MasterInput = {
   sources: string[]
   /** The live map, behind the QR code. */
   url: string
+  /** « Plan » (the plan look as drawn) or « Aquarelle » (that same plan, painted). */
+  look?: MasterLook
 }
+
+export type MasterLook = 'plan' | 'watercolor'
 
 // Theme inks, in Semisto's design order (water before plants).
 const THEME_COLORS: Record<string, string> = {
@@ -49,7 +53,7 @@ const FAINT = '#7a756c'
  * palette, a word on time, and the title block with the phase, the scale,
  * the north and a QR code to the living map. Resolves with the file name.
  */
-export async function exportMasterPlan(source: MapLibreMap, input: MasterInput, plan: MasterPlanData, onProgress?: (step: 'map' | 'pdf') => void): Promise<string> {
+export async function exportMasterPlan(source: MapLibreMap, input: MasterInput, plan: MasterPlanData, onProgress?: (step: 'map' | 'paint' | 'pdf') => void): Promise<string> {
   const layout = masterLayout(input.paper, input.orientation)
   const items = plan.themes.flatMap((theme) => theme.items.map((item) => ({ ...item, theme: theme.key })))
   let marks: { x: number; y: number; number: number; theme: string }[] = []
@@ -57,6 +61,7 @@ export async function exportMasterPlan(source: MapLibreMap, input: MasterInput, 
   const image = await renderMap(source, {
     center: input.center, scale: input.scale, frame: layout.frame, hiddenLayers: input.hiddenLayers,
     variant: input.variant, hideBoundary: input.hideBoundary, planLook: true, tag: input.tag, hiddenIds: input.hiddenIds,
+    paintOnly: input.look === 'watercolor',
     // The bubbles were the sketch of the intentions: the master plan shows what came of them.
     hiddenKinds: [...(input.hiddenKinds ?? []), 'bubble'],
     inspect: (map) => {
@@ -72,6 +77,13 @@ export async function exportMasterPlan(source: MapLibreMap, input: MasterInput, 
       })
     },
   })
+  let painted = image
+  if (input.look === 'watercolor') {
+    // The same plan, painted: nothing is added, the numbers and the legend stay crisp on top.
+    onProgress?.('paint')
+    const { seedOf, watercolorDataUrl } = await import('@/map/drawing/watercolor')
+    painted = await watercolorDataUrl(image, layout.frame.w, seedOf(`${input.url}|${input.title}`))
+  }
   onProgress?.('pdf')
   const { jsPDF } = await import('jspdf')
   const doc = new jsPDF({ orientation: input.orientation, unit: 'mm', format: input.paper.toLowerCase(), compress: true })
@@ -81,7 +93,7 @@ export async function exportMasterPlan(source: MapLibreMap, input: MasterInput, 
   doc.setFillColor('#fbf7ee')
   doc.rect(0, 0, layout.width, layout.height, 'F')
   const { frame, k } = layout
-  doc.addImage(image, 'JPEG', frame.x, frame.y, frame.w, frame.h, undefined, 'FAST')
+  doc.addImage(painted, 'JPEG', frame.x, frame.y, frame.w, frame.h, undefined, 'FAST')
   doc.setDrawColor(INK)
   doc.setLineWidth(0.35 * k)
   doc.rect(frame.x, frame.y, frame.w, frame.h, 'S')

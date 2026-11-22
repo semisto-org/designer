@@ -15,7 +15,7 @@ import {
 } from '@/map/drawing/pdf'
 import { hiddenPlantIds } from '@/map/drawing/hidden'
 import { useDrawingState } from '@/map/drawing/store'
-import { exportMasterPlan, type MasterPlanData } from '@/map/drawing/masterPlan'
+import { exportMasterPlan, type MasterLook, type MasterPlanData } from '@/map/drawing/masterPlan'
 import { masterLayout } from '@/map/drawing/masterPlanLayout'
 import { api } from '@/lib/api'
 import { useShownVariant } from '@/map/variants/store'
@@ -27,7 +27,7 @@ import { plantStrata } from '@/map/plants/strata'
 import { notePrint } from '@/lib/prints'
 import type { BBox, MapFeature, SharedProps } from '@/types'
 
-type Step = { step: 'map' | 'pdf'; page: number; pages: number } | null
+type Step = { step: 'map' | 'paint' | 'pdf'; page: number; pages: number } | null
 /** One plan, a book of sheets, or the « Plan directeur » (numbered, with its legend by theme). */
 export type PdfKind = 'plan' | 'book' | 'master'
 const PAPERS: Paper[] = ['A4', 'A3']
@@ -88,6 +88,21 @@ export function PdfExportPanel({ onClose, initialKind = 'plan' }: { onClose: () 
   const [withBoundary, setWithBoundary] = useState(true)
   const showBoundary = hasBoundary && withBoundary
   const [step, setStep] = useState<Step>(null)
+  const [look, setLook] = useState<MasterLook>(() => {
+    try {
+      return window.localStorage.getItem('designer:master-look') === 'watercolor' ? 'watercolor' : 'plan'
+    } catch {
+      return 'plan'
+    }
+  })
+  const chooseLook = (next: MasterLook) => {
+    setLook(next)
+    try {
+      window.localStorage.setItem('designer:master-look', next)
+    } catch {
+      // Blocked storage: the choice lasts for this export.
+    }
+  }
   const [viewCenter, setViewCenter] = useState<[number, number]>(() => instance.getCenter().toArray() as [number, number])
 
   // What the plan covers when fitted: the terrain, else everything drawn.
@@ -173,6 +188,7 @@ export function PdfExportPanel({ onClose, initialKind = 'plan' }: { onClose: () 
         author: currentUser?.name ?? null,
         sources: attributions(instance),
         url: `${window.location.origin}/maps/${editor.map.id}`,
+        look,
       }, plan, (next) => setStep({ step: next, page: 1, pages: 1 }))
       editor.notify(t('drawing.pdf.done'))
       notePrint(editor.map.id, 'pdf')
@@ -249,6 +265,17 @@ export function PdfExportPanel({ onClose, initialKind = 'plan' }: { onClose: () 
               options={[{ value: 'plan', label: t('drawing.pdf.single') }, { value: 'book', label: t('drawing.pdf.book') }, { value: 'master', label: t('master_plan.option') }]}
             />
             {master && <p className="mt-1 text-sm text-loam-500">{t('master_plan.hint')}</p>}
+            {master && (
+              <div className="mt-2">
+                <Segmented
+                  label={t('master_plan.look')}
+                  value={look}
+                  onChange={chooseLook}
+                  options={[{ value: 'plan', label: t('master_plan.look_plan') }, { value: 'watercolor', label: t('master_plan.look_watercolor') }]}
+                />
+                {look === 'watercolor' && <p className="mt-1 text-sm text-loam-500">{t('master_plan.look_watercolor_hint')}</p>}
+              </div>
+            )}
             {book && (
               <p className="mt-1 text-sm text-loam-500">
                 {sheets.length > 1
@@ -299,7 +326,7 @@ export function PdfExportPanel({ onClose, initialKind = 'plan' }: { onClose: () 
             {step
               ? step.pages > 1
                 ? t('drawing.pdf.rendering_sheet', { page: step.page, pages: step.pages })
-                : t(step.step === 'map' ? 'drawing.pdf.rendering' : 'drawing.pdf.writing')
+                : t(step.step === 'map' ? 'drawing.pdf.rendering' : step.step === 'paint' ? 'master_plan.painting' : 'drawing.pdf.writing')
               : t('drawing.pdf.generate')}
           </Button>
         </div>

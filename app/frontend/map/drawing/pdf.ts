@@ -187,6 +187,11 @@ type RenderOptions = {
   theme?: string | null; hideBoundary?: boolean
   /** The designer's plan look of « Présenter » (paper, crowns, ink outline). */
   planLook?: boolean
+  /**
+   * Only what is painted: no text, icon or trunk dot on the map (the
+   * watercolour master plan, where the numbers and legend say the rest).
+   */
+  paintOnly?: boolean
   /** Called with the offscreen map once drawn, before it goes (to project points on the page). */
   inspect?: (map: MapLibreMap) => void
 }
@@ -199,7 +204,21 @@ function hideBoundaryLayers(map: MapLibreMap) {
   }
 }
 
-export async function renderMap(source: MapLibreMap, { center, scale, frame, hiddenLayers, variant, tag, hiddenKinds, hiddenIds, theme, hideBoundary, planLook, inspect }: RenderOptions): Promise<string> {
+/** The working marks a painted plan leaves out: every text and icon, and the trunks at the heart of the crowns. */
+function hideMarks(map: MapLibreMap) {
+  for (const layer of map.getStyle().layers) {
+    if (layer.type === 'symbol' || layer.id === 'plant-trunks' || layer.id === 'plant-numbers-disc') map.setLayoutProperty(layer.id, 'visibility', 'none')
+  }
+  // A plant is its painted crown: the point at its foot steps aside (other points stay).
+  const point = map.getLayer('features-point')
+  if (point) {
+    const filter = map.getFilter('features-point')
+    const notPlant = ['!=', ['get', 'layer'], 'plants']
+    map.setFilter('features-point', (filter ? ['all', filter, notPlant] : notPlant) as never)
+  }
+}
+
+export async function renderMap(source: MapLibreMap, { center, scale, frame, hiddenLayers, variant, tag, hiddenKinds, hiddenIds, theme, hideBoundary, planLook, paintOnly, inspect }: RenderOptions): Promise<string> {
   const widthCss = Math.round(mmToCss(frame.w))
   const heightCss = Math.round(mmToCss(frame.h))
   const pixelRatio = Math.min(PRINT_DPI / CSS_DPI, MAX_CANVAS_PX / Math.max(widthCss, heightCss))
@@ -232,6 +251,7 @@ export async function renderMap(source: MapLibreMap, { center, scale, frame, hid
       map.setGlobalStateProperty(DRAWN_VIEW_STATE, false)
       applyPresentRender(map, true)
     }
+    if (paintOnly) hideMarks(map)
     await waitFor(map, 'idle')
     inspect?.(map)
     return map.getCanvas().toDataURL('image/jpeg', 0.92)

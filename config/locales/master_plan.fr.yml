@@ -1,6 +1,11 @@
 fr:
   master_plan:
     option: "Plan directeur"
+    look: "Rendu"
+    look_plan: "Plan"
+    look_watercolor: "Aquarelle"
+    look_watercolor_hint: "Le même plan, peint : lavis, bords où le pigment s’accumule, grain du papier. Terranova le peint lui-même à partir de ton dessin, sans rien inventer ; les numéros, la légende et le cartouche restent nets par-dessus."
+    painting: "On peint l’aquarelle…"
     hint: "Ton projet numéroté thème par thème, avec sa légende, l’intention du projet, la palette et un code QR vers la carte vivante. De l’A3 à l’A0, pour l’afficher ou le remettre."
     file: "plan directeur"
     heading: "Plan directeur"
