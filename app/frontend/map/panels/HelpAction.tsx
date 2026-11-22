@@ -29,6 +29,7 @@ const ARTICLE_BY_PANEL: Record<string, string> = {
   'drawing-layers': 'calques-mesures-et-croquis',
   'water-sources': 'dessiner-l-existant',
   earthworks: 'gerer-la-terre-excavee',
+  section: 'la-coupe-dans-le-temps',
   variants: 'comparer-des-variantes',
   'design-phases': 'ranger-une-phase',
   functions: 'les-fonctions-des-elements',

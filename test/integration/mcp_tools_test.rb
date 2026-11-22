@@ -568,6 +568,26 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert text.present?
   end
 
+  test "get_section cuts the land along a line, with each plant at year 5, 15 and 30, and links the editor" do
+    centre = @map.boundary.centroid
+    synthetic_terrain(@map) { |_dx, dy| 200 + dy * 0.05 }
+    alder = @map.features.create!(layer: "plants", kind: "plant", name: "Aulne",
+      geometry: { "type" => "Point", "coordinates" => [ centre.x, centre.y ] }, properties: { "species_id" => plant_species(:alder).id })
+    line = [ [ centre.x, centre.y - 0.0003 ], [ centre.x, centre.y + 0.0003 ] ]
+
+    data, error = call_tool(@viewer, "get_section", { map_id: @map.id, line: })
+    refute error
+    plant = data["plants"].find { _1["id"] == alder.id }
+    assert_operator plant.dig("sizes", "year15", "h"), :>, plant.dig("sizes", "year5", "h")
+    assert_equal "terrain", data["relief"]
+    assert_match %r{/maps/#{@map.id}\?.*panel=section}, data["editor_url"]
+    assert_equal "get_section", AiAction.last.tool
+
+    text, error = call_tool(@viewer, "get_section", { map_id: @map.id, line: [ [ centre.x + 0.1, centre.y ], [ centre.x + 0.1, centre.y + 0.001 ] ] })
+    assert error
+    assert text.present?
+  end
+
   test "find_keypoints gives the keypoints of the valleys with their keylines" do
     synthetic_terrain(@map) { |dx, dy| 200 + dx.abs * 0.15 + (dy.positive? ? dy * 0.10 : dy * 0.02) }
     data, error = call_tool(@viewer, "find_keypoints", { map_id: @map.id })

@@ -1,5 +1,5 @@
 import { Bot, Camera, Waypoints, Compass, Target, Shovel, FileImage, Files, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, Receipt, MapPinned, Mountain, PiggyBank, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
-import { Apple, Archive, GitBranch, Presentation, Trees } from 'lucide-react'
+import { Apple, Archive, GitBranch, Presentation, Spline, Trees } from 'lucide-react'
 import { isAnnotationLayer } from '@/map/scenario'
 import { appliesToCatchment, appliesToEarthworks, appliesToElement, appliesToFruitStore, appliesToGpsPoint, appliesToInfiltration, appliesToKeyline, appliesToLinks, appliesToPhase, appliesToProjectState, appliesToStorm, appliesToTracing, appliesToVariant, appliesToZone } from '@/map/panels/applies'
 import { deferred } from '@/map/panels/deferred'
@@ -86,6 +86,7 @@ export const PANELS: EditorPanel[] = [
   { id: 'water-sources', label: 'water_sources.panel_title', icon: Droplets, group: 'design', component: deferred(() => import('@/map/water/WaterSourcesPanel')), order: 50, essential: true },
   { id: 'design-phases', label: 'design_phases.panel_title', icon: Archive, group: 'design', component: deferred(() => import('@/map/phases/DesignPhasesPanel')), order: 51 },
   { id: 'variants', label: 'variants.panel_title', icon: GitBranch, group: 'design', component: deferred(() => import('@/map/variants/VariantsPanel')), order: 52 },
+  { id: 'section', label: 'section.panel_title', icon: Spline, group: 'design', component: deferred(() => import('@/map/section/SectionPanel')), order: 53 },
   { id: 'earthworks', label: 'earthworks.panel_title', icon: Shovel, group: 'design', component: deferred(() => import('@/map/earthworks/EarthworksPanel')), order: 55 },
   { id: 'functions', label: 'element_functions.panel_title', icon: Waypoints, group: 'design', component: deferred(() => import('@/map/functions/FunctionsPanel')), order: 60 },
   { id: 'drawing-alerts', label: 'drawing.panels.alerts', icon: TriangleAlert, group: 'design', component: deferred(() => import('@/map/drawing/AlertsPanel')), order: 70 },
