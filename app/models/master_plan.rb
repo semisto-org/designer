@@ -80,17 +80,13 @@ class MasterPlan
     def anchor_points(ids)
       return {} if ids.empty?
 
-      sql = <<~SQL
-        SELECT id,
-          ST_X(p) AS lng, ST_Y(p) AS lat
-        FROM (
-          SELECT id, CASE GeometryType(geometry)
-            WHEN 'LINESTRING' THEN ST_LineInterpolatePoint(geometry, 0.5)
-            WHEN 'POINT' THEN geometry
-            ELSE ST_PointOnSurface(geometry) END AS p
-          FROM map_features WHERE id IN (#{ids.map(&:to_i).join(',')})
-        ) points
+      point = <<~SQL.squish
+        CASE GeometryType(geometry)
+          WHEN 'LINESTRING' THEN ST_LineInterpolatePoint(geometry, 0.5)
+          WHEN 'POINT' THEN geometry
+          ELSE ST_PointOnSurface(geometry) END
       SQL
-      MapFeature.connection.select_rows(sql).to_h { |id, lng, lat| [ id.to_i, [ lng.to_f.round(7), lat.to_f.round(7) ] ] }
+      MapFeature.where(id: ids).pluck(:id, Arel.sql("ST_X(#{point})"), Arel.sql("ST_Y(#{point})"))
+        .to_h { |id, lng, lat| [ id, [ lng.to_f.round(7), lat.to_f.round(7) ] ] }
     end
 end
