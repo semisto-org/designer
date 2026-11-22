@@ -20,3 +20,11 @@ export const SECTION_COLORS = {
   line: '#5b5781',
   corridor: '#5b5781',
 } as const
+
+/** A hedge's mass in the section, and the noon shadows on the ground. */
+export const SECTION_WASHES = {
+  hedge: '#6f8a3c',
+  hedgeEdge: '#4d5f29',
+  shadowDecember: '#4d4a45',
+  shadowJune: '#d9a527',
+} as const

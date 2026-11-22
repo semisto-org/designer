@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import {
-  canopyShare, crownOverWater, distanceTicks, groundDrop, groundHeight, labelRows, lineParam, noonSunInSection,
-  parseLineParam, plantShape, sectionLayout, tallestAt, type SectionData, type SectionPlant,
+  canopyShare, crownOverWater, distanceTicks, emptyStretch, groundDrop, groundHeight, labelRows, lineParam, midSentence,
+  noonShadow, noonSunInSection, parseLineParam, plantShape, sectionLayout, tallestAt, winterShadow, type SectionData, type SectionPlant,
 } from '../../../app/frontend/map/section/section.ts'
 
 const tree = (id: number, d: number, sizes: Partial<Record<'today' | 'year5' | 'year15' | 'year30', { h: number; s: number }>>): SectionPlant => ({
@@ -90,4 +90,26 @@ test('the line travels in an editor link and comes back', () => {
   assert.deepEqual(parseLineParam(lineParam(line)), line)
   assert.equal(parseLineParam('4.9,50.3'), null)
   assert.equal(parseLineParam('a,b;c,d'), null)
+})
+
+test('the December noon shadow reaches far to the north, and names what it falls on', () => {
+  const sun = noonSunInSection(0, 50.3)!
+  const shadow = noonShadow({ d: 20 }, 10, sun, 'december')
+  assert.ok(shadow.to > shadow.from, 'drawn south to north: the shadow goes towards the end')
+  assert.ok(Math.abs(shadow.reach - 10 / Math.tan((sun.december * Math.PI) / 180)) < 1e-9)
+  assert.ok(shadow.reach > noonShadow({ d: 20 }, 10, sun, 'june').reach * 4)
+  const d = data({
+    plants: [tree(1, 20, { year30: { h: 10, s: 8 } })],
+    crossings: [{ id: 3, layer: 'structures', kind: 'bed', name: 'Potager', from: 40, to: 48 }],
+  })
+  const winter = winterShadow(d, 'year30', 50.3)
+  assert.equal(winter?.reaches?.name, 'Potager')
+  assert.equal(winterShadow(d, 'today', 50.3), null)
+})
+
+test('a long stretch with no crown is told; a common name is written in lower case mid-sentence', () => {
+  assert.deepEqual(emptyStretch(data({ plants: [tree(1, 10, {})] })), { from: 15, to: 100 })
+  assert.equal(emptyStretch(data({ plants: [tree(1, 30, {}), tree(2, 60, {}), tree(3, 90, {})] })), null)
+  assert.equal(midSentence({ name: 'Châtaignier' }), 'châtaignier')
+  assert.equal(midSentence({ name: 'Castanea sativa', latinName: 'Castanea sativa' }), 'Castanea sativa')
 })

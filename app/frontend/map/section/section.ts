@@ -14,6 +14,8 @@ export type SectionPlant = {
   strata: string
   existing?: boolean
   planted?: boolean
+  /** deciduous, evergreen, semi_evergreen, marcescent (from its sheet), absent when unknown. */
+  foliage?: string
   indicative?: boolean
   /** Distance along the line (m), and to the line (m, left positive). */
   d: number
@@ -23,7 +25,13 @@ export type SectionPlant = {
   adult: SectionSize
   sizes: Record<SectionMoment, SectionSize | null>
 }
-export type SectionCrossing = { id: number; layer: string; kind: string; name?: string; planned?: boolean; from: number; to: number }
+export type SectionCrossing = {
+  id: number; layer: string; kind: string; name?: string; planned?: boolean; from: number; to: number
+  /** Noted on the element: how wide and how deep it is dug (m). */
+  widthM?: number; depthM?: number
+  /** A hedge's height (m) at each moment. */
+  hedge?: Record<SectionMoment, number>
+}
 export type SectionData = {
   line: [number, number][]
   lengthM: number
@@ -31,6 +39,8 @@ export type SectionData = {
   origin: string
   moments: { key: SectionMoment; year: number | null; calendarYear: number }[]
   relief: 'terrain' | 'flat'
+  /** The terrain is there, but the map's plan does not cover the analyses. */
+  reliefLocked?: boolean
   ground: { d: number; z: number | null }[]
   plants: SectionPlant[]
   crossings: SectionCrossing[]
@@ -71,12 +81,14 @@ const MIN_FILL = 0.5
 export function sectionLayout(data: SectionData, width: number, height: number): SectionLayout {
   const left = 44
   const right = 20
-  const top = 58
-  const bottom = 30
+  const top = 70
+  const bottom = 46
   const known = data.ground.filter((g) => g.z != null).map((g) => g.z as number)
   const zMin = known.length ? Math.min(...known) : 0
   const zMax = known.length ? Math.max(...known) : 0
-  const tallest = Math.max(2, ...data.plants.map((p) => Math.max(p.adult.h, ...Object.values(p.sizes).map((s) => s?.h ?? 0)) + ((p.z ?? zMin) - zMin)))
+  const tallest = Math.max(2,
+    ...data.plants.map((p) => Math.max(p.adult.h, ...Object.values(p.sizes).map((s) => s?.h ?? 0)) + ((p.z ?? zMin) - zMin)),
+    ...data.crossings.map((c) => (c.hedge ? Math.max(...Object.values(c.hedge)) : 0) + (zMax - zMin)))
   const sx = (width - left - right) / Math.max(1, data.lengthM)
   // Room under the ground line for a slice of soil, and above for the tallest crown.
   const soil = 14
@@ -213,7 +225,7 @@ export function distanceTicks(length: number, target = 6): number[] {
 }
 
 /** Labels laid on rows so that none overlaps the previous one on its row: the row of each, in order. */
-export function labelRows(spans: { x: number; width: number }[], rows = 3, gap = 6): number[] {
+export function labelRows(spans: { x: number; width: number }[], rows = 4, gap = 6): number[] {
   const ends = new Array(rows).fill(-Infinity)
   return spans.map(({ x, width }) => {
     let row = ends.findIndex((end) => x - width / 2 >= end + gap)
@@ -231,4 +243,49 @@ export function parseLineParam(value: string | null): [number, number][] | null 
   if (!value) return null
   const points = value.split(';').map((pair) => pair.split(',').map(Number) as [number, number])
   return points.length >= 2 && points.every((p) => p.length === 2 && p.every(Number.isFinite)) ? points : null
+}
+
+/**
+ * The shadow a plant casts along the section at solar noon on a solstice:
+ * from its foot to where the ray grazing its top meets flat ground, away from
+ * the sun. True geometry in metres (the drawing stretches it with the heights).
+ */
+export function noonShadow(plant: Pick<SectionPlant, 'd'>, height: number, sun: { from: 'start' | 'end'; june: number; december: number }, season: 'june' | 'december') {
+  const reach = height / Math.tan((sun[season] * Math.PI) / 180)
+  const sign = sun.from === 'start' ? 1 : -1
+  return { from: plant.d, to: plant.d + sign * reach, reach }
+}
+
+/** The tallest tree's December noon shadow, and the first named thing it reaches beyond its crown. */
+export function winterShadow(data: SectionData, moment: SectionMoment, lat: number) {
+  const sun = noonSunInSection(data.bearing, lat)
+  const tallest = tallestAt(data, moment)
+  if (!sun || !tallest || !TREE_STRATA.has(tallest.plant.strata) || tallest.h < 2) return null
+  const shadow = noonShadow(tallest.plant, tallest.h, sun, 'december')
+  const [lo, hi] = [Math.min(shadow.from, shadow.to), Math.max(shadow.from, shadow.to)]
+  const crown = (tallest.plant.sizes[moment]?.s ?? 0) / 2
+  const reaches = data.crossings
+    .filter((c) => c.name && c.to >= lo && c.from <= hi && Math.min(Math.abs(c.from - tallest.plant.d), Math.abs(c.to - tallest.plant.d)) > crown)
+    .sort((a, b) => Math.abs(a.from - tallest.plant.d) - Math.abs(b.from - tallest.plant.d))[0] ?? null
+  return { plant: tallest.plant, height: tallest.h, reach: shadow.reach, reaches }
+}
+
+/** The longest stretch of the line with no crown over it, even adult, when it is long enough to say so. */
+export function emptyStretch(data: SectionData): { from: number; to: number } | null {
+  const spans = data.plants.map((p) => [p.d - p.adult.s / 2, p.d + p.adult.s / 2] as const).sort((a, b) => a[0] - b[0])
+  let best = { from: 0, to: 0 }
+  let cursor = 0
+  for (const [from, to] of spans) {
+    if (from - cursor > best.to - best.from) best = { from: cursor, to: from }
+    cursor = Math.max(cursor, to)
+  }
+  if (data.lengthM - cursor > best.to - best.from) best = { from: cursor, to: data.lengthM }
+  const length = best.to - best.from
+  return length >= 15 && length >= data.lengthM * 0.35 ? { from: Math.max(0, best.from), to: Math.min(data.lengthM, best.to) } : null
+}
+
+/** A common name mid-sentence, in lower case (« le châtaignier »); a Latin name keeps its capital. */
+export function midSentence(plant: Pick<SectionPlant, 'name' | 'latinName' | 'code'>): string {
+  const name = plant.name ?? plant.code ?? ''
+  return name && name !== plant.latinName ? name.charAt(0).toLowerCase() + name.slice(1) : name
 }

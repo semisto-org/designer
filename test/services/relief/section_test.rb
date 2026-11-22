@@ -1,8 +1,10 @@
 require "test_helper"
 require "test_helpers/synthetic_terrain_helper"
+require "test_helpers/billing_test_helper"
 
 class Relief::SectionTest < ActiveSupport::TestCase
   include SyntheticTerrainHelper
+  include BillingTestHelper
 
   setup do
     # About 71 m east–west and 111 m north–south.
@@ -55,6 +57,33 @@ class Relief::SectionTest < ActiveSupport::TestCase
   test "refuses a line too short or too long" do
     assert_equal :line, assert_raises(Relief::Section::Error) { Relief::Section.new(@map, line: [ @line.first ]) }.key
     assert_equal :line, assert_raises(Relief::Section::Error) { Relief::Section.new(@map, line: [ %w[a b], %w[c d] ]) }.key
+    assert_equal :line, assert_raises(Relief::Section::Error) { Relief::Section.new(@map, line: [ @line.first, [ "NaN", 50.3 ] ]) }.key
+    assert_equal :line, assert_raises(Relief::Section::Error) { Relief::Section.new(@map, line: [ @line.first, [ 4.9, 95 ] ]) }.key
+    assert_equal :line, assert_raises(Relief::Section::Error) { Relief::Section.new(@map, line: [ @line.first, @line.first ]) }.key
     assert_equal :too_long, assert_raises(Relief::Section::Error) { Relief::Section.new(@map, line: [ @line.first, [ @centre.x + 0.01, @centre.y ] ]) }.key
+  end
+
+  test "a plant past the end stays out, even when the last click is doubled" do
+    @map.features.create!(layer: "plants", kind: "plant",
+      geometry: { "type" => "Point", "coordinates" => [ @centre.x, @centre.y + 0.0006 ] }, properties: { "species_id" => plant_species(:apple).id })
+    data = Relief::Section.new(@map, line: [ @line.first, @line.last, @line.last ]).as_json
+    assert_empty data[:plants]
+  end
+
+  test "a line along a bed's edge still names the bed" do
+    bed = @map.features.create!(layer: "structures", kind: "bed", name: "Potager",
+      geometry: { "type" => "Polygon", "coordinates" => [ [ [ @centre.x, @centre.y ], [ @centre.x + 0.0001, @centre.y ], [ @centre.x + 0.0001, @centre.y + 0.0001 ], [ @centre.x, @centre.y + 0.0001 ], [ @centre.x, @centre.y ] ] ] })
+    crossing = Relief::Section.new(@map, line: @line).as_json[:crossings].find { _1[:id] == bed.id }
+    assert crossing, "the shared edge is a collection of a line and points"
+    assert_in_delta 44.5, crossing[:from], 1
+  end
+
+  test "on a plan without the analyses the section is drawn flat, and says why" do
+    synthetic_terrain(@map) { |_dx, dy| 200 + dy * 0.1 }
+    with_billing do
+      data = Relief::Section.new(@map, line: @line).as_json
+      assert_equal "flat", data[:relief]
+      assert data[:reliefLocked]
+    end
   end
 end
