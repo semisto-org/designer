@@ -113,4 +113,15 @@ class MapPhaseTest < ActiveSupport::TestCase
     assert_equal [ stroke.id ], phase.compare(variant_id: mine.id)[:removed]
     assert_empty phase.compare[:removed]
   end
+
+  test "a phase put away before pencil strokes were kept does not count today's strokes as added" do
+    phase = MapPhase.put_away!(@map, name: "Ancienne")
+    phase.update_columns(counts: phase.counts.except("keeps_sketches"))
+    stroke = @map.features.create!(layer: "notes", kind: "sketch", geometry: { "type" => "LineString", "coordinates" => [ [ 4.907, 50.341 ], [ 4.9072, 50.3412 ] ] })
+    assert_not_includes phase.reload.compare[:added], stroke.id
+    assert_nil phase.as_json[:keepsSketches]
+    recent = MapPhase.put_away!(@map, name: "Récente")
+    later = @map.features.create!(layer: "notes", kind: "sketch", geometry: { "type" => "LineString", "coordinates" => [ [ 4.907, 50.341 ], [ 4.9071, 50.3411 ] ] })
+    assert_includes recent.reload.compare[:added], later.id
+  end
 end

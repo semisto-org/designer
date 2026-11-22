@@ -11,6 +11,8 @@ export type DesignPhase = {
   putAwayBy?: string
   /** Every variant of its time (each designer's sketch, each proposal), with its own elements counted. Absent on a map without variants. */
   variants?: PhaseVariant[]
+  /** Put away since pencil strokes are kept: older phases never held them. */
+  keepsSketches?: boolean
 }
 
 export type PhaseVariant = { id: number; name: string; retained: boolean; author?: string | null; own?: number }
@@ -34,8 +36,8 @@ type TodayFeature = { properties: { id: number; layer: string; status?: string; 
 const KEPT_NOTE_KINDS = ['sketch']
 
 /** Whether a phase keeps this element (MapPhase.kept): everything but the visit notes. */
-export function keptByPhase(p: { layer: string; kind?: unknown }): boolean {
-  return p.layer !== 'notes' || KEPT_NOTE_KINDS.includes(String(p.kind))
+export function keptByPhase(p: { layer: string; kind?: unknown }, sketches = true): boolean {
+  return p.layer !== 'notes' || (sketches && KEPT_NOTE_KINDS.includes(String(p.kind)))
 }
 
 /**
@@ -63,7 +65,7 @@ export function compareWith(phase: OpenPhase, features: TodayFeature[], retained
   const now = new Map<number, unknown>()
   for (const f of features) {
     const p = f.properties as TodayFeature['properties'] & { kind?: unknown }
-    if (p.status !== 'active' || !keptByPhase(p)) continue
+    if (p.status !== 'active' || !keptByPhase(p, phase.keepsSketches === true)) continue
     if (p.variant_id != null && p.variant_id !== against) continue
     now.set(p.id, p.lockVersion)
   }

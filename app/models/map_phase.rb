@@ -48,7 +48,7 @@ class MapPhase < ApplicationRecord
       phase = map.phases.create!(
         number: (map.phases.maximum(:number) || 0) + 1,
         name: name.presence || map.current_design_phase_name,
-        notes:, snapshot: features.map(&:as_geojson), counts: count(counted), created_by: by,
+        notes:, snapshot: features.map(&:as_geojson), counts: count(counted).merge("keeps_sketches" => true), created_by: by,
         variants: map.variants.includes(:created_by).map { |v| v.as_json.except(:position).merge(own: own[v.id].to_i).deep_stringify_keys }
       )
       # Not a change of the map the editor holds: its lock version stays.
@@ -58,9 +58,14 @@ class MapPhase < ApplicationRecord
   end
 
   # What of a map a phase keeps (and compares with).
-  def self.kept(scope)
-    scope.where.not(layer: SKIPPED_LAYERS).or(scope.where(layer: SKIPPED_LAYERS, kind: KEPT_NOTE_KINDS))
+  def self.kept(scope, sketches: true)
+    others = scope.where.not(layer: SKIPPED_LAYERS)
+    sketches ? others.or(scope.where(layer: SKIPPED_LAYERS, kind: KEPT_NOTE_KINDS)) : others
   end
+
+  # Phases put away before pencil strokes were kept never held them: a
+  # stroke is not « added since » to those.
+  def keeps_sketches? = counts.to_h["keeps_sketches"] == true
 
   def self.count(features)
     tally = ->(list) { planned = list.count(&:planned?); { "planned" => planned, "existing" => list.size - planned } }
@@ -115,7 +120,7 @@ class MapPhase < ApplicationRecord
   # Today's elements to compare with that variant: it, if it still
   # exists, else the project the map counts now.
   def today(variant_id)
-    scope = self.class.kept(map.features.active)
+    scope = self.class.kept(map.features.active, sketches: keeps_sketches?)
     if variant_id && map.variants.exists?(variant_id)
       scope.where(variant_id: [ nil, variant_id ])
     else
@@ -144,7 +149,7 @@ class MapPhase < ApplicationRecord
     full = options.is_a?(Hash) && options[:snapshot]
     {
       id:, number:, name:, notes:, counts: counts_without_networks, putAwayAt: created_at&.iso8601, putAwayBy: created_by&.display_name,
-      variants: Array(variants).presence,
+      variants: Array(variants).presence, keepsSketches: keeps_sketches? || nil,
       snapshot: (full ? { type: "FeatureCollection", features: snapshot } : nil)
     }.compact
   end

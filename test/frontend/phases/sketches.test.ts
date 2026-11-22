@@ -13,7 +13,7 @@ const line = (id: number, props: Record<string, unknown> = {}) => ({
 
 // Julie (variant 10, retained then) placed a path; Michael (variant 11) only drew with a pencil.
 const phase = {
-  id: 1, number: 1, name: 'Esquisses', notes: null, counts: {}, putAwayAt: '2026-11-22T08:00:00Z',
+  id: 1, number: 1, name: 'Esquisses', notes: null, counts: {}, putAwayAt: '2026-11-22T08:00:00Z', keepsSketches: true,
   variants: [{ id: 10, name: 'Esquisse de Julie', retained: true, author: 'Julie' }, { id: 11, name: 'Esquisse de Michael', retained: false, author: 'Michael' }],
   snapshot: {
     type: 'FeatureCollection',
@@ -45,6 +45,16 @@ test('a sketch of a phase is compared with that sketch today, while it still exi
   // Michael's stroke was erased since: removed from his sketch, not from Julie's.
   assert.deepEqual(compareWith(phase, today, 10, 11, [10, 11]).removed, [3])
   assert.deepEqual(compareWith(phase, today, 10, 10, [10, 11]).removed, [])
+})
+
+test('a phase put away before strokes were kept does not see today\'s strokes as added', () => {
+  const today = [
+    { properties: { id: 1, layer: 'access', kind: 'path', status: 'active' } },
+    { properties: { id: 9, layer: 'notes', kind: 'sketch', status: 'active' } },
+  ]
+  const older = { ...phase, variants: undefined, keepsSketches: undefined, snapshot: { type: 'FeatureCollection', features: [line(1)] } } as unknown as OpenPhase
+  assert.deepEqual(compareWith(older, today, null, null).added, [])
+  assert.deepEqual(compareWith({ ...older, keepsSketches: true }, today, null, null).added, [9])
 })
 
 test('a teammate laid on the table brings only their own elements', () => {

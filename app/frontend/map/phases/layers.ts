@@ -1,7 +1,7 @@
 import type { FeatureCollection, Geometry } from 'geojson'
 import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl'
-import { PLAN_COLORS } from '@/map/plants/strataColors'
-import { inkOpacity, paperOpacity } from './fade'
+import { PLAN_COLORS } from '../plants/strataColors.ts'
+import { inkOpacity, paperOpacity } from './fade.ts'
 
 /**
  * The ids of one sheet of tracing paper laid over today's plan: a phase
@@ -90,9 +90,23 @@ export function applySheetLayers(map: MapLibreMap, ids: SheetIds, data: FeatureC
     })
     setSheetFadeOn(map, ids, fade)
   }
-  // Always on top (a sheet is laid over today's plan), moved only when another layer came above.
+  keepSheetsOnTop(map, ids)
+}
+
+/** The sheets laid over today's plan, bottom to top: a phase put away, then a teammate's sketch. */
+const TOP_SHEETS = ['design-phase', 'variant-compare']
+
+/**
+ * Keeps every sheet on the map above everything else, in one shared order,
+ * moving layers only when another came above. Each overlay calls it on every
+ * `styledata` (a move is itself one): with one order for all, two sheets
+ * shown together settle instead of taking the top from each other forever.
+ */
+function keepSheetsOnTop(map: MapLibreMap, ids: SheetIds) {
+  const prefixes = TOP_SHEETS.includes(ids.source) ? TOP_SHEETS : [...TOP_SHEETS, ids.source]
+  const tail = prefixes.map(sheetIds).filter((sheet) => map.getLayer(sheet.paper)).flatMap((sheet) => sheet.layers)
   const order = map.getLayersOrder()
-  if (order.slice(-ids.layers.length).join('|') !== ids.layers.join('|')) ids.layers.forEach((id) => map.moveLayer(id))
+  if (order.slice(-tail.length).join('|') !== tail.join('|')) tail.forEach((id) => map.moveLayer(id))
 }
 
 export function setSheetFadeOn(map: MapLibreMap, ids: SheetIds, fade: number) {
