@@ -34,6 +34,7 @@ module Mcp
           elements: element_counts(map),
           tags: tag_counts(map),
           variants: variants(map),
+          design_phases: design_phases(map),
           palette: palette(map),
           palette_budget: palette_budget(map),
           palette_drafts_pending: map.palette_drafts.count,
@@ -480,6 +481,16 @@ module Mcp
             list: map.variants.map { |v| v.as_json.merge(own_elements: own[v.id].to_i) },
             note: t(map.variants.any? ? "notes.variants" : "notes.no_variants"),
             panel_url: "#{map_url(map)}?panel=variants"
+          }
+        end
+
+        # « Phases du projet »: the phase in progress and the ones put away
+        # (get_design_phases reads one and compares it with today).
+        def design_phases(map)
+          {
+            current: map.current_design_phase_name,
+            put_away: map.phases.listed.map { |p| { id: p.id, number: p.number, name: p.name, put_away_at: p.created_at.iso8601 } },
+            panel_url: "#{map_url(map)}?panel=design-phases"
           }
         end
 

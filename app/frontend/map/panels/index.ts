@@ -1,5 +1,5 @@
 import { Bot, Camera, Waypoints, Compass, Target, Shovel, FileImage, Files, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, Receipt, MapPinned, Mountain, PiggyBank, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
-import { Apple, GitBranch, Presentation, Trees } from 'lucide-react'
+import { Apple, Archive, GitBranch, Presentation, Trees } from 'lucide-react'
 import { isAnnotationLayer } from '@/map/scenario'
 import { appliesToCatchment, appliesToEarthworks, appliesToElement, appliesToFruitStore, appliesToGpsPoint, appliesToInfiltration, appliesToKeyline, appliesToLinks, appliesToPhase, appliesToProjectState, appliesToStorm, appliesToVariant, appliesToZone } from '@/map/panels/applies'
 import { deferred } from '@/map/panels/deferred'
@@ -54,6 +54,7 @@ import EarthworksOverlay from '@/map/earthworks/EarthworksOverlay'
 import PresentationOverlay from '@/map/presentation/PresentationOverlay'
 import DrawnViewOverlay from '@/map/drawn/DrawnViewOverlay'
 import PlaceMarginOverlay from '@/map/drawn/PlaceMarginOverlay'
+import PhaseOverlay from '@/map/phases/PhaseOverlay'
 import MapOpeningProbe from '@/map/performance/MapOpeningProbe'
 import { appliesToFunctions } from '@/map/functions/store'
 
@@ -81,6 +82,7 @@ export const PANELS: EditorPanel[] = [
   { id: 'zones', label: 'permaculture_zones.panel_title', icon: Target, group: 'design', component: deferred(() => import('@/map/zones/ZonesPanel')), order: 10, essential: true },
   { id: 'palette', label: 'editor.panels.palette', icon: Sprout, group: 'design', component: deferred(() => import('@/map/plants/PalettePanel')), order: 20, essential: true },
   { id: 'water-sources', label: 'water_sources.panel_title', icon: Droplets, group: 'design', component: deferred(() => import('@/map/water/WaterSourcesPanel')), order: 50, essential: true },
+  { id: 'design-phases', label: 'design_phases.panel_title', icon: Archive, group: 'design', component: deferred(() => import('@/map/phases/DesignPhasesPanel')), order: 51 },
   { id: 'variants', label: 'variants.panel_title', icon: GitBranch, group: 'design', component: deferred(() => import('@/map/variants/VariantsPanel')), order: 52 },
   { id: 'earthworks', label: 'earthworks.panel_title', icon: Shovel, group: 'design', component: deferred(() => import('@/map/earthworks/EarthworksPanel')), order: 55 },
   { id: 'functions', label: 'element_functions.panel_title', icon: Waypoints, group: 'design', component: deferred(() => import('@/map/functions/FunctionsPanel')), order: 60 },
@@ -185,6 +187,7 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'sectors', component: SectorsOverlay, order: 13 },
   { id: 'presentation', component: PresentationOverlay, order: 95 },
   { id: 'drawn-view', component: DrawnViewOverlay, order: 96 },
+  { id: 'design-phase', component: PhaseOverlay, order: 98 },
   { id: 'place-margin', component: PlaceMarginOverlay, order: 97 },
   { id: 'opening-probe', component: MapOpeningProbe, order: 200 },
 ]

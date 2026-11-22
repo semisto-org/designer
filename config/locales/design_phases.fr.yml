@@ -1,0 +1,69 @@
+fr:
+  design_phases:
+    default_name: "Phase %{number}"
+    name_missing: "Donne un nom à la phase."
+    panel_title: "Phases du projet"
+    intro: "Un design mûrit par étapes : une esquisse, un avant-projet, un projet détaillé. Quand une étape est décidée, range-la : elle reste là, telle quelle, et tu continues sur la même carte."
+    in_progress: "Phase en cours"
+    planned_count:
+      zero: "Rien encore en projet"
+      one: "1 élément en projet"
+      other: "%{count} éléments en projet"
+    rename: "Renommer la phase"
+    put_away: "Ranger cette phase"
+    put_away_title: "Phases rangées"
+    put_away_on: "Rangée le %{date}"
+    put_away_done: "« %{name} » est rangée. La suite commence ici."
+    empty: "Aucune phase rangée pour l’instant. Ta première esquisse viendra se ranger ici."
+    reopen: "Revoir sur la carte"
+    hide: "Ne plus la montrer"
+    delete: "Supprimer la phase"
+    delete_title: "Supprimer « %{name} » ?"
+    delete_body: "La copie de cette phase disparaît. La carte d’aujourd’hui ne change pas."
+    deleted: "Phase supprimée."
+    error: "La phase n’a pas pu être lue ou enregistrée. Réessaie dans un instant."
+    dialog_title: "Ranger cette phase"
+    dialog_intro: "Terranova garde une copie du projet tel qu’il est maintenant, avec l’existant. Tu pourras la revoir, la comparer à la suite et en reprendre un élément."
+    name_label: "Nom de la phase que tu ranges"
+    notes_label: "Ce qui a été décidé"
+    notes_hint: "Pourquoi ces choix, ce que le client a dit, ce qui reste ouvert. Tu le reliras dans six mois."
+    next_label: "La phase suivante"
+    next_placeholder: "Par exemple : Avant-projet"
+    cancel: "Annuler"
+    go_outside: "Avant de ranger, va marcher le terrain avec la carte sur ton téléphone : se tenir là où passera le chemin vaut mieux qu’un plan relu à l’écran."
+    names:
+      esquisse: "Esquisse"
+      avant_projet: "Avant-projet"
+      projet_detaille: "Projet détaillé"
+      plan_de_plantation: "Plan de plantation"
+    viewing: "Phase « %{name} »"
+    read_only: "lecture seule"
+    close: "Fermer la phase"
+    fade: "Passer d’aujourd’hui à la phase rangée"
+    today: "Aujourd’hui"
+    unchanged: "Rien n’a bougé depuis : la carte d’aujourd’hui est cette phase."
+    since: "Depuis cette phase"
+    since_removed:
+      one: "1 élément retiré"
+      other: "%{count} éléments retirés"
+    since_changed:
+      one: "1 élément modifié"
+      other: "%{count} éléments modifiés"
+    since_added:
+      one: "1 élément ajouté"
+      other: "%{count} éléments ajoutés"
+    list: "Ce qui a été retiré ou modifié"
+    take: "Reprendre sur la carte"
+    taken_short: "Déjà reprise sur la carte"
+    taken: "« %{name} » est revenu sur la carte."
+    states:
+      same: "inchangé depuis"
+      changed: "modifié depuis"
+      removed: "retiré depuis"
+  activerecord:
+    errors:
+      models:
+        map_phase:
+          attributes:
+            base:
+              too_many: "Une carte garde au plus %{count} phases rangées."

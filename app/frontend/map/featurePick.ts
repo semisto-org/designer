@@ -68,6 +68,13 @@ export function hitsIn(map: Pickable, from: { x: number; y: number }, to: { x: n
   return map.queryRenderedFeatures(box, { layers: present }).map(hitOf)
 }
 
+/**
+ * Overlays that take a click for themselves (a phase reopened over today's
+ * map): while one of them answers true, the editor selects nothing there.
+ */
+export const clickClaimers = new Set<(point: { x: number; y: number }) => boolean>()
+export const clickClaimed = (point: { x: number; y: number }) => [...clickClaimers].some((claims) => claims(point))
+
 /** The element a click at this point selects, or null. */
 export function featureAt(map: Pickable, point: { x: number; y: number }, areaOf?: (id: number) => number): number | null {
   return pickFeature(hitsAt(map, point), areaOf)

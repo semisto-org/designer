@@ -31,6 +31,8 @@ class Map < ApplicationRecord
   has_many :features, class_name: "MapFeature", dependent: :destroy
   # Variants of the project (MapVariant); one is retained.
   has_many :variants, -> { ordered }, class_name: "MapVariant", dependent: :delete_all, inverse_of: :map
+  # Design phases put away (« Esquisse », « Avant-projet »…), each a frozen copy of the project (MapPhase).
+  has_many :phases, -> { ordered }, class_name: "MapPhase", dependent: :delete_all, inverse_of: :map
   has_many :trashed_features, -> { trashed }, class_name: "MapFeature", dependent: :destroy
   has_many :feature_update_drafts, dependent: :delete_all
   has_many :project_sheet_drafts, -> { ordered }, dependent: :delete_all, inverse_of: :map
@@ -111,6 +113,11 @@ class Map < ApplicationRecord
   end
 
   def locking_enabled? = !@touching && super
+
+  # The design phase in progress (« Esquisse »…), before it is put away (MapPhase).
+  def current_design_phase_name
+    design_phase_name.presence || I18n.t("design_phases.default_name", number: (phases.maximum(:number) || 0) + 1)
+  end
 
   def role_for(user)
     return nil unless user

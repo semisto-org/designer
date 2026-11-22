@@ -802,6 +802,16 @@ Rails.application.routes.draw do
   end
   # --- end variants ---
 
+  # --- design phases ---
+  # Design phases put away (« Ranger la phase »), reopened read-only.
+  resources :maps, only: [] do
+    resources :design_phases, path: "design/phases", only: %i[index show create update destroy], controller: "maps/design_phases" do
+      post :take, on: :member
+    end
+    patch "design/phase", to: "maps/design_phases#rename_current", as: :current_design_phase
+  end
+  # --- end design phases ---
+
   # --- first-hours ---
   # The beta's « Premières heures »: « Un retour ? » from any page, the answer
   # to the session recording question and the replays it starts, the plan's

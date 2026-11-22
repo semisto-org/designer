@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_21_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_21_150000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -746,6 +746,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_21_090000) do
     t.index ["requested_by_id"], name: "index_map_offline_sites_on_requested_by_id"
   end
 
+  create_table "map_phases", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.integer "number", null: false
+    t.string "name", null: false
+    t.text "notes"
+    t.jsonb "snapshot", default: [], null: false
+    t.jsonb "counts", default: {}, null: false
+    t.bigint "created_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_map_phases_on_created_by_id"
+    t.index ["map_id", "number"], name: "index_map_phases_on_map_id_and_number", unique: true
+    t.index ["map_id"], name: "index_map_phases_on_map_id"
+  end
+
   create_table "map_photos", force: :cascade do |t|
     t.bigint "map_id", null: false
     t.bigint "uploaded_by_id"
@@ -969,6 +984,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_21_090000) do
     t.boolean "time_shared_with_client", default: false, null: false
     t.datetime "agent_enabled_at"
     t.bigint "agent_enabled_by_id"
+    t.string "design_phase_name"
     t.index ["board_section_id"], name: "index_maps_on_board_section_id"
     t.index ["boundary"], name: "index_maps_on_boundary", using: :gist
     t.index ["lead_id"], name: "index_maps_on_lead_id"
@@ -2139,6 +2155,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_21_090000) do
   add_foreign_key "map_memberships", "users", column: "invited_by_id"
   add_foreign_key "map_offline_sites", "maps", on_delete: :cascade
   add_foreign_key "map_offline_sites", "users", column: "requested_by_id", on_delete: :nullify
+  add_foreign_key "map_phases", "maps", on_delete: :cascade
+  add_foreign_key "map_phases", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "map_photos", "drone_missions", on_delete: :nullify
   add_foreign_key "map_photos", "map_features", on_delete: :nullify
   add_foreign_key "map_photos", "map_photos", column: "derived_from_id", on_delete: :nullify
