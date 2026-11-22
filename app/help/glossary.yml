@@ -17,6 +17,9 @@
 - term: Cépée
   forms: [cépées]
   definition: "Arbre ou arbuste coupé au ras du sol tous les quelques ans, qui repart en une touffe de tiges depuis sa souche. On en tire du bois, des piquets, des perches, et il reste bien plus bas qu'un arbre libre."
+- term: Coupe
+  forms: [coupes]
+  definition: "Dessin du terrain tranché à la verticale le long d'une ligne, comme on coupe un gâteau : on y voit le sol, l'eau et la hauteur des plantes, que le plan vu d'en haut ne montre pas."
 - term: Courbe de niveau
   forms: [courbes de niveau]
   definition: "Ligne qui relie les points d'un terrain à la même altitude. Une ligne tracée dessus ne monte ni ne descend : l'eau ne peut pas la suivre."

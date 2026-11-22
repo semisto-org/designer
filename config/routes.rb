@@ -812,6 +812,8 @@ Rails.application.routes.draw do
     patch "design/phase", to: "maps/design_phases#rename_current", as: :current_design_phase
     # « Plan directeur »: the design numbered theme by theme.
     get "design/master_plan", to: "maps/master_plans#show", as: :master_plan
+    # « Coupe dans le temps »: a section through the land along a drawn line.
+    get "design/section", to: "maps/sections#show", as: :design_section
   end
   # --- end design phases ---
 

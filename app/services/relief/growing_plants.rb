@@ -19,6 +19,23 @@ module Relief
       @quantities = map.planted_quantities
     end
 
+    # A plant row's size at `target` (a Date), as the 3D view grows it: a
+    # planned plant goes into the ground today; nil before its planting or
+    # once a support plant gave way. { height:, spread: } in metres.
+    def self.size_at(plant, target:, today: Date.current)
+      planted_on = plant[:plantedOn] && (Date.iso8601(plant[:plantedOn]) rescue nil)
+      age = plant[:plantedLongAgo] ? PlantGrowth::Curve::MEASURED_LONG_AGO : (target - (planted_on || today)) / 365.25
+      form = PlantGrowth::Curve.form(plant[:strata], plant[:plantType])
+      training = PlantGrowth::Curve.training(form, plant[:training])
+      graft = training == "free" ? PlantGrowth::Curve.graft(form, plant[:graft]) : nil
+      support_until = plant[:support] && !plant[:plantedLongAgo] ? plant[:supportUntil] : nil
+      PlantGrowth::Curve.size_at(
+        strata: plant[:strata], height: plant[:heightM], spread: plant[:spreadM], maturity: plant[:maturityYears],
+        age: age.to_f, training:, graft:, until_years: support_until,
+        measured: PlantGrowth::Curve.measured(plant[:measures], planted_on:)
+      )
+    end
+
     def as_json(*)
       plants = plant_rows + existing_tree_rows
       patches = patch_rows
