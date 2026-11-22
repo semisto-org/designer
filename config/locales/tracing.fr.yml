@@ -6,6 +6,7 @@ fr:
     fold: "Replier la note"
     unfold: "Déplier la note"
     start: "Commencer par la feuille « %{sheet} »"
+    continue: "Continuer avec la feuille « %{sheet} »"
     sheets:
       bubbles: "Bulles"
       frame: "Trame"

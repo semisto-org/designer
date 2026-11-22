@@ -89,6 +89,8 @@ export default function TracingCard({ counts }: { counts: SheetCounts }) {
   ]
   const next = sheet ? sheetAt(sheetRank(sheet) + 1) : null
   const start = suggestedSheet(counts)
+  // Once a sheet holds something, the next one continues the drawing rather than starting it.
+  const started = Object.values(counts).some((n) => n > 0)
   // The note steps aside while a tool is open or an element's sheet is shown, so it never covers what one works on.
   const showNote = noteOpen && tool == null && editor.selectedId == null
 
@@ -131,7 +133,9 @@ export default function TracingCard({ counts }: { counts: SheetCounts }) {
           <p className="px-2 pb-1.5 pt-1 text-sm text-loam-600">
             {t('tracing.all_hint')}{' '}
             <Button variant="ghost" size="sm" className="-ml-2" onClick={() => choose(start)}>
-              {t('tracing.start', { sheet: t(`tracing.sheets.${start}`) })}
+              {started
+                ? t('tracing.continue', { sheet: t(`tracing.sheets.${start}`) })
+                : t('tracing.start', { sheet: t(`tracing.sheets.${start}`) })}
             </Button>
           </p>
         ))}
