@@ -798,6 +798,7 @@ Rails.application.routes.draw do
   resources :maps, only: [] do
     resources :variants, only: %i[index create update destroy], controller: "maps/variants" do
       post :duplicate, on: :member
+      post :copy, on: :collection
     end
   end
   # --- end variants ---

@@ -86,4 +86,42 @@ class MapPhaseTest < ActiveSupport::TestCase
     assert_nil copy.properties["water_source_id"]
     assert copy.planned?
   end
+
+  test "a phase keeps every designer's sketch, pencil strokes included, and compares one at a time" do
+    julie = @map.variants.create!(name: "Esquisse de Julie", created_by: @user)
+    mine = @map.variants.create!(name: "Esquisse de Michael")
+    julie_pond = @map.features.create!(layer: "water", kind: "pond", geometry: SHAPE, properties: { "planned" => true }, variant: julie)
+    stroke = @map.features.create!(layer: "notes", kind: "sketch", geometry: { "type" => "LineString", "coordinates" => [ [ 4.907, 50.341 ], [ 4.9072, 50.3412 ] ] }, variant: mine)
+    common = @map.features.create!(layer: "access", kind: "path", geometry: { "type" => "LineString", "coordinates" => [ [ 4.907, 50.341 ], [ 4.9071, 50.3411 ] ] }, properties: { "planned" => true })
+    visit_note = @map.features.create!(layer: "notes", kind: "note", geometry: POINT)
+
+    phase = MapPhase.put_away!(@map, name: "Esquisses").reload
+    kept = phase.snapshot.map { _1["id"] }
+    assert_includes kept, julie_pond.id
+    assert_includes kept, stroke.id
+    assert_not_includes kept, visit_note.id
+    assert_equal [ [ "Esquisse de Julie", true, "Michael", 1 ], [ "Esquisse de Michael", false, nil, 1 ] ],
+      phase.variants.map { [ _1["name"], _1["retained"], _1["author"], _1["own"] ] }
+    # The counts are the project the map counted then: the retained sketch.
+    assert_equal 2, phase.counts["planned"]
+
+    assert_equal julie.id, phase.retained_variant_id
+    assert_equal [ julie_pond.id, common.id ].sort, (phase.features_of(julie.id).map { _1["id"] } & [ julie_pond.id, common.id, stroke.id ]).sort
+    assert_includes phase.features_of(mine.id).map { _1["id"] }, stroke.id
+
+    stroke.trash!
+    assert_equal [ stroke.id ], phase.compare(variant_id: mine.id)[:removed]
+    assert_empty phase.compare[:removed]
+  end
+
+  test "a phase put away before pencil strokes were kept does not count today's strokes as added" do
+    phase = MapPhase.put_away!(@map, name: "Ancienne")
+    phase.update_columns(counts: phase.counts.except("keeps_sketches"))
+    stroke = @map.features.create!(layer: "notes", kind: "sketch", geometry: { "type" => "LineString", "coordinates" => [ [ 4.907, 50.341 ], [ 4.9072, 50.3412 ] ] })
+    assert_not_includes phase.reload.compare[:added], stroke.id
+    assert_nil phase.as_json[:keepsSketches]
+    recent = MapPhase.put_away!(@map, name: "Récente")
+    later = @map.features.create!(layer: "notes", kind: "sketch", geometry: { "type" => "LineString", "coordinates" => [ [ 4.907, 50.341 ], [ 4.9071, 50.3411 ] ] })
+    assert_includes recent.reload.compare[:added], later.id
+  end
 end

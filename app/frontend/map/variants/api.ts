@@ -4,7 +4,7 @@ import type { MapFeature } from '@/types'
 import { setVariants, showVariant } from './store'
 import type { MapVariant } from './variants'
 
-type Payload = { variants: MapVariant[]; id?: number; features?: MapFeature[]; trashed?: number[] }
+type Payload = { variants: MapVariant[]; id?: number; features?: MapFeature[]; feature?: MapFeature; trashed?: number[] }
 
 const base = (editor: Editor) => `/maps/${editor.map.id}/variants`
 
@@ -13,9 +13,9 @@ const base = (editor: Editor) => `/maps/${editor.map.id}/variants`
  * first makes « Projet 1 » of the project as it stands. `fromTag`: the
  * planned elements carrying that tag join it (the former « Version »).
  */
-export async function createVariant(editor: Editor, options: { name?: string; fromTag?: string } = {}) {
+export async function createVariant(editor: Editor, options: { name?: string; fromTag?: string; sketch?: boolean } = {}) {
   const data = await api<Payload>(base(editor), {
-    method: 'POST', body: { variant: { name: options.name ?? '' }, from_tag: options.fromTag ?? null },
+    method: 'POST', body: { variant: { name: options.name ?? '' }, from_tag: options.fromTag ?? null, sketch: options.sketch ?? false },
   })
   setVariants(data.variants)
   if (data.id) showVariant(data.id)
@@ -44,4 +44,15 @@ export async function deleteVariant(editor: Editor, id: number) {
   setVariants(data.variants)
   if (data.trashed?.length) editor.removeFeatures(data.trashed)
   showVariant(null)
+}
+
+/**
+ * A copy of an element in a variant, or in the common project (null): an
+ * idea taken from a teammate's sketch, which keeps it.
+ */
+export async function copyToVariant(editor: Editor, featureId: number, variantId: number | null) {
+  const data = await api<Payload>(`${base(editor)}/copy`, { method: 'POST', body: { feature_id: featureId, variant_id: variantId } })
+  setVariants(data.variants)
+  if (data.feature) editor.upsertFeatures([data.feature])
+  return data.feature ?? null
 }

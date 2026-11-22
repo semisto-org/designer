@@ -478,7 +478,7 @@ module Mcp
         def variants(map)
           own = map.features.where.not(status: "rejected").where.not(variant_id: nil).group(:variant_id).count
           {
-            list: map.variants.map { |v| v.as_json.merge(own_elements: own[v.id].to_i) },
+            list: map.variants.includes(:created_by).map { |v| v.as_json.merge(own_elements: own[v.id].to_i) },
             note: t(map.variants.any? ? "notes.variants" : "notes.no_variants"),
             panel_url: "#{map_url(map)}?panel=variants"
           }

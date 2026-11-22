@@ -9,6 +9,9 @@ class MapPhase < ApplicationRecord
   # What a phase keeps: the design and what is already there, not the
   # visit notes and season signs (they belong to the place, not to a phase).
   SKIPPED_LAYERS = %w[notes].freeze
+  # ...except the freehand sketches: for a designer who draws with a pencil,
+  # they are the design of that phase.
+  KEPT_NOTE_KINDS = %w[sketch].freeze
   # Never copied back from a snapshot: the map gives these again.
   NOT_TAKEN = %w[id lockVersion updatedAt status source rationale variant_id number phase_id layer kind name notes style tags].freeze
   # What happened on the ground since (planting, measures, checks, photos)
@@ -37,18 +40,32 @@ class MapPhase < ApplicationRecord
   def self.put_away!(map, name:, notes: nil, next_name: nil, by: nil)
     transaction do
       map.lock!
-      features = map.features.active.in_design.where.not(layer: SKIPPED_LAYERS).order(:id).to_a
-      snapshot = features.map(&:as_geojson)
+      # Every variant of its time: each designer's sketch, each proposal.
+      features = kept(map.features.active).order(:id).to_a
+      retained = map.variants.retained.first&.id
+      counted = features.select { |f| f.variant_id.nil? || f.variant_id == retained }
+      own = features.reject { _1.variant_id.nil? }.group_by(&:variant_id).transform_values(&:size)
       phase = map.phases.create!(
         number: (map.phases.maximum(:number) || 0) + 1,
         name: name.presence || map.current_design_phase_name,
-        notes:, snapshot:, counts: count(features), created_by: by
+        notes:, snapshot: features.map(&:as_geojson), counts: count(counted).merge("keeps_sketches" => true), created_by: by,
+        variants: map.variants.includes(:created_by).map { |v| v.as_json.except(:position).merge(own: own[v.id].to_i).deep_stringify_keys }
       )
       # Not a change of the map the editor holds: its lock version stays.
       map.update_columns(design_phase_name: next_name.to_s.squish.first(60).presence || I18n.t("design_phases.default_name", number: phase.number + 1), updated_at: Time.current)
       phase
     end
   end
+
+  # What of a map a phase keeps (and compares with).
+  def self.kept(scope, sketches: true)
+    others = scope.where.not(layer: SKIPPED_LAYERS)
+    sketches ? others.or(scope.where(layer: SKIPPED_LAYERS, kind: KEPT_NOTE_KINDS)) : others
+  end
+
+  # Phases put away before pencil strokes were kept never held them: a
+  # stroke is not « added since » to those.
+  def keeps_sketches? = counts.to_h["keeps_sketches"] == true
 
   def self.count(features)
     tally = ->(list) { planned = list.count(&:planned?); { "planned" => planned, "existing" => list.size - planned } }
@@ -69,14 +86,46 @@ class MapPhase < ApplicationRecord
   # How the map of today differs from this phase, element by element: the
   # ones drawn since (added), the ones gone since (removed: their id in the
   # phase) and the ones moved or changed since (changed).
-  def compare(current = map.features.active.in_design.where.not(layer: SKIPPED_LAYERS))
-    kept = snapshot.to_h { |f| [ f["id"], f.dig("properties", "lockVersion") ] }
+  #
+  # A phase keeps every variant of its time; one is compared at a time
+  # (`variant_id`, by default the one retained then): the common project
+  # and that variant's own, then and now.
+  def compare(current = nil, variant_id: retained_variant_id)
+    current ||= today(variant_id)
+    kept = features_of(variant_id).to_h { |f| [ f["id"], f.dig("properties", "lockVersion") ] }
     now = current.pluck(:id, :lock_version).to_h
     {
       added: (now.keys - kept.keys).sort,
       removed: (kept.keys - now.keys).sort,
       changed: (kept.keys & now.keys).select { |id| kept[id] != now[id] }.sort
     }
+  end
+
+  # The variant retained when the phase was put away (nil: there were none).
+  def retained_variant_id
+    Array(variants).find { _1["retained"] }&.dig("id")
+  end
+
+  # The phase as seen in one of its variants: the common project and that
+  # variant's own elements (every element when the phase kept no variant).
+  def features_of(variant_id)
+    return snapshot if Array(variants).empty? && variant_id.nil?
+
+    snapshot.select do |f|
+      own = f.dig("properties", "variant_id")
+      own.nil? || own == variant_id
+    end
+  end
+
+  # Today's elements to compare with that variant: it, if it still
+  # exists, else the project the map counts now.
+  def today(variant_id)
+    scope = self.class.kept(map.features.active, sketches: keeps_sketches?)
+    if variant_id && map.variants.exists?(variant_id)
+      scope.where(variant_id: [ nil, variant_id ])
+    else
+      scope.in_design
+    end
   end
 
   # A copy of one of the phase's elements, back on the map as a new element.
@@ -100,6 +149,7 @@ class MapPhase < ApplicationRecord
     full = options.is_a?(Hash) && options[:snapshot]
     {
       id:, number:, name:, notes:, counts: counts_without_networks, putAwayAt: created_at&.iso8601, putAwayBy: created_by&.display_name,
+      variants: Array(variants).presence, keepsSketches: keeps_sketches? || nil,
       snapshot: (full ? { type: "FeatureCollection", features: snapshot } : nil)
     }.compact
   end

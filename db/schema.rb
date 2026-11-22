@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_21_150000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_22_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -756,6 +756,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_21_150000) do
     t.bigint "created_by_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "variants", default: [], null: false
     t.index ["created_by_id"], name: "index_map_phases_on_created_by_id"
     t.index ["map_id", "number"], name: "index_map_phases_on_map_id_and_number", unique: true
     t.index ["map_id"], name: "index_map_phases_on_map_id"
@@ -932,6 +933,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_21_150000) do
     t.boolean "retained", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "created_by_id"
+    t.index ["created_by_id"], name: "index_map_variants_on_created_by_id"
     t.index ["map_id"], name: "index_map_variants_on_map_id"
     t.index ["map_id"], name: "index_map_variants_one_retained", unique: true, where: "retained"
   end
@@ -2180,6 +2183,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_21_150000) do
   add_foreign_key "map_trials", "regions"
   add_foreign_key "map_trials", "users", column: "claimant_id", on_delete: :nullify
   add_foreign_key "map_variants", "maps", on_delete: :cascade
+  add_foreign_key "map_variants", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "map_visits", "maps", on_delete: :cascade
   add_foreign_key "map_visits", "users", on_delete: :cascade
   add_foreign_key "maps", "board_sections", on_delete: :nullify

@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { Copy, Eye, Footprints, GitBranchPlus, Hourglass, Pencil, Star, Tag, Trash2 } from 'lucide-react'
+import { Copy, Eye, Footprints, GitBranchPlus, Hourglass, Layers, Pencil, PenLine, Star, Tag, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { confirmAction } from '@/components/ui/confirm'
@@ -11,6 +11,7 @@ import { useEditor } from '@/map/editor/EditorContext'
 import { isPlanned } from '@/map/scenario'
 import { tagCounts } from '@/map/tags/tags'
 import { createVariant, deleteVariant, duplicateVariant, updateVariant } from './api'
+import { compareWith as layOver, useCompared } from './compare'
 import { showVariant, useShownVariant, useVariants } from './store'
 import { ownCounts, variantOf, type MapVariant } from './variants'
 
@@ -36,6 +37,7 @@ export default function VariantsPanel() {
     [editor.features, variants],
   )
   const [tag, setTag] = useState('')
+  const compared = useCompared()
 
   // Variants are a project matter: the panel looks at the project.
   const setMode = editor.setMode
@@ -84,6 +86,12 @@ export default function VariantsPanel() {
     await run(() => updateVariant(editor, variant.id, { name: next }))
   }
 
+  // « Mon esquisse »: each designer sketches in a variant of their own, then the team shares them.
+  async function sketch() {
+    const created = await run(() => createVariant(editor, { sketch: true }))
+    if (created) editor.notify(t('variants.sketch_done', { name: created.name }))
+  }
+
   async function fromTag() {
     const chosen = tag || tags[0]?.tag
     if (!chosen) return
@@ -100,9 +108,14 @@ export default function VariantsPanel() {
           <h3 className="font-serif text-lg text-loam-900">{t('variants.empty_title')}</h3>
           <p className="text-sm text-loam-600">{t('variants.empty')}</p>
           {editor.canEdit && (
-            <Button size="sm" disabled={busy} onClick={() => void run(() => createVariant(editor))}>
-              <GitBranchPlus className="h-4 w-4" />{t('variants.start')}
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" disabled={busy} onClick={() => void run(() => createVariant(editor))}>
+                <GitBranchPlus className="h-4 w-4" />{t('variants.start')}
+              </Button>
+              <Button size="sm" variant="secondary" disabled={busy} title={t('variants.sketch_hint')} onClick={() => void sketch()}>
+                <PenLine className="h-4 w-4" />{t('variants.sketch')}
+              </Button>
+            </div>
           )}
         </section>
       ) : (
@@ -131,13 +144,30 @@ export default function VariantsPanel() {
                     )}
                     {variant.retained && <Pill tone="leaf" icon={<Star className="h-3.5 w-3.5" />}>{t('variants.retained')}</Pill>}
                   </div>
-                  <p className="mt-1 text-sm text-loam-500">{t('variants.own_count', { count: counts.get(variant.id) ?? 0 })}</p>
+                  <p className="mt-1 text-sm text-loam-500">
+                    {[variant.author && t('variants.started_by', { name: variant.author }), t('variants.own_count', { count: counts.get(variant.id) ?? 0 })].filter(Boolean).join(' · ')}
+                  </p>
                   <div className="mt-2 flex flex-wrap items-center gap-1">
                     {isShown ? (
                       <Pill tone="prune" icon={<Eye className="h-3.5 w-3.5" />}>{t('variants.shown')}</Pill>
                     ) : (
                       <Button size="sm" variant="secondary" onClick={() => showVariant(variant.id)}>
                         <Eye className="h-4 w-4" />{t('variants.show')}
+                      </Button>
+                    )}
+                    {!isShown && (
+                      <Button
+                        size="sm"
+                        variant={compared === variant.id ? 'primary' : 'ghost'}
+                        title={t('variants.compare_hint')}
+                        aria-pressed={compared === variant.id}
+                        onClick={() => {
+                          layOver(compared === variant.id ? null : variant.id)
+                          // On a phone the panel covers the map: make room for the two sketches.
+                          if (compared !== variant.id && typeof window.matchMedia === 'function' && !window.matchMedia('(min-width: 768px)').matches) editor.openPanel(null)
+                        }}
+                      >
+                        <Layers className="h-4 w-4" />{t('variants.compare')}
                       </Button>
                     )}
                     {editor.canEdit && !variant.retained && (
@@ -163,9 +193,14 @@ export default function VariantsPanel() {
           <p className="text-sm text-loam-500">{t('variants.common_count', { count: common })}</p>
           <div className="flex flex-wrap gap-2">
             {editor.canEdit && (
-              <Button size="sm" disabled={busy} onClick={() => void run(() => createVariant(editor))}>
-                <GitBranchPlus className="h-4 w-4" />{t('variants.new')}
-              </Button>
+              <>
+                <Button size="sm" disabled={busy} title={t('variants.sketch_hint')} onClick={() => void sketch()}>
+                  <PenLine className="h-4 w-4" />{t('variants.sketch')}
+                </Button>
+                <Button size="sm" variant="secondary" disabled={busy} onClick={() => void run(() => createVariant(editor))}>
+                  <GitBranchPlus className="h-4 w-4" />{t('variants.new')}
+                </Button>
+              </>
             )}
             {/* The time of living things: two ideas part ways when the trees have grown. */}
             <Button size="sm" variant="ghost" onClick={() => editor.setMoment('year15')}>

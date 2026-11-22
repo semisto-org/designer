@@ -3,6 +3,11 @@ fr:
     default_name: "Phase %{number}"
     name_missing: "Donne un nom à la phase."
     panel_title: "Phases du projet"
+    variant_label: "Esquisse ou proposition de cette phase"
+    variants_kept:
+      one: "Avec 1 variante : %{names}"
+      other: "Avec %{count} esquisses ou propositions : %{names}"
+    put_away_keeps: "Toutes les variantes sont rangées avec elle : l’esquisse de chacun, chaque proposition, les croquis au crayon compris."
     intro: "Un design mûrit par étapes : une esquisse, un avant-projet, un projet détaillé. Quand une étape est décidée, range-la : elle reste là, telle quelle, et tu continues sur la même carte."
     in_progress: "Phase en cours"
     planned_count:

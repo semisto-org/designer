@@ -21,9 +21,12 @@ export default function PhaseOverlay() {
   useEffect(() => forMap(editor.map.id), [editor.map.id])
   const open = usePhases((s) => (s.mapId === editor.map.id ? s.open : null))
   const fade = usePhases((s) => s.fade)
-  const retained = useVariants((s) => s.variants.find((v) => v.retained)?.id ?? null)
-  const compare = useMemo(() => (open ? compareWith(open, editor.features, retained) : null), [open, editor.features, retained])
-  const data = useMemo(() => (open && compare ? phaseCollection(open, compare) : null), [open, compare])
+  const variant = usePhases((s) => s.variant)
+  const variants = useVariants((s) => s.variants)
+  const retained = variants.find((v) => v.retained)?.id ?? null
+  const variantIds = useMemo(() => variants.map((v) => v.id), [variants])
+  const compare = useMemo(() => (open ? compareWith(open, editor.features, retained, variant, variantIds) : null), [open, editor.features, retained, variant, variantIds])
+  const data = useMemo(() => (open && compare ? phaseCollection(open, compare, variant) : null), [open, compare, variant])
   const fadeRef = useRef(fade)
   fadeRef.current = fade
 

@@ -3,13 +3,14 @@ import clsx from 'clsx'
 import { BookOpen, ChevronDown, RotateCcw, X } from 'lucide-react'
 import { useId, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/Button'
+import { Select } from '@/components/ui/Field'
 import { IconButton } from '@/components/ui/IconButton'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { ZoneCard } from '@/map/layout/ZoneLayer'
 import { PRIORITY } from '@/map/layout/zones'
 import { takeFromPhase } from './api'
-import { closePhase, pickPhaseElement, setPhaseFade, usePhases } from './store'
+import { closePhase, pickPhaseElement, setPhaseFade, showPhaseVariant, usePhases } from './store'
 import { phaseDate, phaseStateOf, type OpenPhase, type PhaseCompare, type PhaseFeature } from './types'
 
 const LISTED = 6
@@ -28,6 +29,8 @@ export default function PhaseCard({ phase, compare }: { phase: OpenPhase; compar
   const editor = useEditor()
   const fade = usePhases((s) => s.fade)
   const picked = usePhases((s) => s.picked)
+  const variant = usePhases((s) => s.variant)
+  const kept = phase.variants ?? []
   const [listOpen, setListOpen] = useState(false)
   const [busy, setBusy] = useState<number | null>(null)
   // Taken back in this visit: the copy is on the map, a second click would make another.
@@ -91,6 +94,19 @@ export default function PhaseCard({ phase, compare }: { phase: OpenPhase; compar
         </div>
 
         {phase.notes && <p className="mt-2 hidden font-hand text-xl leading-tight text-prune-700 md:block">{phase.notes}</p>}
+
+        {/* A phase keeps every sketch and proposal of its time: one is laid on the table at a time. */}
+        {kept.length > 1 && (
+          <div className="mt-2">
+            <Select value={variant ?? ''} onChange={(e) => showPhaseVariant(e.target.value ? Number(e.target.value) : null)} aria-label={t('design_phases.variant_label')}>
+              {kept.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {[v.retained ? t('variants.option_retained', { name: v.name }) : v.name, v.author && t('variants.by', { name: v.author })].filter(Boolean).join(' · ')}
+                </option>
+              ))}
+            </Select>
+          </div>
+        )}
 
         <div className="mt-2">
           <label htmlFor={sliderId} className="sr-only">{t('design_phases.fade')}</label>

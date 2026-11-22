@@ -73,4 +73,49 @@ class Maps::VariantsControllerTest < ActionDispatch::IntegrationTest
     post map_variants_path(@map), as: :json
     assert_response :forbidden
   end
+
+  test "« Mon esquisse » is a variant named after its designer, who is its author" do
+    sign_in_as users(:michael)
+    post map_variants_path(@map), params: { sketch: true }, as: :json
+    assert_response :created
+    variants = response.parsed_body["variants"]
+    assert_equal [ "Projet 1", "Esquisse de Michael" ], variants.map { _1["name"] }
+    assert_equal [ nil, "Michael" ], variants.map { _1["author"] }
+    post map_variants_path(@map), params: { sketch: true }, as: :json
+    assert_equal "Esquisse de Michael 2", response.parsed_body["variants"].last["name"]
+  end
+
+  test "a designer whose name starts with a vowel gets the elided form" do
+    eric = users(:michael)
+    eric.update!(name: "Eric Dupont")
+    sign_in_as eric
+    post map_variants_path(@map), params: { sketch: true }, as: :json
+    assert_equal "Esquisse d’Eric", response.parsed_body["variants"].last["name"]
+  end
+
+  test "copying an element of a sketch into the common project leaves the sketch whole" do
+    sign_in_as users(:michael)
+    sketch = @map.variants.create!(name: "Esquisse de Julie")
+    stroke = @map.features.create!(layer: "notes", kind: "sketch", geometry: { "type" => "LineString", "coordinates" => [ [ 4.907, 50.341 ], [ 4.9072, 50.3412 ] ] }, style: { "color" => "#1b1712" }, properties: { "tracing" => "bubbles" }, variant: sketch)
+
+    assert_difference -> { @map.features.count }, 1 do
+      post copy_map_variants_path(@map), params: { feature_id: stroke.id, variant_id: nil }, as: :json
+    end
+    assert_response :created
+    copy = MapFeature.find(response.parsed_body.dig("feature", "properties", "id"))
+    assert_nil copy.variant_id
+    assert_equal [ "notes", "sketch", "bubbles" ], [ copy.layer, copy.kind, copy.properties["tracing"] ]
+    assert_equal sketch.id, stroke.reload.variant_id
+
+    other = @map.variants.create!(name: "Proposition 1")
+    post copy_map_variants_path(@map), params: { feature_id: stroke.id, variant_id: other.id }, as: :json
+    assert_equal other.id, MapFeature.find(response.parsed_body.dig("feature", "properties", "id")).variant_id
+  end
+
+  test "a viewer copies nothing" do
+    pond = @map.features.create!(layer: "water", kind: "pond", geometry: SHAPE, properties: { "planned" => true })
+    sign_in_as users(:alice)
+    post copy_map_variants_path(@map), params: { feature_id: pond.id }, as: :json
+    assert_response :forbidden
+  end
 end
