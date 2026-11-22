@@ -71,6 +71,9 @@ export function PdfExportPanel({ onClose, initialKind = 'plan' }: { onClose: () 
   const hiddenStrata = useDrawingState((s) => s.hiddenStrata)
   const { data: planting } = usePlanting(editor.map.id)
   const hiddenIds = planting ? hiddenPlantIds(editor.features, hiddenStrata, (f) => plantStrata(f as MapFeature, planting)) : []
+  // Printed plans leave out AI drafts: the plants overlay too, which draws them at future moments.
+  const draftIds = editor.features.filter((f) => f.properties.status === 'draft').map((f) => f.properties.id)
+  const printHiddenIds = draftIds.length ? [...hiddenIds, ...draftIds] : hiddenIds
   const variant = useShownVariant()
   const tag = useDrawingState((s) => s.shownTag)
   const instance = editor.instance
@@ -186,11 +189,11 @@ export function PdfExportPanel({ onClose, initialKind = 'plan' }: { onClose: () 
           .filter((theme) => theme.items.length > 0),
         plants: data.plants?.filter((plant) => drawn.has(plant.id)),
         // Lettered again after the filter, so the sheet reads A, B, C without gaps.
-        existing: data.existing?.filter((item) => drawn.has(item.id)).map((item) => ({ ...item, letter: String.fromCharCode(65 + (letter++ % 26)) })),
+        existing: data.existing?.filter((item) => drawn.has(item.id)).slice(0, 26).map((item) => ({ ...item, letter: String.fromCharCode(65 + letter++) })),
       }
       await exportMasterPlan(instance, {
         title: title.trim() || editor.map.name,
-        paper, orientation, scale, center, hiddenLayers, hiddenKinds, hiddenIds, tag,
+        paper, orientation, scale, center, hiddenLayers, hiddenKinds, hiddenIds: printHiddenIds, tag,
         hideBoundary: !showBoundary,
         variant: variant?.id ?? null,
         author: currentUser?.name ?? null,
@@ -206,20 +209,28 @@ export function PdfExportPanel({ onClose, initialKind = 'plan' }: { onClose: () 
       editor.notify(t('drawing.pdf.error'), 'error')
     } finally {
       // The growth sheet moved the time strip: put it back where the person left it.
-      if (growth) editor.setMoment(moment)
+      if (growth) {
+        editor.setMoment(moment)
+        // A future moment also switched the view to « Projet »: the person's own view comes back.
+        editor.setMode(mode)
+      }
       setStep(null)
     }
   }
 
   // The time strip moment when the export starts, and how the growth sheet moves it.
   const moment = editor.moment
+  const mode = editor.mode
   async function showMoment(next: GrowthMoment) {
     editor.setMoment(next)
-    // Let React apply the moment and MapLibre redraw the crowns before the copy.
+    // Let React apply the moment and the plants overlay hand MapLibre its new crowns before the copy.
     await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))
     await new Promise<void>((resolve) => {
-      if (instance.loaded()) setTimeout(resolve, 400)
-      else instance.once('idle', () => resolve())
+      const done = () => { clearTimeout(timer); instance.off('sourcedata', onData); resolve() }
+      const onData = (e: { sourceId?: string }) => { if (e.sourceId === 'plant-crowns') setTimeout(done, 150) }
+      // Never held: a map that keeps loading tiles still gets copied.
+      const timer = setTimeout(done, 1500)
+      instance.on('sourcedata', onData)
     })
   }
 
@@ -235,7 +246,7 @@ export function PdfExportPanel({ onClose, initialKind = 'plan' }: { onClose: () 
         center,
         hiddenLayers,
         hiddenKinds,
-        hiddenIds,
+        hiddenIds: printHiddenIds,
         hideBoundary: !showBoundary,
         variant: variant?.id ?? null,
         tag,

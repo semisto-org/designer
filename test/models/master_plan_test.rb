@@ -62,6 +62,7 @@ class MasterPlanTest < ActiveSupport::TestCase
     @map.features.create!(layer: "water", kind: "pond", name: "Vieille mare", geometry: SHAPE)
     @map.features.create!(layer: "existing", kind: "building", geometry: SHAPE)
     @map.features.create!(layer: "water", kind: "pond", name: "Mare du projet", geometry: SHAPE, properties: { "planned" => true })
+    @map.features.create!(layer: "existing", kind: "building", name: "Vieux hangar", geometry: SHAPE, properties: { "removed_on" => "2025-03-01" })
     oak = PlantSpecies.create!(latin_name: "Quercus robur", plant_type: "tree", strata: "canopy", height_min_m: 25, height_max_m: 35)
     @map.features.create!(layer: "plants", kind: "plant", geometry: POINT, properties: { "species_id" => oak.id })
 
@@ -70,8 +71,17 @@ class MasterPlanTest < ActiveSupport::TestCase
     assert_equal [ "A", "Grange" ], lettered.first
     assert_includes lettered.map(&:last), "Vieille mare"
     assert_not_includes lettered.map(&:last), "Mare du projet"
+    assert_not_includes lettered.map(&:last), "Vieux hangar", "taken away: no longer on the land"
     assert_equal lettered.map(&:first), ("A"..).first(lettered.size)
     tallest = plan.time.find { _1[:key] == "tallest" }
     assert_equal [ 30, [ oak.common_name || "Quercus robur" ], 30 ], tallest.values_at(:year, :names, :heightM)
+  end
+
+  test "an area's number is pinned on its edge, at the north-west, not on what is planted inside" do
+    zone = @map.features.create!(layer: "drawings", kind: "zone", name: "Verger", geometry: SHAPE, properties: { "planned" => true })
+    item = MasterPlan.new(@map).themes.flat_map { _1[:items] }.find { _1[:id] == zone.id }
+    # The triangle's edge nearest its bounding box's north-west corner, at that corner's foot.
+    assert_in_delta 4.9071, item[:at][0], 1e-6
+    assert_in_delta 50.3411, item[:at][1], 1e-6
   end
 end

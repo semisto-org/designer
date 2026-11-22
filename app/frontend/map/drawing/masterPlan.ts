@@ -13,7 +13,7 @@ export type MasterPlanData = {
   mission?: string
   areaM2?: number | null
   themes: { key: string; items: { number: number; id: number; label: string; kind: string; at?: [number, number] }[] }[]
-  palette: { species_id: number; name: string; latin: string; code?: string; count: number }[]
+  palette: { species_id: number; name: string; latin: string; code?: string; count: number; heightM?: number }[]
   /** Each single plant, where it stands, with its species' code. */
   plants?: { id: number; code: string; at: [number, number] }[]
   /** What already stands and has a name, lettered A, B, C… */
@@ -77,7 +77,7 @@ export async function exportMasterPlan(source: MapLibreMap, input: MasterInput, 
   onProgress?.('map', 1, pages)
   const image = await renderMap(source, {
     center: input.center, scale: input.scale, frame: layout.frame, hiddenLayers: input.hiddenLayers,
-    variant: input.variant, hideBoundary: input.hideBoundary, planLook: true, tag: input.tag, hiddenIds: input.hiddenIds,
+    variant: input.variant, hideBoundary: input.hideBoundary, planLook: true, withoutNames: true, tag: input.tag, hiddenIds: input.hiddenIds,
     paintOnly: input.look === 'watercolor',
     // The bubbles were the sketch of the intentions: the master plan shows what came of them.
     hiddenKinds: [...(input.hiddenKinds ?? []), 'bubble'],
@@ -177,7 +177,7 @@ async function drawGrowthSheet(doc: JsPDF, source: MapLibreMap, input: MasterInp
     let codes: { x: number; y: number; code: string }[] = []
     const image = await renderMap(source, {
       center: input.center, scale, frame, hiddenLayers: input.hiddenLayers,
-      variant: input.variant, hideBoundary: input.hideBoundary, planLook: true, tag: input.tag, hiddenIds: input.hiddenIds,
+      variant: input.variant, hideBoundary: input.hideBoundary, planLook: true, withoutNames: true, tag: input.tag, hiddenIds: input.hiddenIds,
       paintOnly: input.look === 'watercolor',
       hiddenKinds: [...(input.hiddenKinds ?? []), 'bubble'],
       inspect: (map) => {
@@ -216,7 +216,7 @@ async function drawGrowthSheet(doc: JsPDF, source: MapLibreMap, input: MasterInp
     }
   }
   doc.setFont('helvetica', 'normal')
-  doc.setFontSize(6.5 * k)
+  doc.setFontSize(7.5 * k)
   doc.setTextColor(FAINT)
   doc.text(pdfText(t('master_plan.growth_note', { scale: formatNumber(scale) })), margin, height - margin)
 }
@@ -374,7 +374,8 @@ function drawText(doc: JsPDF, layout: MasterLayout, input: MasterInput, plan: Ma
     flow.space(3)
     flow.lines(t('master_plan.palette', { count: plan.palette.reduce((sum, row) => sum + row.count, 0) }), 9.5, { style: 'bold', color: THEME_COLORS.plants, gap: 0.8 })
     for (const row of plan.palette) {
-      if (!flow.lines(`${row.code ? `${row.code} · ` : ''}${row.count} × ${row.name}`, 8, { color: SOFT, indent: 4.5, gap: 0.3 })) break
+      const height = row.heightM ? ` · ${t('master_plan.height', { height: formatNumber(row.heightM) })}` : ''
+      if (!flow.lines(`${row.code ? `${row.code} · ` : ''}${row.count} × ${row.name}${height}`, 8, { color: SOFT, indent: 4.5, gap: 0.3 })) break
     }
   }
 
@@ -390,18 +391,23 @@ function drawText(doc: JsPDF, layout: MasterLayout, input: MasterInput, plan: Ma
   if (!full) {
     flow.space(3)
     flow.lines(t('master_plan.time_title'), 9, { style: 'bold', color: '#5b5781', gap: 0.5 })
-    flow.lines(timeText(plan.time ?? []), 8, { font: 'times', color: SOFT })
+    for (const sentence of timeSentences(plan.time ?? [])) flow.lines(sentence, 8, { font: 'times', color: SOFT, gap: 0.4 })
   }
 }
 
 /** « Le temps du vivant », told with this garden's own plants when the palette allows it. */
 export function timeText(time: NonNullable<MasterPlanData['time']>, withAdultSize = true): string {
+  return timeSentences(time, withAdultSize).join(' ')
+}
+
+/** The same, one sentence per moment, so each year starts its own line on the sheet. */
+export function timeSentences(time: NonNullable<MasterPlanData['time']>, withAdultSize = true): string[] {
   const list = (names: string[]) => (names.length > 1 ? `${names.slice(0, -1).join(', ')} ${t('master_plan.and')} ${names[names.length - 1]}` : names[0] ?? '')
   const told = time.map((step) => step.key === 'tallest'
-    ? t('master_plan.time_tallest', { year: step.year, name: step.names[0], height: step.heightM ?? 0 })
+    ? t('master_plan.time_tallest', { year: step.year, name: list(step.names), height: step.heightM ?? 0 })
     : t(`master_plan.time_${step.key}`, { year: step.year, names: list(step.names) }))
-  if (!withAdultSize) return told.join(' ')
-  return [t('master_plan.time_adult_size'), ...(told.length ? told : [t('master_plan.time')])].join(' ')
+  if (!withAdultSize) return told
+  return [t('master_plan.time_adult_size'), ...(told.length ? told : [t('master_plan.time')])]
 }
 
 function drawCartouche(doc: JsPDF, layout: MasterLayout, input: MasterInput, plan: MasterPlanData) {

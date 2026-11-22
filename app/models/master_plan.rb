@@ -20,6 +20,7 @@ class MasterPlan
   # What already stands is lettered A to Z.
   EXISTING_LAYERS = %w[existing water access structures animals].freeze
   LETTERS = ("A".."Z").to_a.freeze
+  EXISTING_LIMIT = 100
   TIME_YEARS = [ 5, 15, 30 ].freeze
 
   attr_reader :map
@@ -63,15 +64,19 @@ class MasterPlan
     end
   end
 
-  # Single plants of the project, counted by species, most planted first, each with its code.
+  # Single plants of the project, counted by species (the most planted kept), each with its code
+  # and adult height, the tallest first.
   def palette
     @palette ||= begin
       rows = planned_plants.group_by(&:plant_species_id).filter_map do |id, list|
         next unless (s = species[id])
 
-        { species_id: id, name: s.common_name || s.latin_name, latin: s.latin_name, code: self.class.code(s.latin_name), count: list.size }.compact
+        height = PlantGrowth.height(strata: s.default_strata, species: s).metres.to_f
+        { species_id: id, name: s.common_name || s.latin_name, latin: s.latin_name, code: self.class.code(s.latin_name), count: list.size,
+          heightM: (height.round(height < 3 ? 1 : 0) if height.positive?) }.compact
       end.sort_by { |row| [ -row[:count], row[:name].to_s ] }.first(PALETTE_LIMIT)
-      distinct_codes(rows)
+      # Read like a planting list: the tallest first, down the layers to the shrubs.
+      distinct_codes(rows).sort_by { |row| [ -(row[:heightM] || 0), row[:name].to_s ] }
     end
   end
 
@@ -84,9 +89,11 @@ class MasterPlan
   end
 
   # What already stands and has a name (the house, the barn, the old pond), lettered A, B, C…
+  # Up to EXISTING_LIMIT are listed, lettered up to Z: the printed plan letters again
+  # what it draws (a hidden layer, a tag), A to Z.
   def existing
-    list = design.where(layer: EXISTING_LAYERS).reject(&:planned?).select { _1.name.present? }
-      .sort_by { |f| [ EXISTING_LAYERS.index(f.layer), f.name.to_s.downcase, f.id ] }.first(LETTERS.size)
+    list = design.where(layer: EXISTING_LAYERS).reject { _1.planned? || _1.removed? }.select { _1.name.present? }
+      .sort_by { |f| [ EXISTING_LAYERS.index(f.layer), f.name.to_s.downcase, f.id ] }.first(EXISTING_LIMIT)
     anchors = anchor_points(list.map(&:id))
     list.each_with_index.map { |f, i| { letter: LETTERS[i], id: f.id, label: f.name.to_s.squish, kind: f.kind, at: anchors[f.id] }.compact }
   end
@@ -98,7 +105,11 @@ class MasterPlan
   def time
     return [] if palette.empty?
 
-    grown = palette.map { |row| s = species[row[:species_id]]; [ row, s, s.default_strata ] }
+    # Common names go mid-sentence, in lower case (« le noyer commun »); a Latin name keeps its capital.
+    grown = palette.map do |row|
+      s = species[row[:species_id]]
+      [ row.merge(name: s.common_name.present? ? s.common_name.sub(/\A./, &:downcase) : s.latin_name), s, s.default_strata ]
+    end
     fruit = grown.select { |_, s, strata| s.edible? && PlantGrowth.production_start(strata:, species: s).years <= 5 }
     adult = grown.select { |_, s, strata| %w[canopy sub_canopy].include?(strata) && PlantGrowth.maturity(strata:, species: s).years <= 15 }
     tallest = grown.max_by { |_, s, strata| PlantGrowth.height(strata:, species: s).metres.to_f }
@@ -153,14 +164,18 @@ class MasterPlan
       scope.select { |f| (f.layer == "drawings" && f.kind != "bubble") || f.planned? }
     end
 
-    # Where each number is written: on the surface of an area, halfway along a line.
+    # Where each number is written: halfway along a line, and on the edge of
+    # an area, at its north-west corner, as one pins a number on a plan: inside
+    # it would land on the crowns planted there.
     def anchor_points(ids)
       return {} if ids.empty?
 
       point = <<~SQL.squish
-        CASE GeometryType(geometry)
-          WHEN 'LINESTRING' THEN ST_LineInterpolatePoint(geometry, 0.5)
-          WHEN 'POINT' THEN geometry
+        CASE
+          WHEN GeometryType(geometry) = 'LINESTRING' THEN ST_LineInterpolatePoint(geometry, 0.5)
+          WHEN GeometryType(geometry) = 'POINT' THEN geometry
+          WHEN GeometryType(geometry) IN ('POLYGON', 'MULTIPOLYGON')
+            THEN ST_ClosestPoint(ST_Boundary(geometry), ST_SetSRID(ST_MakePoint(ST_XMin(geometry), ST_YMax(geometry)), 4326))
           ELSE ST_PointOnSurface(geometry) END
       SQL
       MapFeature.where(id: ids).pluck(:id, Arel.sql("ST_X(#{point})"), Arel.sql("ST_Y(#{point})"))
