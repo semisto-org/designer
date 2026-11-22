@@ -8,7 +8,7 @@ import { GHOST_RASTER_PAINT, ghostPaint, type ThemeTest } from '@/map/drawing/gh
 import { drawIcon } from '@/map/drawing/icons'
 import { applyLayerVisibility, installDrawingImages, TRANSIENT_PREFIX } from '@/map/drawing/style'
 import { BOUNDARY_MASK_SOURCE, BOUNDARY_SOURCE } from '@/map/layers/boundary'
-import { FEATURES_SOURCE } from '@/map/layers/features'
+import { FEATURES_SOURCE, paintPlantPoints } from '@/map/layers/features'
 import { PARCELS_SOURCE } from '@/map/layers/parcels'
 import { inTag } from '@/map/tags/tags'
 import { inVariant } from '@/map/variants/variants'
@@ -204,18 +204,13 @@ function hideBoundaryLayers(map: MapLibreMap) {
   }
 }
 
-/** The working marks a painted plan leaves out: every text and icon, and the trunks at the heart of the crowns. */
+/** The working marks a painted plan leaves out: every text and icon, and the trunk discs; a plant keeps a painted dot. */
 function hideMarks(map: MapLibreMap) {
   for (const layer of map.getStyle().layers) {
     if (layer.type === 'symbol' || layer.id === 'plant-trunks' || layer.id === 'plant-numbers-disc') map.setLayoutProperty(layer.id, 'visibility', 'none')
   }
-  // A plant is its painted crown: the point at its foot steps aside (other points stay).
-  const point = map.getLayer('features-point')
-  if (point) {
-    const filter = map.getFilter('features-point')
-    const notPlant = ['!=', ['get', 'layer'], 'plants']
-    map.setFilter('features-point', (filter ? ['all', filter, notPlant] : notPlant) as never)
-  }
+  // A plant keeps its place: a small painted dot, no white ring (a vine without a crown stays on the sheet).
+  paintPlantPoints(map)
 }
 
 export async function renderMap(source: MapLibreMap, { center, scale, frame, hiddenLayers, variant, tag, hiddenKinds, hiddenIds, theme, hideBoundary, planLook, paintOnly, inspect }: RenderOptions): Promise<string> {

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { boxBlur, paintWatercolor, seedOf, valueNoise, WOBBLE_MM } from '../../../app/frontend/map/drawing/watercolor.ts'
+import { boxBlur, MAX_PAINT_PX, noiseSampler, paintWatercolor, seedOf, valueNoise, WOBBLE_MM } from '../../../app/frontend/map/drawing/watercolor.ts'
 
 const MM = 8 // px per printed mm in these tests
 
@@ -71,4 +71,24 @@ test('one plan, one painting', () => {
   assert.equal(seedOf('maps/3|Le Clos'), seedOf('maps/3|Le Clos'))
   assert.notEqual(seedOf('maps/3|Le Clos'), seedOf('maps/4|Le Clos'))
   assert.deepEqual(paintWatercolor(plan(), { mm: MM, seed: 9 }).data, paintWatercolor(plan(), { mm: MM, seed: 9 }).data)
+})
+
+test('an A0 painting stays within what a modest machine holds', () => {
+  // The long side is capped at MAX_PAINT_PX before painting (watercolorDataUrl).
+  const width = MAX_PAINT_PX
+  const height = Math.round(MAX_PAINT_PX * 841 / 1189)
+  const src = { data: new Uint8ClampedArray(width * height * 4).fill(255), width, height }
+  global.gc?.()
+  const before = process.memoryUsage().arrayBuffers
+  const painted = paintWatercolor(src, { mm: width / 1189, seed: 1 })
+  const used = process.memoryUsage().arrayBuffers - before
+  assert.equal(painted.width, width)
+  // Eight float channels and the output, not seventeen fields: well under 300 MB.
+  assert.ok(used < 300 * 1024 * 1024, `${Math.round(used / 1048576)} MB`)
+})
+
+test('noise read pixel by pixel is the same field', () => {
+  const field = valueNoise(30, 20, 6, 4)
+  const at = noiseSampler(30, 20, 6, 4)
+  assert.equal(Math.fround(at(7, 11)), field[11 * 30 + 7])
 })

@@ -16,7 +16,7 @@ Le **plan directeur** est la feuille que l'on affiche dans la grange ou que l'on
 
 ## En aquarelle
 
-Le rendu **Aquarelle** peint ton plan comme un plan directeur fait à la main : des lavis plus clairs au cœur et plus sombres au bord, un trait qui tremble un peu, le grain du papier. Les noms et les icônes s'effacent : sur la feuille, les numéros et la légende disent le reste.
+Le rendu **Aquarelle** peint ton plan comme un plan directeur fait à la main : des lavis plus clairs au cœur et plus sombres au bord, un trait qui tremble un peu, le grain du papier. Les noms et les icônes s'effacent, chaque plante garde son point peint là où elle pousse : sur la feuille, les numéros et la légende disent le reste.
 
 Terranova peint lui-même cette aquarelle, à partir de ton dessin. Aucune IA n'imagine l'image : chaque mare, chaque chemin, chaque couronne reste à sa place (le trait ne bouge jamais de plus d'un demi-millimètre sur la feuille) et rien n'est ajouté. Les numéros, la légende et le cartouche restent nets par-dessus. Le même plan donne toujours la même aquarelle.
 
