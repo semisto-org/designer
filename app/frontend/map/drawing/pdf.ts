@@ -1,7 +1,7 @@
 import type { Polygon } from 'geojson'
 import type { jsPDF as JsPDF } from 'jspdf'
 import * as maplibregl from 'maplibre-gl'
-import type { Map as MapLibreMap, StyleSpecification } from 'maplibre-gl'
+import type { FilterSpecification, Map as MapLibreMap, StyleSpecification } from 'maplibre-gl'
 import { formatArea, formatNumber, t } from '@/lib/i18n'
 import { DESIGN_LAYERS, elementFor, featureColor, layerColor } from '@/map/drawing/catalog'
 import { GHOST_RASTER_PAINT, ghostPaint, type ThemeTest } from '@/map/drawing/ghost'
@@ -192,6 +192,12 @@ type RenderOptions = {
    * watercolour master plan, where the numbers and legend say the rest).
    */
   paintOnly?: boolean
+  /**
+   * The design's names step aside (zone names, element names, plant names and
+   * numbers): the master plan writes its own numbers and codes, and a name
+   * left on the map would cover them. Icons stay.
+   */
+  withoutNames?: boolean
   /** Called with the offscreen map once drawn, before it goes (to project points on the page). */
   inspect?: (map: MapLibreMap) => void
 }
@@ -213,7 +219,30 @@ function hideMarks(map: MapLibreMap) {
   paintPlantPoints(map)
 }
 
-export async function renderMap(source: MapLibreMap, { center, scale, frame, hiddenLayers, variant, tag, hiddenKinds, hiddenIds, theme, hideBoundary, planLook, paintOnly, inspect }: RenderOptions): Promise<string> {
+/**
+ * The plants overlay (crowns, names, numbers) is drawn by the editor from
+ * its own state, outside the features source: the plants left out of the
+ * print (a hidden strata, an AI draft) are taken out of it here.
+ */
+function hidePlantOverlay(map: MapLibreMap, ids: number[]) {
+  const test = ['!', ['in', ['get', 'featureId'], ['literal', ids]]]
+  for (const layer of map.getStyle().layers) {
+    if (!('source' in layer) || !PLANT_SOURCES.includes(layer.source)) continue
+    const current = map.getFilter(layer.id)
+    map.setFilter(layer.id, (current ? ['all', current, test] : test) as FilterSpecification)
+  }
+}
+
+/** Clears the text of the design's own symbols, keeping their icons. */
+function hideDesignNames(map: MapLibreMap) {
+  for (const layer of map.getStyle().layers) {
+    if (layer.type !== 'symbol') continue
+    const source = layer.source
+    if ((source === FEATURES_SOURCE || PLANT_SOURCES.includes(source)) && layer.layout?.['text-field'] != null) map.setLayoutProperty(layer.id, 'text-field', '')
+  }
+}
+
+export async function renderMap(source: MapLibreMap, { center, scale, frame, hiddenLayers, variant, tag, hiddenKinds, hiddenIds, theme, hideBoundary, planLook, paintOnly, withoutNames, inspect }: RenderOptions): Promise<string> {
   const widthCss = Math.round(mmToCss(frame.w))
   const heightCss = Math.round(mmToCss(frame.h))
   const pixelRatio = Math.min(PRINT_DPI / CSS_DPI, MAX_CANVAS_PX / Math.max(widthCss, heightCss))
@@ -240,6 +269,7 @@ export async function renderMap(source: MapLibreMap, { center, scale, frame, hid
     applyLayerVisibility(map, hiddenLayers, { activeOnly: true, variant, tag, hiddenKinds, hiddenIds })
     if (theme) applyTheme(map, theme)
     if (hideBoundary) hideBoundaryLayers(map)
+    if (hiddenIds?.length) hidePlantOverlay(map, hiddenIds)
     if (planLook) {
       // The project as designed, in the designer's plan look; the working marks step aside.
       map.setGlobalStateProperty(DESIGN_MODE_STATE, 'project')
@@ -247,6 +277,7 @@ export async function renderMap(source: MapLibreMap, { center, scale, frame, hid
       applyPresentRender(map, true)
     }
     if (paintOnly) hideMarks(map)
+    if (withoutNames) hideDesignNames(map)
     await waitFor(map, 'idle')
     inspect?.(map)
     return map.getCanvas().toDataURL('image/jpeg', 0.92)

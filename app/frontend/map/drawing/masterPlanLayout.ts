@@ -52,7 +52,8 @@ export function masterLayout(paper: MasterPaper, orientation: MasterOrientation)
  */
 export function spreadMarks(points: { x: number; y: number }[], radius: number): { x: number; y: number }[] {
   const placed: { x: number; y: number }[] = []
-  const min = radius * 2.1
+  // A clear gap between two badges, so each number reads as its own.
+  const min = radius * 2.6
   for (const point of points) {
     let candidate = { ...point }
     for (let tries = 0; tries < 12 && placed.some((p) => Math.hypot(p.x - candidate.x, p.y - candidate.y) < min); tries++) {

@@ -13,7 +13,13 @@ export type MasterPlanData = {
   mission?: string
   areaM2?: number | null
   themes: { key: string; items: { number: number; id: number; label: string; kind: string; at?: [number, number] }[] }[]
-  palette: { species_id: number; name: string; latin: string; count: number }[]
+  palette: { species_id: number; name: string; latin: string; code?: string; count: number; heightM?: number }[]
+  /** Each single plant, where it stands, with its species' code. */
+  plants?: { id: number; code: string; at: [number, number] }[]
+  /** What already stands and has a name, lettered A, B, C… */
+  existing?: { letter: string; id: number; label: string; kind: string; at?: [number, number] }[]
+  /** This garden's own time: the first fruits, the trees grown, the tallest one. */
+  time?: { year: number; key: 'fruit' | 'adult' | 'tallest'; names: string[]; heightM?: number }[]
 }
 
 export type MasterInput = {
@@ -34,9 +40,17 @@ export type MasterInput = {
   url: string
   /** « Plan » (the plan look as drawn) or « Aquarelle » (that same plan, painted). */
   look?: MasterLook
+  /**
+   * Sets the editor's map at a moment of the time strip and resolves once
+   * its crowns have grown or shrunk: given, a second sheet shows the garden
+   * at year 5 and year 30 side by side.
+   */
+  atMoment?: (moment: GrowthMoment) => Promise<void>
 }
 
 export type MasterLook = 'plan' | 'watercolor'
+export type GrowthMoment = 'year5' | 'year30'
+const GROWTH_MOMENTS: { moment: GrowthMoment; year: number }[] = [{ moment: 'year5', year: 5 }, { moment: 'year30', year: 30 }]
 
 // Theme inks, in Semisto's design order (water before plants).
 const THEME_COLORS: Record<string, string> = {
@@ -53,14 +67,17 @@ const FAINT = '#7a756c'
  * palette, a word on time, and the title block with the phase, the scale,
  * the north and a QR code to the living map. Resolves with the file name.
  */
-export async function exportMasterPlan(source: MapLibreMap, input: MasterInput, plan: MasterPlanData, onProgress?: (step: 'map' | 'paint' | 'pdf') => void): Promise<string> {
+export async function exportMasterPlan(source: MapLibreMap, input: MasterInput, plan: MasterPlanData, onProgress?: (step: 'map' | 'paint' | 'pdf', page?: number, pages?: number) => void): Promise<string> {
   const layout = masterLayout(input.paper, input.orientation)
   const items = plan.themes.flatMap((theme) => theme.items.map((item) => ({ ...item, theme: theme.key })))
   let marks: { x: number; y: number; number: number; theme: string }[] = []
-  onProgress?.('map')
+  let codes: { x: number; y: number; code: string }[] = []
+  let letters: { x: number; y: number; letter: string }[] = []
+  const pages = input.atMoment ? 2 : 1
+  onProgress?.('map', 1, pages)
   const image = await renderMap(source, {
     center: input.center, scale: input.scale, frame: layout.frame, hiddenLayers: input.hiddenLayers,
-    variant: input.variant, hideBoundary: input.hideBoundary, planLook: true, tag: input.tag, hiddenIds: input.hiddenIds,
+    variant: input.variant, hideBoundary: input.hideBoundary, planLook: true, withoutNames: true, tag: input.tag, hiddenIds: input.hiddenIds,
     paintOnly: input.look === 'watercolor',
     // The bubbles were the sketch of the intentions: the master plan shows what came of them.
     hiddenKinds: [...(input.hiddenKinds ?? []), 'bubble'],
@@ -75,6 +92,14 @@ export async function exportMasterPlan(source: MapLibreMap, input: MasterInput, 
         const inside = x > layout.frame.x + 3 && x < layout.frame.x + layout.frame.w - 3 && y > layout.frame.y + 3 && y < layout.frame.y + layout.frame.h - 3
         return inside ? [{ x, y, number: item.number, theme: item.theme }] : []
       })
+      const place = (at: [number, number]) => {
+        const p = map.project(at)
+        const x = layout.frame.x + p.x * ratio
+        const y = layout.frame.y + p.y * ratio
+        return x > layout.frame.x + 3 && x < layout.frame.x + layout.frame.w - 3 && y > layout.frame.y + 3 && y < layout.frame.y + layout.frame.h - 3 ? { x, y } : null
+      }
+      codes = (plan.plants ?? []).flatMap((plant) => { const at = place(plant.at); return at ? [{ ...at, code: plant.code }] : [] })
+      letters = (plan.existing ?? []).flatMap((item) => { const at = item.at && place(item.at); return at ? [{ ...at, letter: item.letter }] : [] })
     },
   })
   let painted = image
@@ -97,6 +122,8 @@ export async function exportMasterPlan(source: MapLibreMap, input: MasterInput, 
   doc.setDrawColor(INK)
   doc.setLineWidth(0.35 * k)
   doc.rect(frame.x, frame.y, frame.w, frame.h, 'S')
+  drawCodes(doc, codes, k)
+  drawLetters(doc, letters, k)
   drawMarks(doc, marks, k)
   drawNorthArrow(doc, frame.x + frame.w - 11 * k, frame.y + 11 * k, k)
   drawSources(doc, layout, input.sources)
@@ -104,9 +131,129 @@ export async function exportMasterPlan(source: MapLibreMap, input: MasterInput, 
   drawText(doc, layout, input, plan)
   drawCartouche(doc, layout, input, plan)
 
+  if (input.atMoment) {
+    onProgress?.('map', 2, pages)
+    await drawGrowthSheet(doc, source, input, plan, layout)
+  }
+
   const fileName = `${slug(input.title) || 'plan'}-${slug(t('master_plan.file'))}-${input.paper.toLowerCase()}.pdf`
   doc.save(fileName)
   return fileName
+}
+
+/**
+ * The second sheet: the same garden at year 5 and at year 30, side by side
+ * (stacked in portrait), each plant with its code, and what each moment
+ * brings in this garden. The crowns are the editor's growth model.
+ */
+async function drawGrowthSheet(doc: JsPDF, source: MapLibreMap, input: MasterInput, plan: MasterPlanData, layout: MasterLayout) {
+  const { k, width, height } = layout
+  const margin = 10 * k
+  const gap = 6 * k
+  const head = 16 * k
+  const foot = 24 * k
+  const landscape = input.orientation === 'landscape'
+  const w = landscape ? (width - 2 * margin - gap) / 2 : width - 2 * margin
+  const h = landscape ? height - 2 * margin - head - foot : (height - 2 * margin - head - 2 * foot - gap) / 2
+  // The two frames show what the first sheet shows, smaller.
+  const scale = Math.round(input.scale * Math.max(layout.frame.w / w, layout.frame.h / h))
+  doc.addPage(input.paper.toLowerCase(), input.orientation)
+  doc.setFillColor('#fbf7ee')
+  doc.rect(0, 0, width, height, 'F')
+  doc.setFont('times', 'bold')
+  doc.setFontSize(18 * k)
+  doc.setTextColor(INK)
+  doc.text(pdfText(t('master_plan.growth_title')), margin, margin + 7 * k)
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(8.5 * k)
+  doc.setTextColor(SOFT)
+  doc.text(pdfText(t('master_plan.growth_hint', { title: input.title })), margin, margin + 12 * k)
+
+  for (const [i, { moment, year }] of GROWTH_MOMENTS.entries()) {
+    const frame = landscape
+      ? { x: margin + i * (w + gap), y: margin + head, w, h }
+      : { x: margin, y: margin + head + i * (h + foot + gap), w, h }
+    await input.atMoment?.(moment)
+    let codes: { x: number; y: number; code: string }[] = []
+    const image = await renderMap(source, {
+      center: input.center, scale, frame, hiddenLayers: input.hiddenLayers,
+      variant: input.variant, hideBoundary: input.hideBoundary, planLook: true, withoutNames: true, tag: input.tag, hiddenIds: input.hiddenIds,
+      paintOnly: input.look === 'watercolor',
+      hiddenKinds: [...(input.hiddenKinds ?? []), 'bubble'],
+      inspect: (map) => {
+        const ratio = frame.w / mmToCss(frame.w)
+        codes = (plan.plants ?? []).flatMap((plant) => {
+          const p = map.project(plant.at)
+          const x = frame.x + p.x * ratio
+          const y = frame.y + p.y * ratio
+          return x > frame.x + 3 && x < frame.x + frame.w - 3 && y > frame.y + 3 && y < frame.y + frame.h - 3 ? [{ x, y, code: plant.code }] : []
+        })
+      },
+    })
+    // Painted like the first sheet, so the two read as one set.
+    const painted = input.look === 'watercolor'
+      ? await import('@/map/drawing/watercolor').then(({ seedOf, watercolorDataUrl }) => watercolorDataUrl(image, frame.w, seedOf(`${input.url}|${input.title}|${year}`)))
+      : image
+    doc.addImage(painted, 'JPEG', frame.x, frame.y, frame.w, frame.h, undefined, 'FAST')
+    doc.setDrawColor(INK)
+    doc.setLineWidth(0.35 * k)
+    doc.rect(frame.x, frame.y, frame.w, frame.h, 'S')
+    drawCodes(doc, codes, k)
+    // The year, like a label pinned on the sheet.
+    doc.setFillColor('#fbf7ee')
+    doc.roundedRect(frame.x + 3 * k, frame.y + 3 * k, 22 * k, 9 * k, 1.5 * k, 1.5 * k, 'F')
+    doc.setFont('times', 'bold')
+    doc.setFontSize(15 * k)
+    doc.setTextColor('#5b5781')
+    doc.text(pdfText(t('master_plan.growth_year', { year })), frame.x + 6 * k, frame.y + 10 * k)
+    const said = timeText((plan.time ?? []).filter((step) => (year === 5 ? step.year <= 5 : step.year > 5)), false)
+    if (said) {
+      doc.setFont('times', 'normal')
+      doc.setFontSize(9.5 * k)
+      doc.setTextColor(SOFT)
+      const lines: string[] = doc.splitTextToSize(pdfText(said), frame.w)
+      doc.text(lines.slice(0, 3), frame.x, frame.y + frame.h + 5.5 * k)
+    }
+  }
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(7.5 * k)
+  doc.setTextColor(FAINT)
+  doc.text(pdfText(t('master_plan.growth_note', { scale: formatNumber(scale) })), margin, height - margin)
+}
+
+/** Each plant's species code, small, just beside it, as a designer writes it on a plan. */
+function drawCodes(doc: JsPDF, codes: { x: number; y: number; code: string }[], k: number) {
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(4.6 * k)
+  doc.setLineDashPattern([], 0)
+  for (const { x, y, code } of codes) {
+    const text = pdfText(code)
+    const w = doc.getTextWidth(text) + 1.2 * k
+    const h = 2.4 * k
+    // On a slip of paper, so it reads on the darkest crown.
+    doc.setFillColor('#fbf7ee')
+    doc.roundedRect(x + 1 * k, y - h / 2, w, h, 0.6 * k, 0.6 * k, 'F')
+    doc.setTextColor(THEME_COLORS.plants)
+    doc.text(text, x + 1.6 * k, y + 0.6 * k)
+  }
+}
+
+/** What already stands, lettered in grey: it was there before the project. */
+function drawLetters(doc: JsPDF, letters: { x: number; y: number; letter: string }[], k: number) {
+  const r = 2.1 * k
+  const spread = spreadMarks(letters, r)
+  doc.setLineDashPattern([], 0)
+  letters.forEach(({ letter }, i) => {
+    const { x, y } = spread[i]
+    doc.setFillColor('#f2efe8')
+    doc.setDrawColor(FAINT)
+    doc.setLineWidth(0.3 * k)
+    doc.circle(x, y, r, 'FD')
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(6 * k)
+    doc.setTextColor(SOFT)
+    doc.text(letter, x, y + 0.75 * k, { align: 'center' })
+  })
 }
 
 function drawMarks(doc: JsPDF, marks: { x: number; y: number; number: number; theme: string }[], k: number) {
@@ -227,15 +374,40 @@ function drawText(doc: JsPDF, layout: MasterLayout, input: MasterInput, plan: Ma
     flow.space(3)
     flow.lines(t('master_plan.palette', { count: plan.palette.reduce((sum, row) => sum + row.count, 0) }), 9.5, { style: 'bold', color: THEME_COLORS.plants, gap: 0.8 })
     for (const row of plan.palette) {
-      if (!flow.lines(`${row.count} × ${row.name}`, 8, { color: SOFT, indent: 4.5, gap: 0.3 })) break
+      const height = row.heightM ? ` · ${t('master_plan.height', { height: formatNumber(row.heightM) })}` : ''
+      if (!flow.lines(`${row.code ? `${row.code} · ` : ''}${row.count} × ${row.name}${height}`, 8, { color: SOFT, indent: 4.5, gap: 0.3 })) break
+    }
+  }
+
+  if (!full && plan.existing?.length) {
+    flow.space(3)
+    flow.lines(t('master_plan.existing_title'), 9.5, { style: 'bold', color: SOFT, gap: 0.5 })
+    flow.lines(t('master_plan.existing_hint'), 7.5, { color: FAINT, indent: 4.5, gap: 0.5 })
+    for (const item of plan.existing) {
+      if (!flow.lines(`${item.letter}. ${item.label}`, 8, { color: SOFT, indent: 4.5, gap: 0.3 })) break
     }
   }
 
   if (!full) {
     flow.space(3)
     flow.lines(t('master_plan.time_title'), 9, { style: 'bold', color: '#5b5781', gap: 0.5 })
-    flow.lines(t('master_plan.time'), 8, { font: 'times', color: SOFT })
+    for (const sentence of timeSentences(plan.time ?? [])) flow.lines(sentence, 8, { font: 'times', color: SOFT, gap: 0.4 })
   }
+}
+
+/** « Le temps du vivant », told with this garden's own plants when the palette allows it. */
+export function timeText(time: NonNullable<MasterPlanData['time']>, withAdultSize = true): string {
+  return timeSentences(time, withAdultSize).join(' ')
+}
+
+/** The same, one sentence per moment, so each year starts its own line on the sheet. */
+export function timeSentences(time: NonNullable<MasterPlanData['time']>, withAdultSize = true): string[] {
+  const list = (names: string[]) => (names.length > 1 ? `${names.slice(0, -1).join(', ')} ${t('master_plan.and')} ${names[names.length - 1]}` : names[0] ?? '')
+  const told = time.map((step) => step.key === 'tallest'
+    ? t('master_plan.time_tallest', { year: step.year, name: list(step.names), height: step.heightM ?? 0 })
+    : t(`master_plan.time_${step.key}`, { year: step.year, names: list(step.names) }))
+  if (!withAdultSize) return told
+  return [t('master_plan.time_adult_size'), ...(told.length ? told : [t('master_plan.time')])]
 }
 
 function drawCartouche(doc: JsPDF, layout: MasterLayout, input: MasterInput, plan: MasterPlanData) {
