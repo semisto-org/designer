@@ -33,6 +33,8 @@ export type DrawOptions = {
   onChange?: (geometry: Geometry | null) => void
   /** Ink colour of the shape being drawn. */
   color?: string
+  /** A freehand surface also drawn by dragging (a finger, a pencil: a bubble), not only click, go round, click. */
+  dragToDraw?: boolean
   /** Called with the tool a click now uses on an edited shape (buttons, keys, Alt held). */
   onPointTool?: (tool: PointTool) => void
   /** Called when a point cannot be removed: a line keeps two, a polygon three. */
@@ -189,6 +191,9 @@ export class Drawer {
     if (shape === 'linestring' || shape === 'freehand-linestring') {
       const lineStringColor = (options.color ?? COLOR) as `#${string}`
       this.terra.updateModeOptions<typeof TerraDrawLineStringMode>(shape, { styles: { lineStringColor, lineStringWidth: 3 } })
+    }
+    if (shape === 'freehand') {
+      this.terra.updateModeOptions<typeof TerraDrawFreehandMode>(shape, { drawInteraction: options.dragToDraw ? 'click-move-or-drag' : 'click-move' })
     }
     this.terra.setMode(shape)
     return new Promise((resolve) => {

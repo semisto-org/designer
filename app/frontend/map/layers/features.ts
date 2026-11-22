@@ -3,6 +3,7 @@ import { IN_PLAN_LOOK, IN_PRESENT_RENDER, PLANNED_ELEMENT_EXPR, PLANNED_OPACITY,
 import { ensureLabelBackground, markerLabel, PAPER_LABEL_IMAGE } from '@/map/layers/labels'
 import { measure } from '@/map/editor/measure'
 import { stackFeatureLayers } from '@/map/layers/stack'
+import { BUBBLE_KIND, TRACING_FACTOR } from '@/map/tracing/sheets'
 import { displayGeometry, isRounded, isZoneKind, ZONE_FILL_OPACITY, ZONE_KINDS, zoneMeasureText } from '@/map/zones/zones'
 import type { MapFeatureCollection } from '@/types'
 
@@ -42,6 +43,10 @@ function styleColorExpr(fallback: unknown): unknown {
 const layerColor = ['match', ['get', 'layer'], ...Object.entries(LAYER_COLORS).flat(), '#6e6355']
 const color = styleColorExpr(layerColor) as string
 const isZone = ['in', ['get', 'kind'], ['literal', ZONE_KINDS]]
+/** A bubble of the first tracing sheet (map/tracing): a loose pencilled blob, its name across it. */
+const isBubble = ['==', ['get', 'kind'], BUBBLE_KIND]
+/** Faded under the tracing paper, or gone while a lower sheet is on the table (map/tracing). */
+const tracing = TRACING_FACTOR
 // A plant's point takes its strata colour when the plants overlay set one
 // (feature state, see PlantsOverlay), else the colour of its layer.
 const pointColor = ['case', ['!=', ['feature-state', 'strataColor'], null], ['to-color', ['feature-state', 'strataColor']], color]
@@ -92,6 +97,9 @@ export function zoneLabelLayout(placement: 'point' | 'line-center') {
     'icon-text-fit-padding': [1, 4, 1, 4],
   }
 }
+
+/** A bubble is a pencilled intention: lighter than a zone, the plan shows through. */
+const BUBBLE_FILL_OPACITY = 0.22
 
 /** loam-900 for the name, loam-600 for the measure under it. */
 const ZONE_MEASURE_COLOR = '#4d4a45'
@@ -149,7 +157,7 @@ export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollectio
     source: FEATURES_SOURCE,
     filter: ['==', ['geometry-type'], 'Polygon'],
     // A named zone is drawn bolder than other surfaces: it is what the plan says.
-    paint: { 'fill-color': color, 'fill-opacity': ['case', draft as never, 0.15, plannedElement, 0.12, isZone as never, ZONE_FILL_OPACITY, 0.28] },
+    paint: { 'fill-color': color, 'fill-opacity': ['*', ['case', draft as never, 0.15, plannedElement, 0.12, isBubble, BUBBLE_FILL_OPACITY, isZone as never, ZONE_FILL_OPACITY, 0.28], tracing] as never },
   })
   map.addLayer({
     id: 'features-line',
@@ -158,9 +166,9 @@ export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollectio
     filter: ['in', ['geometry-type'], ['literal', ['Polygon', 'LineString']]],
     paint: {
       'line-color': color,
-      'line-width': ['case', ['boolean', ['feature-state', 'selected'], false], 4, ['==', ['get', 'kind'], 'line'], 3, 2],
-      'line-dasharray': ['case', draft as never, ['literal', [2, 2]], ['all', plannedElement, ['!', IN_PLAN_LOOK]], ['literal', [3, 2]], toRemove, ['literal', [0.6, 1.6]], ['literal', [1, 0]]] as never,
-      'line-opacity': ['case', ['all', plannedElement, ['!', IN_PLAN_LOOK]], PLANNED_OPACITY, toRemove, TO_REMOVE_OPACITY, 1] as never,
+      'line-width': ['case', ['boolean', ['feature-state', 'selected'], false], 4, ['==', ['get', 'kind'], 'line'], 3, isBubble, 2.5, 2] as never,
+      'line-dasharray': ['case', draft as never, ['literal', [2, 2]], isBubble, ['literal', [4, 1.5]], ['all', plannedElement, ['!', IN_PLAN_LOOK]], ['literal', [3, 2]], toRemove, ['literal', [0.6, 1.6]], ['literal', [1, 0]]] as never,
+      'line-opacity': ['*', ['case', ['all', plannedElement, ['!', IN_PLAN_LOOK]], PLANNED_OPACITY, toRemove, TO_REMOVE_OPACITY, 1], tracing] as never,
     },
   })
   map.addLayer({
@@ -175,8 +183,8 @@ export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollectio
       'circle-stroke-width': ['case', ['boolean', ['feature-state', 'selected'], false], 3, planned, 3, 1.5],
       // « Rendu présentation »: a plant is its crown, without the point at its
       // foot; a vine or a plant without a crown keeps its point.
-      'circle-opacity': ['case', ['all', IN_PRESENT_RENDER, crownedPlant], 0, draft as never, 0.6, ['any', planned, plannedElement], PLANNED_OPACITY, 1] as never,
-      'circle-stroke-opacity': ['case', ['all', IN_PRESENT_RENDER, crownedPlant], 0, planned, PLANNED_OPACITY, 1] as never,
+      'circle-opacity': ['*', ['case', ['all', IN_PRESENT_RENDER, crownedPlant], 0, draft as never, 0.6, ['any', planned, plannedElement], PLANNED_OPACITY, 1], tracing] as never,
+      'circle-stroke-opacity': ['*', ['case', ['all', IN_PRESENT_RENDER, crownedPlant], 0, planned, PLANNED_OPACITY, 1], tracing] as never,
     },
   })
   map.addLayer({
@@ -193,9 +201,9 @@ export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollectio
     type: 'symbol',
     source: FEATURES_SOURCE,
     minzoom: 15,
-    filter: ['all', ['==', ['get', 'kind'], 'zone'], ['in', ['geometry-type'], ['literal', ['Polygon', 'MultiPolygon']]], ['any', ['has', 'name'], ['has', 'zone_measure']]] as never,
+    filter: ['all', ['in', ['get', 'kind'], ['literal', ['zone', BUBBLE_KIND]]], ['in', ['geometry-type'], ['literal', ['Polygon', 'MultiPolygon']]], ['any', ['has', 'name'], ['has', 'zone_measure']]] as never,
     layout: zoneLabelLayout('point') as never,
-    paint: ZONE_LABEL_PAINT,
+    paint: { ...ZONE_LABEL_PAINT, 'text-opacity': tracing, 'icon-opacity': tracing } as never,
   })
   map.addLayer({
     id: 'zone-labels-line',
@@ -211,7 +219,7 @@ export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollectio
       'text-justify': 'left',
       'text-offset': [0.8, 0],
     } as never,
-    paint: ZONE_LABEL_PAINT,
+    paint: { ...ZONE_LABEL_PAINT, 'text-opacity': tracing, 'icon-opacity': tracing } as never,
   })
   // Added again after a base map change: back under the plants already there.
   stackFeatureLayers(map)

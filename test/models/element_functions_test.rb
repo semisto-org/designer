@@ -105,4 +105,14 @@ class ElementFunctionsTest < ActiveSupport::TestCase
     assert pond.valid?
     refute pond.properties.key?("serves")
   end
+
+  test "a bubble drawn for a function is listed with it without serving it yet" do
+    @map.update!(project: ProjectSheet.merge({}, { "analysis" => {
+      "place_functions" => [ { "name" => "Retenir l'eau", "id" => "fwater" } ]
+    } }).to_h)
+    bubble = @map.features.create!(layer: "drawings", kind: "bubble", name: "Garder l'eau en bas", properties: { "serves" => [ "fwater" ], "rounded" => true },
+      geometry: { "type" => "Polygon", "coordinates" => [ [ [ 4.905, 50.341 ], [ 4.906, 50.341 ], [ 4.906, 50.342 ], [ 4.905, 50.341 ] ] ] })
+    water = ElementFunctions.new(@map).project.sole
+    assert_equal [ "missing", 0, [ bubble.id ] ], water.values_at(:status, :count, :bubbles)
+  end
 end

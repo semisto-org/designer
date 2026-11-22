@@ -29,6 +29,7 @@ fr:
         holder: "Pour les porteurs de projet"
         place: "Pour le lieu"
       missing: "Aucun élément ne la sert encore."
+      missing_bubbled: "Imaginée dans la bulle %{bubbles}, pas encore traduite en éléments : pose la feuille « Trame »."
       fragile: "Un seul élément la sert : %{name}."
       covered:
         one: "%{count} élément"

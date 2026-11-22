@@ -17,6 +17,7 @@ import { ensureSupportHatch } from '@/map/plants/supportHatch'
 import { PLAN_COLORS, PLAN_STRATA_COLORS } from '@/map/plants/strataColors'
 import { stackFeatureLayers } from '@/map/layers/stack'
 import { variantFilter } from '@/map/variants/variants'
+import { TRACING_FACTOR, TRACING_SHOWN } from '@/map/tracing/sheets'
 import { RENDER_HIDDEN_KINDS, RIBBON_KINDS } from '@/map/presentation/renderRules'
 
 /**
@@ -118,7 +119,9 @@ const drawnView = expr(IN_DRAWN_VIEW)
 const isTechnical = expr(['in', ['get', 'kind'], ['literal', RENDER_HIDDEN_KINDS]])
 const visibleFactor = expr(['*',
   ['case', editing, 0, ['all', inRender, isTechnical], 0, isDraft, 0.5, ['all', isPlannedElement, ['!', planLook]], PLANNED_OPACITY, isToRemove, TO_REMOVE_OPACITY, 1],
-  ['case', selected, 1, GROUND_IN_PROJECT_FACTOR]])
+  ['case', selected, 1, GROUND_IN_PROJECT_FACTOR],
+  // The tracing sheets (map/tracing): what lies under the sheet on the table shows through the paper.
+  TRACING_FACTOR])
 /**
  * A planned element keeps its own dash if it has one, else draws dashed:
  * « not there yet ». What the project takes away draws dotted: « on its way out ».
@@ -579,6 +582,8 @@ export function applyLayerVisibility(
     if (variant) tests.push(variant)
     if (tag) tests.push(tag)
     tests.push(...hiddenTests(hiddenKinds, hiddenIds))
+    // The sheets above the one on the table are not drawn yet (map/tracing): off the map, out of reach of a click.
+    tests.push(TRACING_SHOWN)
     const test = tests.length === 0 ? null : tests.length === 1 ? tests[0] : ['all', ...tests]
     const filter = composeFilter(entry.original, test)
     map.setFilter(id, filter as FilterSpecification | null)

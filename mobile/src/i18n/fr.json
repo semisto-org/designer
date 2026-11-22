@@ -1531,6 +1531,7 @@
       "zone": "Zone",
       "line": "Ligne",
       "point": "Point",
+      "bubble": "Bulle",
       "measure": "Mesure",
       "plant": "Plante",
       "patch": "Patch"

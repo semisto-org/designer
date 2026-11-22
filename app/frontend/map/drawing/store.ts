@@ -8,7 +8,7 @@ import type { PointTool } from '@/map/editor/draw'
  * feature whose shape is being edited. Shared by the toolbar, the
  * inspector section, the layers panel and the exports.
  */
-export type DrawingTool = 'draw' | 'zone' | 'measure' | 'sketch' | 'shape' | null
+export type DrawingTool = 'draw' | 'zone' | 'bubble' | 'measure' | 'sketch' | 'shape' | null
 
 export type DrawingState = {
   mapId: number | null
@@ -33,9 +33,11 @@ export type DrawingState = {
    * by « Présenter » steps. Project variants are map/variants.
    */
   shownTag: string | null
+  /** The design layer the element picker opens on, set by whoever opened it (a tracing sheet); null: the last one used. */
+  pickerLayer: string | null
 }
 
-let state: DrawingState = { mapId: null, hiddenLayers: [], hiddenKinds: [], hiddenStrata: [], hiddenSoil: [], labelsHidden: false, tool: null, shapeEditId: null, shapeEditFrom: 'inspector', shapeEditTool: 'move', shownTag: null }
+let state: DrawingState = { mapId: null, hiddenLayers: [], hiddenKinds: [], hiddenStrata: [], hiddenSoil: [], labelsHidden: false, tool: null, shapeEditId: null, shapeEditFrom: 'inspector', shapeEditTool: 'move', shownTag: null, pickerLayer: null }
 const listeners = new Set<() => void>()
 
 export const drawingStore = {
@@ -100,7 +102,7 @@ export function initDrawingState(mapId: number) {
   }
   drawingStore.set({
     mapId, hiddenLayers: hidden, hiddenKinds: readList(mapId, 'kinds'), hiddenStrata: readList(mapId, 'strata'), hiddenSoil: readList(mapId, 'soil'),
-    labelsHidden: readLabelsHidden(mapId), tool: null, shapeEditId: null, shownTag,
+    labelsHidden: readLabelsHidden(mapId), tool: null, shapeEditId: null, shownTag, pickerLayer: null,
   })
 }
 

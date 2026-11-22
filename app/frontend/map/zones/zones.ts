@@ -11,7 +11,8 @@
 
 import type { Geometry } from 'geojson'
 
-export const ZONE_KINDS = ['zone', 'line'] as const
+// `bubble`: an intention on the first tracing sheet (map/tracing), a zone drawn loosely.
+export const ZONE_KINDS = ['zone', 'line', 'bubble'] as const
 export type ZoneKind = (typeof ZONE_KINDS)[number]
 
 export function isZoneKind(kind: unknown): kind is ZoneKind {
@@ -69,7 +70,9 @@ export function zoneMeasureText(
   measure: { area: number | null; length: number | null },
 ): string | null {
   if (!isZoneKind(properties.kind) || properties.show_measure === false) return null
-  if (properties.kind === 'zone') return measure.area != null && measure.area > 0 ? zoneAreaText(measure.area) : null
+  // A bubble is a rough intention: its area only when asked for.
+  if (properties.kind === 'bubble' && properties.show_measure !== true) return null
+  if (properties.kind === 'zone' || properties.kind === 'bubble') return measure.area != null && measure.area > 0 ? zoneAreaText(measure.area) : null
   return measure.length != null && measure.length > 0 ? zoneLengthText(measure.length) : null
 }
 

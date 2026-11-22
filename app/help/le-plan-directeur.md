@@ -1,0 +1,28 @@
+---
+title: "Le plan directeur"
+summary: "Ton projet sur une grande feuille, numéroté thème par thème, avec son intention, sa palette et un code QR vers la carte vivante."
+category: Concevoir
+order: 50
+---
+
+Le **plan directeur** est la feuille que l'on affiche dans la grange ou que l'on remet au client. On y voit tout le projet d'un coup d'œil, chaque élément porte un numéro, et la légende raconte le lieu thème par thème.
+
+## Le faire
+
+1. Ouvre l'export (le bouton de téléchargement en haut de la carte), puis « Plan PDF ».
+2. Choisis « Plan directeur », puis le format : de l'A3 pour la table à l'A0 pour le mur.
+3. Règle l'échelle et cadre la carte, puis « Créer le PDF ».
+
+## Ce qu'il contient
+
+- **Le plan**, dans le rendu de « Présenter » : le papier, les couronnes à leur taille adulte, ton projet en couleurs.
+- **Les numéros**, dans l'ordre de la méthode : l'eau d'abord, puis les accès, les structures, les animaux, les zones et les massifs. Les plantes isolées ne sont pas numérotées : la **palette** les compte espèce par espèce.
+- **Notre intention** : la raison d'être de ta fiche projet, en une phrase.
+- **Le temps du vivant** : ce que deviendra le jardin à l'an 1, 5, 15 et 30.
+- **Le cartouche** : la phase en cours, la date, l'échelle, le nord, et un **code QR** qui ouvre la carte vivante sur un téléphone.
+
+Affiche-le au bord du terrain : en scannant le code, chacun retrouve la carte à jour et peut aller voir sur place ce que porte le n° 7.
+
+## Avec ton IA
+
+Ton IA connaît la même numérotation : elle peut te parler du « n° 7, la mare du bas », comme sur ta feuille.

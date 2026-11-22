@@ -1,0 +1,65 @@
+fr:
+  tracing:
+    title: "Feuilles du dessin"
+    all: "Tout"
+    all_hint: "Un design se dessine en trois feuilles de calque posées sur le fond de plan : les bulles, la trame, les plantations."
+    fold: "Replier la note"
+    unfold: "Déplier la note"
+    start: "Commencer par la feuille « %{sheet} »"
+    continue: "Continuer avec la feuille « %{sheet} »"
+    sheets:
+      bubbles: "Bulles"
+      frame: "Trame"
+      planting: "Plantations"
+    notes:
+      bubbles: "De grandes bulles floues : où l'on vit, où l'on cueille, où l'eau s'arrête."
+      frame: "L'eau d'abord, puis les accès, puis la structure."
+      planting: "Les arbres d'abord, puis chaque strate en dessous."
+    why:
+      bubbles:
+        zero: "Pas encore de bulle. Une bulle par usage, reliée aux fonctions de ta fiche projet : tu les affineras sur la feuille suivante."
+        one: "Une bulle sur cette feuille. Relie-la aux fonctions de ta fiche projet : elles guideront la trame."
+        other: "%{count} bulles sur cette feuille. Relie-les aux fonctions de ta fiche projet : elles guideront la trame."
+      frame:
+        zero: "Les bulles restent sous le calque pour te guider. Rien n'est encore tracé ici : l'eau décide de presque tout le reste."
+        one: "Un élément sur cette feuille. Les bulles restent sous le calque pour te guider."
+        other: "%{count} éléments sur cette feuille. Les bulles restent sous le calque pour te guider."
+      planting:
+        zero: "La trame est sous le calque. Pense à l'an 15 : une couronne adulte prend vite la place prévue."
+        one: "Une plante ou un massif sur cette feuille. Pense à l'an 15 : une couronne adulte prend vite la place prévue."
+        other: "%{count} plantes et massifs sur cette feuille. Pense à l'an 15 : une couronne adulte prend vite la place prévue."
+    actions:
+      draw_bubble: "Dessiner une bulle"
+      water: "Placer l'eau"
+      access: "Les accès"
+      structures: "La structure"
+      palette: "Ouvrir la palette"
+      plants: "Placer une plante"
+    next: "Poser la feuille « %{sheet} »"
+    outside:
+      bubbles: "Sur place, marche ton terrain : là où tu aimes t'arrêter, une bulle commence souvent."
+      frame: "Après une averse, va voir où l'eau coule et où elle stagne : c'est elle qui trace la trame."
+      planting: "Avant de planter, regarde où l'ombre reste en hiver et où le givre tient le matin."
+    raised_drawn: "La feuille « %{sheet} » est posée sur la table : c'est là que va ce que tu viens de dessiner."
+    raised_selected: "La feuille « %{sheet} » est posée sur la table pour te montrer cet élément."
+    bubble:
+      tool: "Bulle"
+      tool_hint: "Une intention, dessinée à main levée"
+      title: "Dessiner une bulle"
+      intro: "Une bulle dit une intention, pas encore un élément : « Se retrouver », « Cueillir », « Garder l'eau »."
+      name: "Nom de la bulle"
+      name_placeholder: "Ex. Cueillir près de la maison"
+      serves: "Elle répond à"
+      no_functions: "Les fonctions de ta fiche projet apparaîtront ici."
+      open_functions: "Voir les fonctions"
+      draw: "Dessiner à main levée"
+      hint: "Clique et fais le tour de la bulle, ou trace-la au doigt ou au crayon. Elle se ferme d'elle-même."
+      created: "Bulle « %{name} » posée."
+      created_unnamed: "Bulle posée. Donne-lui un nom dans sa fiche."
+    section:
+      title: "Feuille du dessin"
+      hint: "Sur quelle feuille de calque cette note ou cette zone se montre."
+      none: "Toutes"
+      inside_title: "Dessiné dans cette bulle"
+      inside_none: "Rien encore dans cette bulle. Pose la feuille « Trame » pour la traduire en eau, accès et structure."
+      inside_more: "et %{count} de plus"

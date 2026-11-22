@@ -158,6 +158,7 @@ fr:
       zone: "Zone"
       line: "Ligne"
       point: "Point"
+      bubble: "Bulle"
       measure: "Mesure"
   public:
     nav:

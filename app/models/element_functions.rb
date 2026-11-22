@@ -74,11 +74,14 @@ class ElementFunctions
   end
 
   # One row per function of the project's analysis: which elements serve it.
+  # `bubbles`: the ids of the bubbles (first tracing sheet) drawn for it, an
+  # intention that does not count as serving it yet.
   def project
     sheet.project_functions.map do |function|
       serving = entries.select { |e| e.serves.include?(function[:id]) }
       status = serving.empty? ? "missing" : serving.size < ENOUGH ? "fragile" : "covered"
-      function.merge(count: serving.size, status:, entries: serving.map(&:key))
+      function.merge(count: serving.size, status:, entries: serving.map(&:key),
+        bubbles: bubbles.select { |b| self.class.serves(b).include?(function[:id]) }.map(&:id))
     end
   end
 
@@ -104,6 +107,10 @@ class ElementFunctions
   private
     def sheet
       @sheet ||= ProjectSheet.parse(@map.project, strict: false)
+    end
+
+    def bubbles
+      @bubbles ||= @map.features.active.in_design.where(kind: "bubble").to_a
     end
 
     def features

@@ -28,6 +28,8 @@ export type ProjectFunction = {
   count: number
   status: 'missing' | 'fragile' | 'covered'
   entries: string[]
+  /** Ids of the bubbles (first tracing sheet, map/tracing) drawn for it. */
+  bubbles?: number[]
 }
 export type FunctionBalance = { function: string; count: number; status: 'missing' | 'fragile' | 'covered'; entries: string[]; existingOnly: boolean }
 export type FunctionsResponse = {

@@ -1,0 +1,24 @@
+fr:
+  master_plan:
+    option: "Plan directeur"
+    hint: "Ton projet numéroté thème par thème, avec sa légende, l’intention du projet, la palette et un code QR vers la carte vivante. De l’A3 à l’A0, pour l’afficher ou le remettre."
+    file: "plan directeur"
+    heading: "Plan directeur"
+    phase: "Phase : %{phase}"
+    mission: "Notre intention"
+    more:
+      one: "… et 1 autre élément sur la carte vivante"
+      other: "… et %{count} autres éléments sur la carte vivante"
+    palette:
+      one: "Palette · 1 plant"
+      other: "Palette · %{count} plants"
+    time_title: "Le temps du vivant"
+    time: "Les arbres sont dessinés à leur taille adulte. An 1 : de jeunes plants. An 5 : les premiers fruits. An 15 : la forêt se ferme. An 30 : le jardin-forêt mûr."
+    qr: "La carte vivante"
+    themes:
+      water: "Eau"
+      access: "Accès"
+      structures: "Structures"
+      animals: "Animaux"
+      drawings: "Zones"
+      plants: "Massifs et plantations"
