@@ -42,4 +42,36 @@ class MasterPlanTest < ActiveSupport::TestCase
     assert_includes ids.(MasterPlan.new(@map, variant: two).as_json), second.id
     assert_not_includes ids.(MasterPlan.new(@map, variant: two).as_json), first.id
   end
+
+  test "each species has its code, distinct on one plan, written by each of its plants" do
+    hazel = PlantSpecies.create!(latin_name: "Corylus colurna", plant_type: "tree")
+    dogwood = PlantSpecies.create!(latin_name: "Cornus controversa", plant_type: "tree")
+    walnut = PlantSpecies.create!(latin_name: "Juglans regia", plant_type: "tree")
+    [ hazel, dogwood, walnut ].each { |s| @map.features.create!(layer: "plants", kind: "plant", geometry: POINT, properties: { "species_id" => s.id }) }
+
+    plan = MasterPlan.new(@map)
+    codes = plan.palette.to_h { [ _1[:latin], _1[:code] ] }
+    assert_equal({ "Corylus colurna" => "Co col", "Cornus controversa" => "Co con", "Juglans regia" => "Ju re" }, codes)
+    assert_equal [ "Co col", "Co con", "Ju re" ], plan.plants.map { _1[:code] }.sort
+    assert_in_delta 4.9071, plan.plants.first[:at][0], 1e-6
+    assert_equal "Ma do", MasterPlan.code("Malus × domestica")
+  end
+
+  test "what already stands and has a name is lettered; the time of living things speaks of this garden" do
+    @map.features.create!(layer: "existing", kind: "building", name: "Grange", geometry: SHAPE)
+    @map.features.create!(layer: "water", kind: "pond", name: "Vieille mare", geometry: SHAPE)
+    @map.features.create!(layer: "existing", kind: "building", geometry: SHAPE)
+    @map.features.create!(layer: "water", kind: "pond", name: "Mare du projet", geometry: SHAPE, properties: { "planned" => true })
+    oak = PlantSpecies.create!(latin_name: "Quercus robur", plant_type: "tree", strata: "canopy", height_min_m: 25, height_max_m: 35)
+    @map.features.create!(layer: "plants", kind: "plant", geometry: POINT, properties: { "species_id" => oak.id })
+
+    plan = MasterPlan.new(@map)
+    lettered = plan.existing.map { _1.values_at(:letter, :label) }
+    assert_equal [ "A", "Grange" ], lettered.first
+    assert_includes lettered.map(&:last), "Vieille mare"
+    assert_not_includes lettered.map(&:last), "Mare du projet"
+    assert_equal lettered.map(&:first), ("A"..).first(lettered.size)
+    tallest = plan.time.find { _1[:key] == "tallest" }
+    assert_equal [ 30, [ oak.common_name || "Quercus robur" ], 30 ], tallest.values_at(:year, :names, :heightM)
+  end
 end

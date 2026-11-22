@@ -7,9 +7,20 @@
 # project), the phase in progress and the place. The browser lays it out
 # as a PDF; the MCP serves the same numbering, so an AI and the paper speak
 # of « n° 7 » alike. The networks never appear.
+#
+# Each species of the palette has the code designers write on a plan
+# (Juglans regia → « Ju re »), written by each of its plants; what is
+# already there and has a name is lettered (A, B, C…), in grey; and « Le
+# temps du vivant » speaks of this garden's own plants at years 5, 15, 30.
 class MasterPlan
   THEMES = %w[water access structures animals drawings plants].freeze
   PALETTE_LIMIT = 40
+  # Single plants written on the plan by their code: past that, a sheet is ink.
+  PLANTS_LIMIT = 400
+  # What already stands is lettered A to Z.
+  EXISTING_LAYERS = %w[existing water access structures animals].freeze
+  LETTERS = ("A".."Z").to_a.freeze
+  TIME_YEARS = [ 5, 15, 30 ].freeze
 
   attr_reader :map
 
@@ -24,7 +35,7 @@ class MasterPlan
   end
 
   def as_json(*)
-    { title: map.name, place: map.address.presence, phase: map.current_design_phase_name, mission:, themes:, palette:, areaM2: map.area_m2 }.compact
+    { title: map.name, place: map.address.presence, phase: map.current_design_phase_name, mission:, themes:, palette:, plants:, existing:, time:, areaM2: map.area_m2 }.compact
   end
 
   # The project's purpose, in one or two sentences.
@@ -52,19 +63,85 @@ class MasterPlan
     end
   end
 
-  # Single plants of the project, counted by species, most planted first.
+  # Single plants of the project, counted by species, most planted first, each with its code.
   def palette
-    plants = design.where(layer: "plants", kind: MapFeature::PLANT).to_a.select(&:planned?)
-    counts = plants.group_by(&:plant_species_id).transform_values(&:size)
-    species = PlantSpecies.where(id: counts.keys.compact).includes(:common_names).index_by(&:id)
-    counts.filter_map do |id, count|
-      next unless (s = species[id])
+    @palette ||= begin
+      rows = planned_plants.group_by(&:plant_species_id).filter_map do |id, list|
+        next unless (s = species[id])
 
-      { species_id: id, name: s.common_name || s.latin_name, latin: s.latin_name, count: }
-    end.sort_by { |row| [ -row[:count], row[:name].to_s ] }.first(PALETTE_LIMIT)
+        { species_id: id, name: s.common_name || s.latin_name, latin: s.latin_name, code: self.class.code(s.latin_name), count: list.size }.compact
+      end.sort_by { |row| [ -row[:count], row[:name].to_s ] }.first(PALETTE_LIMIT)
+      distinct_codes(rows)
+    end
+  end
+
+  # Where each single plant stands, with its species' code: [{ id:, code:, at: }].
+  def plants
+    codes = palette.to_h { [ _1[:species_id], _1[:code] ] }
+    list = planned_plants.select { codes[_1.plant_species_id] }.first(PLANTS_LIMIT)
+    anchors = anchor_points(list.map(&:id))
+    list.filter_map { |f| { id: f.id, code: codes[f.plant_species_id], at: anchors[f.id] } if anchors[f.id] }
+  end
+
+  # What already stands and has a name (the house, the barn, the old pond), lettered A, B, C…
+  def existing
+    list = design.where(layer: EXISTING_LAYERS).reject(&:planned?).select { _1.name.present? }
+      .sort_by { |f| [ EXISTING_LAYERS.index(f.layer), f.name.to_s.downcase, f.id ] }.first(LETTERS.size)
+    anchors = anchor_points(list.map(&:id))
+    list.each_with_index.map { |f, i| { letter: LETTERS[i], id: f.id, label: f.name.to_s.squish, kind: f.kind, at: anchors[f.id] }.compact }
+  end
+
+  # This garden's own time: [{ year:, key:, names: [...] }] — the first
+  # fruits at year 5, the plants at their full size by year 15, the
+  # tallest tree at year 30 (with its height in metres). The layout turns
+  # them into sentences; nothing when the palette is empty.
+  def time
+    return [] if palette.empty?
+
+    grown = palette.map { |row| s = species[row[:species_id]]; [ row, s, s.default_strata ] }
+    fruit = grown.select { |_, s, strata| s.edible? && PlantGrowth.production_start(strata:, species: s).years <= 5 }
+    adult = grown.select { |_, s, strata| %w[canopy sub_canopy].include?(strata) && PlantGrowth.maturity(strata:, species: s).years <= 15 }
+    tallest = grown.max_by { |_, s, strata| PlantGrowth.height(strata:, species: s).metres.to_f }
+    [
+      ({ year: 5, key: "fruit", names: fruit.first(3).map { _1[0][:name] } } if fruit.any?),
+      ({ year: 15, key: "adult", names: adult.first(3).map { _1[0][:name] } } if adult.any?),
+      ({ year: 30, key: "tallest", names: [ tallest[0][:name] ], heightM: PlantGrowth.height(strata: tallest[2], species: tallest[1]).metres.to_f.round } if tallest)
+    ].compact
+  end
+
+  # The code designers write on a plan: the first two letters of the genus
+  # and of the species (Malus domestica → « Ma do »); hybrid signs and
+  # abbreviations skipped. Mirrors plantCode in map/plants/labelRank.ts.
+  def self.code(latin, species_letters: 2)
+    words = latin.to_s.split(/\s+/).select { |w| w.match?(/\A[[:alpha:]]/) && !%w[x ×].include?(w) && !w.end_with?(".") }
+    return nil if words.empty?
+
+    genus = words[0][0, 2].capitalize
+    species = words[1]&.delete_prefix("'")&.delete_prefix('"')&.[](0, species_letters)&.downcase
+    species.present? ? "#{genus} #{species}" : genus
   end
 
   private
+    # Two species of one plan never share a code: Corylus colurna and Cornus
+    # controversa become « Co col » and « Co con », then « Co co 2 » if need be.
+    def distinct_codes(rows)
+      rows.group_by { _1[:code] }.each_value do |same|
+        next if same.size < 2 || same.first[:code].nil?
+
+        same.each { |row| row[:code] = self.class.code(row[:latin], species_letters: 3) }
+        same.group_by { _1[:code] }.each_value { |still| still.each_with_index { |row, i| row[:code] = "#{row[:code]} #{i + 1}" if still.size > 1 } }
+      end
+      rows
+    end
+
+    def planned_plants
+      @planned_plants ||= design.where(layer: "plants", kind: MapFeature::PLANT).order(:id).to_a.select(&:planned?)
+    end
+
+    def species
+      @species ||= PlantSpecies.where(id: planned_plants.map(&:plant_species_id).compact.uniq).includes(:common_names).index_by(&:id)
+    end
+
     def design
       scope = map.features.active
       @variant ? scope.where(variant_id: [ nil, @variant.id ]) : scope.in_design

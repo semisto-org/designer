@@ -15,7 +15,7 @@ import {
 } from '@/map/drawing/pdf'
 import { hiddenPlantIds } from '@/map/drawing/hidden'
 import { useDrawingState } from '@/map/drawing/store'
-import { exportMasterPlan, type MasterLook, type MasterPlanData } from '@/map/drawing/masterPlan'
+import { exportMasterPlan, type MasterLook, type GrowthMoment, type MasterPlanData } from '@/map/drawing/masterPlan'
 import { masterLayout } from '@/map/drawing/masterPlanLayout'
 import { api } from '@/lib/api'
 import { useShownVariant } from '@/map/variants/store'
@@ -103,6 +103,8 @@ export function PdfExportPanel({ onClose, initialKind = 'plan' }: { onClose: () 
       // Blocked storage: the choice lasts for this export.
     }
   }
+  // « Le jardin qui pousse »: a second sheet with the same garden at year 5 and year 30.
+  const [growth, setGrowth] = useState(true)
   const [viewCenter, setViewCenter] = useState<[number, number]>(() => instance.getCenter().toArray() as [number, number])
 
   // What the plan covers when fitted: the terrain, else everything drawn.
@@ -177,9 +179,15 @@ export function PdfExportPanel({ onClose, initialKind = 'plan' }: { onClose: () 
       const drawn = new Set(editor.features.filter((f) => !hiddenLayers.includes(f.properties.layer) && inVariant(f.properties, shown) && inTag(f, tag) &&
         !hiddenIds.includes(f.properties.id) && !(f.properties.kind && hiddenKinds.includes(f.properties.kind))).map((f) => f.properties.id))
       let number = 0
-      const plan = { ...data, themes: data.themes
-        .map((theme) => ({ ...theme, items: theme.items.filter((item) => drawn.has(item.id)).map((item) => ({ ...item, number: ++number })) }))
-        .filter((theme) => theme.items.length > 0) }
+      let letter = 0
+      const plan = { ...data,
+        themes: data.themes
+          .map((theme) => ({ ...theme, items: theme.items.filter((item) => drawn.has(item.id)).map((item) => ({ ...item, number: ++number })) }))
+          .filter((theme) => theme.items.length > 0),
+        plants: data.plants?.filter((plant) => drawn.has(plant.id)),
+        // Lettered again after the filter, so the sheet reads A, B, C without gaps.
+        existing: data.existing?.filter((item) => drawn.has(item.id)).map((item) => ({ ...item, letter: String.fromCharCode(65 + (letter++ % 26)) })),
+      }
       await exportMasterPlan(instance, {
         title: title.trim() || editor.map.name,
         paper, orientation, scale, center, hiddenLayers, hiddenKinds, hiddenIds, tag,
@@ -189,15 +197,30 @@ export function PdfExportPanel({ onClose, initialKind = 'plan' }: { onClose: () 
         sources: attributions(instance),
         url: `${window.location.origin}/maps/${editor.map.id}`,
         look,
-      }, plan, (next) => setStep({ step: next, page: 1, pages: 1 }))
+        atMoment: growth ? showMoment : undefined,
+      }, plan, (next, page = 1, pages = 1) => setStep({ step: next, page, pages }))
       editor.notify(t('drawing.pdf.done'))
       notePrint(editor.map.id, 'pdf')
     } catch (error) {
       console.error(error)
       editor.notify(t('drawing.pdf.error'), 'error')
     } finally {
+      // The growth sheet moved the time strip: put it back where the person left it.
+      if (growth) editor.setMoment(moment)
       setStep(null)
     }
+  }
+
+  // The time strip moment when the export starts, and how the growth sheet moves it.
+  const moment = editor.moment
+  async function showMoment(next: GrowthMoment) {
+    editor.setMoment(next)
+    // Let React apply the moment and MapLibre redraw the crowns before the copy.
+    await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))
+    await new Promise<void>((resolve) => {
+      if (instance.loaded()) setTimeout(resolve, 400)
+      else instance.once('idle', () => resolve())
+    })
   }
 
   async function generate() {
@@ -309,6 +332,20 @@ export function PdfExportPanel({ onClose, initialKind = 'plan' }: { onClose: () 
                 className="mt-0.5 h-4 w-4 rounded border-loam-300 text-prune-600 focus:ring-prune-500"
               />
               {t('drawing.pdf.include_boundary')}
+            </label>
+          )}
+          {master && (
+            <label className="flex items-start gap-2 text-sm text-loam-700">
+              <input
+                type="checkbox"
+                checked={growth}
+                onChange={(e) => setGrowth(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-loam-300 text-prune-600 focus:ring-prune-500"
+              />
+              <span>
+                {t('master_plan.growth')}
+                <span className="block text-loam-500">{t('master_plan.growth_hint_option')}</span>
+              </span>
             </label>
           )}
           {editor.canEdit && !master && (
