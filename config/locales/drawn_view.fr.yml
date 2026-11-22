@@ -1,0 +1,29 @@
+fr:
+  drawn_view:
+    turn_on: "Voir le terrain dessiné, comme sur la table à dessin"
+    turn_off: "Revenir à la photo aérienne"
+    photo: "Photo sous le papier"
+    photo_hint: "Régler la photo sous le papier"
+    photo_value: "Photo à %{percent} %"
+    photo_help: "À 0 %, le terrain n’est plus qu’un dessin : l’existant à l’encre, les courbes de niveau, ton projet en couleurs."
+    margin:
+      title: "Ce que le lieu dit"
+      challenges: "Défis du lieu"
+      unserved: "Encore à servir"
+      open_functions: "Voir les fonctions"
+      sectors: "Secteurs"
+      show_sectors:
+        one: "Dessiner le secteur sur le plan"
+        other: "Dessiner les %{count} secteurs sur le plan"
+      no_sectors: "Pas encore noté : d’où vient le vent, où tombe le soleil, où gèle-t-il ?"
+      open_sectors: "Noter les secteurs"
+      seasons_title: "Saisons à observer"
+      seasons_missing: "Pas encore vu ici : %{seasons}."
+      go_outside: "Sors noter ce que tu vois avec l’app sur ton téléphone avant de figer ce qui en dépend."
+      no_challenges: "Les défis du lieu de ta fiche projet viendront s’écrire ici."
+      open_project: "Ouvrir la fiche projet"
+      seasons:
+        winter: "l’hiver"
+        spring: "le printemps"
+        summer: "l’été"
+        autumn: "l’automne"

@@ -19,7 +19,7 @@ export const RELIEF_OVERLAY_ID = 'relief-overlay'
 const images = new Map<string, string>()
 const grids = new Map<string, Promise<Float32Array>>()
 
-function loadHeights(grid: TerrainGridData): Promise<Float32Array> {
+export function loadHeights(grid: TerrainGridData): Promise<Float32Array> {
   const url = grid.files.grid
   if (!url) return Promise.reject(new Error('grid unavailable'))
   let pending = grids.get(url)

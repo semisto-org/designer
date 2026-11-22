@@ -38,6 +38,7 @@ import { idsWithin, selectionMove, toggled } from '@/map/selection/move'
 import { DEFAULT_MOMENT, shownMoment, timeline as timelineOf } from '@/map/time/moment'
 import { initTime, setMode, setMoment, setSeason, timeStore, useTime } from '@/map/time/store'
 import { modeForStage } from '@/map/time/mode'
+import { DrawnViewControl } from '@/map/drawn/DrawnViewControl'
 import { ModeSwitch } from '@/map/time/ModeSwitch'
 import { isPlanned } from '@/map/scenario'
 import type { EntitlementsData, MapData, MapFeature, MapStage, RegionLayerData } from '@/types'
@@ -568,7 +569,7 @@ function HeaderSteps() {
   return (
     <>
       {target && createPortal(<StageStepper />, target)}
-      {modeTarget && createPortal(<ModeSwitch />, modeTarget)}
+      {modeTarget && createPortal(<div className="flex items-center gap-1.5"><ModeSwitch /><DrawnViewControl /></div>, modeTarget)}
     </>
   )
 }

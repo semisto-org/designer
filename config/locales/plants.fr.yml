@@ -205,6 +205,7 @@ fr:
     legend:
       title: "Strates"
       planned: "En pointillés : pas encore planté"
+      planted_drawn: "En gris : déjà en terre"
       support: "Hachurées : plantes de soutien, qui nourrissent le sol puis laissent la place"
       labels: "Noms des plants sur la carte"
       labels_name: "Nom"

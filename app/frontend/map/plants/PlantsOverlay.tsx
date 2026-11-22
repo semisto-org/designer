@@ -20,7 +20,7 @@ import { ensureSupportHatch, SUPPORT_HATCH } from '@/map/plants/supportHatch'
 import { crownOrder, darken, inkOn, PLAN_COLORS, PLAN_STRATA_COLORS } from '@/map/plants/strataColors'
 import { applyPlantsVisibility } from '@/map/plants/visibility'
 import { setPlantLabels } from '@/map/plants/labelIndex'
-import { DESIGN_MODE_STATE, GROUND_IN_PROJECT_OPACITY, IN_PRESENT_RENDER, isPlannedPlant, PLANNED_OPACITY } from '@/map/scenario'
+import { DESIGN_MODE_STATE, GROUND_IN_PROJECT_OPACITY, IN_DRAWN_VIEW, IN_PLAN_LOOK, isPlannedPlant, PLANNED_OPACITY } from '@/map/scenario'
 import { inMoment } from '@/map/time/moment'
 import { growingPlant, sizeAtMoment } from '@/map/time/plants'
 import type { PlantingState, Strata } from '@/types/plants'
@@ -47,8 +47,13 @@ const PLANTED = ['get', 'planted'] as unknown as boolean
 // Plants in the ground fade behind the project while the editor shows « Projet » (map/time/mode).
 const GROUND_FADE = ['case', ['==', ['global-state', DESIGN_MODE_STATE], 'project'], GROUND_IN_PROJECT_OPACITY, 1] as unknown as number
 const NOT_REACH = ['!', ['to-boolean', ['get', 'reach']]] as never
-// « Rendu présentation » (map/presentation/render): crowns as soft washes.
-const RENDER = IN_PRESENT_RENDER as unknown as boolean
+// « Rendu présentation » (map/presentation/render) and « vue dessinée »
+// (map/drawn): crowns as soft washes.
+const RENDER = IN_PLAN_LOOK as unknown as boolean
+// In the drawn view, a plant already in the ground is part of the base
+// plan: a grey wash under the project's colours, as a designer draws what is there.
+const DRAWN_GROUND = ['all', IN_DRAWN_VIEW, PLANTED] as unknown as boolean
+const SELECTED = ['get', 'selected'] as unknown as boolean
 
 /** A crown's wash and rim in the « rendu présentation ». */
 function planColors(strata: Strata) {
@@ -228,8 +233,8 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
     layout: { 'fill-sort-key': ['get', 'order'] },
     filter: NOT_REACH,
     paint: {
-      'fill-color': ['case', RENDER, ['get', 'planColor'], ['get', 'color']],
-      'fill-opacity': ['case', RENDER, ['get', 'planOpacity'], PLANTED, ['*', 0.45, GROUND_FADE], 0.15],
+      'fill-color': ['case', DRAWN_GROUND, PLAN_COLORS.existingCrown, RENDER, ['get', 'planColor'], ['get', 'color']],
+      'fill-opacity': ['case', DRAWN_GROUND, 0.4, RENDER, ['get', 'planOpacity'], PLANTED, ['*', 0.45, GROUND_FADE], 0.15],
     },
   }, before)
   // Support plants: the ground they feed is hatched in their strata colour,
@@ -279,11 +284,11 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
     layout: { 'line-sort-key': ['get', 'order'] },
     filter: NOT_REACH,
     paint: {
-      'line-color': ['case', RENDER, ['get', 'planEdge'], ['get', 'color']],
+      'line-color': ['case', DRAWN_GROUND, PLAN_COLORS.existingEdge, RENDER, ['get', 'planEdge'], ['get', 'color']],
       // On the plan only the canopy keeps a soft rim; lower crowns are washes.
-      'line-width': ['case', RENDER, ['case', ['get', 'planRim'], 1.6, 0], ['get', 'selected'], 3, 2],
+      'line-width': ['case', SELECTED, 3, DRAWN_GROUND, 1, RENDER, ['case', ['get', 'planRim'], 1.6, 0], 2],
       'line-blur': ['case', RENDER, 0.6, 0],
-      'line-opacity': ['case', RENDER, ['case', ['get', 'planRim'], 0.85, 0], PLANTED, ['*', 0.95, GROUND_FADE], PLANNED_OPACITY],
+      'line-opacity': ['case', ['all', RENDER, SELECTED], 1, DRAWN_GROUND, 0.8, RENDER, ['case', ['get', 'planRim'], 0.85, 0], PLANTED, ['*', 0.95, GROUND_FADE], PLANNED_OPACITY],
       'line-dasharray': ['case', ['any', PLANTED, RENDER], ['literal', [1, 0]], ['literal', [2, 1.5]]] as never,
     },
   }, before)
