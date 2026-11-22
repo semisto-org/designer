@@ -28,6 +28,7 @@ Terranova peint lui-même cette aquarelle, à partir de ton dessin. Aucune IA n'
 - **Déjà là** : ce qui était sur le terrain avant le projet et porte un nom (la maison, la grange, la vieille mare) est marqué d'une lettre grise, A, B, C… Donne-leur un nom sur la carte pour qu'ils apparaissent.
 - **Notre intention** : la raison d'être de ta fiche projet, en une phrase.
 - **Le temps du vivant** : ce que deviendra ton jardin, avec tes propres plantes : les premières récoltes à l'an 5, les arbres presque adultes à l'an 15, le plus grand d'entre eux à l'an 30. Des valeurs indicatives, tirées du catalogue.
+- **Le jardin qui pousse** (si tu le coches) : une seconde feuille montre les mêmes plants à l'an 5 puis à l'an 30, côte à côte. On comprend d'un regard pourquoi le noyer est planté si loin de la maison.
 - **Le cartouche** : la phase en cours, la date, l'échelle, le nord, et un **code QR** qui ouvre la carte vivante sur un téléphone.
 
 Affiche-le au bord du terrain : en scannant le code, chacun retrouve la carte à jour et peut aller voir sur place ce que porte le n° 7.
