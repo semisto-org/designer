@@ -104,7 +104,8 @@ export function PdfExportPanel({ onClose, initialKind = 'plan' }: { onClose: () 
   const center: [number, number] = fitted ? [(extent[0] + extent[2]) / 2, (extent[1] + extent[3]) / 2] : viewCenter
   const frame = useMemo(() => frameGeometry(center, scale, layout.frame), [center[0], center[1], scale, paper, orientation, master]) // eslint-disable-line react-hooks/exhaustive-deps
   const ground = groundSize(scale, layout.frame)
-  const hiddenLayers = [...new Set([...hidden, ...(withNetworks && editor.canEdit ? [] : ['networks'])])]
+  // The master plan never shows the networks: it is the sheet that goes on the wall and to the client.
+  const hiddenLayers = [...new Set([...hidden, ...(withNetworks && editor.canEdit && !master ? [] : ['networks'])])]
   const legend = legendEntries(editor.features, hiddenLayers, showBoundary, variant?.id ?? null, { kinds: hiddenKinds, ids: hiddenIds, tag })
   const sheets = bookSheets(title.trim() || editor.map.name, legend, editor.features, hiddenLayers, variant?.id ?? null, tag)
 
@@ -283,7 +284,7 @@ export function PdfExportPanel({ onClose, initialKind = 'plan' }: { onClose: () 
               {t('drawing.pdf.include_boundary')}
             </label>
           )}
-          {editor.canEdit && (
+          {editor.canEdit && !master && (
             <label className="flex items-start gap-2 text-sm text-loam-700">
               <input
                 type="checkbox"

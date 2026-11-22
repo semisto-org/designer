@@ -1106,4 +1106,15 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_not_includes items.map { _1["id"] }, @pipe.id
     assert_match "export=master_plan", data["export_url"]
   end
+
+  test "get_master_plan reads a variant's plan, and refuses one from another map" do
+    variant = @map.variants.create!(name: "Proposition 2")
+    shape = { "type" => "Polygon", "coordinates" => [ [ [ 4.907, 50.341 ], [ 4.9072, 50.341 ], [ 4.9072, 50.3412 ], [ 4.907, 50.341 ] ] ] }
+    own = @map.features.create!(layer: "water", kind: "pond", name: "Mare de la proposition", geometry: shape, properties: { "planned" => true }, variant:)
+    data, error = call_tool(@viewer, "get_master_plan", { map_id: @map.id, variant_id: variant.id })
+    refute error
+    assert_includes data["themes"].flat_map { _1["items"] }.map { _1["id"] }, own.id
+    _, error = call_tool(@viewer, "get_master_plan", { map_id: @map.id, variant_id: 999_999 })
+    assert error
+  end
 end
