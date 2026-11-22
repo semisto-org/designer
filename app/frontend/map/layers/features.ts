@@ -113,21 +113,6 @@ const isPlantPoint = ['all', ['==', ['get', 'layer'], 'plants'], ['==', ['get', 
  * hide its colour. The editor's plants overlay names plants itself, by
  * crown size (see map/plants/labelRank): there, `withPlants: false`.
  */
-/**
- * The painted master plan: each plant's point becomes a small dot of its
- * own colour, with no white ring, at the foot of its crown (or alone, for a
- * vine): painted with the rest, and still where the plant stands.
- */
-export function paintPlantPoints(map: MapLibreMap) {
-  if (!map.getLayer('features-point')) return
-  const isPlant = ['==', ['get', 'layer'], 'plants']
-  const keep = (name: 'circle-color' | 'circle-radius' | 'circle-stroke-opacity' | 'circle-opacity') => map.getPaintProperty('features-point', name) ?? 1
-  map.setPaintProperty('features-point', 'circle-color', ['case', isPlant, pointColor, keep('circle-color')] as never)
-  map.setPaintProperty('features-point', 'circle-radius', ['case', isPlant, ['interpolate', ['linear'], ['zoom'], 14, 1.6, 20, 4], keep('circle-radius')] as never)
-  map.setPaintProperty('features-point', 'circle-opacity', ['case', isPlant, 0.85, keep('circle-opacity')] as never)
-  map.setPaintProperty('features-point', 'circle-stroke-opacity', ['case', isPlant, 0, keep('circle-stroke-opacity')] as never)
-}
-
 export function featureLabelFilter({ withPlants = true }: { withPlants?: boolean } = {}): unknown[] {
   const filter: unknown[] = ['all', ['to-boolean', ['coalesce', ['get', 'name'], '']], ['!', isZone]]
   if (!withPlants) filter.push(['!', isPlantPoint])
@@ -238,4 +223,20 @@ export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollectio
   })
   // Added again after a base map change: back under the plants already there.
   stackFeatureLayers(map)
+}
+
+/**
+ * The painted master plan: each plant's point becomes a small dot of its
+ * own colour, with no white ring, at the foot of its crown (or alone, for a
+ * vine): painted with the rest, and still where the plant stands.
+ */
+export function paintPlantPoints(map: MapLibreMap) {
+  if (!map.getLayer('features-point')) return
+  const isPlant = ['==', ['get', 'layer'], 'plants']
+  const keep = (name: 'circle-color' | 'circle-stroke-opacity' | 'circle-opacity', fallback: unknown) => map.getPaintProperty('features-point', name) ?? fallback
+  map.setPaintProperty('features-point', 'circle-color', ['case', isPlant, pointColor, keep('circle-color', '#ffffff')] as never)
+  // A zoom curve may only sit at the top of the expression: the plant case goes inside it.
+  map.setPaintProperty('features-point', 'circle-radius', ['interpolate', ['linear'], ['zoom'], 14, ['case', isPlant, 1.6, 3], 20, ['case', isPlant, 4, 9]] as never)
+  map.setPaintProperty('features-point', 'circle-opacity', ['case', isPlant, 0.85, keep('circle-opacity', 1)] as never)
+  map.setPaintProperty('features-point', 'circle-stroke-opacity', ['case', isPlant, 0, keep('circle-stroke-opacity', 1)] as never)
 }
