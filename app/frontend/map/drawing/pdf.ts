@@ -8,7 +8,7 @@ import { GHOST_RASTER_PAINT, ghostPaint, type ThemeTest } from '@/map/drawing/gh
 import { drawIcon } from '@/map/drawing/icons'
 import { applyLayerVisibility, installDrawingImages, TRANSIENT_PREFIX } from '@/map/drawing/style'
 import { BOUNDARY_MASK_SOURCE, BOUNDARY_SOURCE } from '@/map/layers/boundary'
-import { FEATURES_SOURCE } from '@/map/layers/features'
+import { FEATURES_SOURCE, paintPlantPoints } from '@/map/layers/features'
 import { PARCELS_SOURCE } from '@/map/layers/parcels'
 import { inTag } from '@/map/tags/tags'
 import { inVariant } from '@/map/variants/variants'
@@ -187,6 +187,11 @@ type RenderOptions = {
   theme?: string | null; hideBoundary?: boolean
   /** The designer's plan look of « Présenter » (paper, crowns, ink outline). */
   planLook?: boolean
+  /**
+   * Only what is painted: no text, icon or trunk dot on the map (the
+   * watercolour master plan, where the numbers and legend say the rest).
+   */
+  paintOnly?: boolean
   /** Called with the offscreen map once drawn, before it goes (to project points on the page). */
   inspect?: (map: MapLibreMap) => void
 }
@@ -199,7 +204,16 @@ function hideBoundaryLayers(map: MapLibreMap) {
   }
 }
 
-export async function renderMap(source: MapLibreMap, { center, scale, frame, hiddenLayers, variant, tag, hiddenKinds, hiddenIds, theme, hideBoundary, planLook, inspect }: RenderOptions): Promise<string> {
+/** The working marks a painted plan leaves out: every text and icon, and the trunk discs; a plant keeps a painted dot. */
+function hideMarks(map: MapLibreMap) {
+  for (const layer of map.getStyle().layers) {
+    if (layer.type === 'symbol' || layer.id === 'plant-trunks' || layer.id === 'plant-numbers-disc') map.setLayoutProperty(layer.id, 'visibility', 'none')
+  }
+  // A plant keeps its place: a small painted dot, no white ring (a vine without a crown stays on the sheet).
+  paintPlantPoints(map)
+}
+
+export async function renderMap(source: MapLibreMap, { center, scale, frame, hiddenLayers, variant, tag, hiddenKinds, hiddenIds, theme, hideBoundary, planLook, paintOnly, inspect }: RenderOptions): Promise<string> {
   const widthCss = Math.round(mmToCss(frame.w))
   const heightCss = Math.round(mmToCss(frame.h))
   const pixelRatio = Math.min(PRINT_DPI / CSS_DPI, MAX_CANVAS_PX / Math.max(widthCss, heightCss))
@@ -232,6 +246,7 @@ export async function renderMap(source: MapLibreMap, { center, scale, frame, hid
       map.setGlobalStateProperty(DRAWN_VIEW_STATE, false)
       applyPresentRender(map, true)
     }
+    if (paintOnly) hideMarks(map)
     await waitFor(map, 'idle')
     inspect?.(map)
     return map.getCanvas().toDataURL('image/jpeg', 0.92)
