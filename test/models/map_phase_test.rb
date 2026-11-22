@@ -87,4 +87,3 @@ class MapPhaseTest < ActiveSupport::TestCase
     assert copy.planned?
   end
 end
-
