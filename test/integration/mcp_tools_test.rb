@@ -1107,4 +1107,3 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_match "export=master_plan", data["export_url"]
   end
 end
-
