@@ -62,7 +62,7 @@ function isEmpty(dossier: Dossier, section: DossierSection): boolean {
 }
 
 /** Sections where part of the content is a paid analysis. */
-const PARTLY_PAID: DossierSection[] = ['terrain', 'climate', 'soil']
+const PARTLY_PAID: DossierSection[] = ['climate', 'soil']
 
 /** The « Dossier du projet »: chosen sections on A4 paper, printed (or saved as PDF) by the browser. */
 export default function DossierShow({ map, canEdit }: DossierPageProps) {

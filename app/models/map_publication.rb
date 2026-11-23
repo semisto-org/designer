@@ -249,9 +249,9 @@ class MapPublication < ApplicationRecord
   end
 
   # The simplified 3D view (rain, night, shade, a walk or a drive): when the
-  # terrain's relief is imported and the map's plan includes the analyses.
+  # terrain's relief is imported, on every plan.
   def relief?
-    map.terrain&.ready? && Entitlements.for_map(map).analyses?
+    map.terrain&.ready? || false
   end
 
   private

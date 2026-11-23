@@ -3,10 +3,8 @@
 module Maps
   class WaterSettingsController < ApplicationController
     include MapScoped
-    include ReliefGate
 
     before_action :set_map
-    before_action :require_analyses!
     before_action :require_editor!
 
     def update

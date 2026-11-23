@@ -9,7 +9,7 @@ import { formatPrice } from '@/lib/money'
 import type { SharedProps } from '@/types'
 import type { SketchGeometry } from '@/types/myMaps'
 
-export type GateFeature = 'relief' | 'climate' | 'soil' | 'pdf' | 'dossier_terrain' | 'dossier_climate' | 'dossier_soil' | 'time'
+export type GateFeature = 'climate' | 'soil' | 'pdf' | 'dossier_climate' | 'dossier_soil' | 'time'
 
 type Props = {
   feature: GateFeature

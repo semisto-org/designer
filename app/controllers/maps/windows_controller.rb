@@ -8,13 +8,11 @@
 module Maps
   class WindowsController < ApplicationController
     include MapScoped
-    include ReliefGate
 
     # The located photos offered to look through, newest first.
     PHOTO_LIMIT = 200
 
     before_action :set_map
-    before_action :require_analyses!
 
     def show
       terrain = @map.terrain

@@ -2,10 +2,9 @@ import { Link } from '@inertiajs/react'
 import { area as turfArea } from '@turf/turf'
 import { Box, Download, Loader2, RotateCcw, Trees } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
-import { PlanGate } from '@/components/billing/PlanGate'
 import { Button, buttonClass } from '@/components/ui/Button'
 import { Field, Input, Select } from '@/components/ui/Field'
-import { api, ApiError } from '@/lib/api'
+import { api } from '@/lib/api'
 import { formatArea, formatNumber, t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import KeylineFinder from '@/map/water/KeylineFinder'
@@ -18,24 +17,12 @@ import type { ReliefOverview, WaterSettings } from '@/types/relief'
 const POLL_MS = 3000
 const ROOF_KINDS = new Set(['building', 'greenhouse', 'shelter', 'shed'])
 
-/** "Eau et relief": import the relief, open the 3D view, the key numbers and the roofs' rainwater. */
+/** "Eau et relief": import the relief, open the 3D view, the key numbers and the roofs' rainwater. For every plan, from the free one. */
 export default function ReliefPanel() {
-  const editor = useEditor()
-  if (!editor.entitlements.analyses) return <Upsell />
-  return <ReliefPanelContent />
-}
-
-function Upsell() {
-  const editor = useEditor()
-  return <PlanGate feature="relief" place={editor.map} canUpgrade={editor.isOwner} panel="relief" />
-}
-
-function ReliefPanelContent() {
   const editor = useEditor()
   const mapId = editor.map.id
   const [overview, setOverview] = useState<ReliefOverview | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [upsell, setUpsell] = useState(false)
   const [busy, setBusy] = useState(false)
   const previousStatus = useRef<string | null>(null)
 
@@ -46,8 +33,7 @@ function ReliefPanelContent() {
       setError(null)
     } catch (e) {
       if ((e as Error).name === 'AbortError') return
-      if (e instanceof ApiError && e.status === 402) setUpsell(true)
-      else setError((e as Error).message)
+      setError((e as Error).message)
     }
   }, [mapId])
 
@@ -83,7 +69,6 @@ function ReliefPanelContent() {
     }
   }
 
-  if (upsell) return <Upsell />
   if (!overview) {
     return error
       ? <p className="text-sm text-clay-700">{error}</p>

@@ -31,11 +31,11 @@ export default function DrawnViewOverlay() {
   const [contours, setContours] = useState<Contours | null>(null)
   useEffect(() => {
     setContours(null)
-    if (!on || !editor.entitlements.analyses) return
+    if (!on) return
     let live = true
     void loadContours(editor.map.id).then((data) => { if (live) setContours(data) })
     return () => { live = false }
-  }, [on, editor.map.id, editor.entitlements.analyses])
+  }, [on, editor.map.id])
 
   useEffect(() => {
     const map = editor.instance

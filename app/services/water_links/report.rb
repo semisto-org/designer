@@ -91,7 +91,7 @@ module WaterLinks
       def heights
         return @heights if defined?(@heights)
         terrain = @map.terrain
-        @heights = terrain&.ready? && terrain.grid.attached? && Entitlements.for_map(@map).analyses? ? Relief::Heights.new(terrain) : nil
+        @heights = terrain&.ready? && terrain.grid.attached? ? Relief::Heights.new(terrain) : nil
       end
   end
 end

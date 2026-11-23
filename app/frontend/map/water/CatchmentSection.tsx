@@ -97,10 +97,8 @@ export default function CatchmentSection({ feature }: { feature: MapFeature }) {
   const p = feature.properties
   const [state, setState] = useState<State>({ status: 'loading' })
   const [shown, setShown] = useState(true)
-  const allowed = editor.entitlements.analyses
 
   useEffect(() => {
-    if (!allowed) return
     const controller = new AbortController()
     setState({ status: 'loading' })
     api<CatchmentResult>(`/maps/${editor.map.id}/relief/catchment?feature_id=${p.id}`, { signal: controller.signal })
@@ -111,7 +109,7 @@ export default function CatchmentSection({ feature }: { feature: MapFeature }) {
         setState({ status: 'error', message: (error as Error).message, reason })
       })
     return () => controller.abort()
-  }, [allowed, editor.map.id, p.id, p.lockVersion])
+  }, [editor.map.id, p.id, p.lockVersion])
 
   const geometry = state.status === 'ready' && shown ? state.result.geometry : null
   useEffect(() => {
@@ -126,7 +124,6 @@ export default function CatchmentSection({ feature }: { feature: MapFeature }) {
     }
   }, [map, geometry])
 
-  if (!allowed) return null
 
   return (
     <section className="space-y-2 border-t border-loam-100 pt-3">

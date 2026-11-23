@@ -21,18 +21,16 @@ export default function ReliefOverlaySection() {
   const mapId = editor.map.id
   const [overview, setOverview] = useState<ReliefOverview | null>(null)
   const state = useReliefOverlay(mapId)
-  const allowed = Boolean(editor.entitlements.analyses)
 
   useEffect(() => {
-    if (!allowed) return
     const abort = new AbortController()
     api<ReliefOverview>(`/maps/${mapId}/terrain`, { signal: abort.signal })
       .then(setOverview)
       .catch(() => setOverview(null))
     return () => abort.abort()
-  }, [mapId, allowed])
+  }, [mapId])
 
-  if (!allowed || !overview?.available) return null
+  if (!overview?.available) return null
   const grid = overview.terrainGrid
 
   const choose = (mode: (typeof MODES)[number], checked: boolean) => {

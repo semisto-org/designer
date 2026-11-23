@@ -34,7 +34,6 @@ export default function StormSection({ feature }: { feature: MapFeature }) {
   const [state, setState] = useState<State>({ status: 'loading' })
 
   useEffect(() => {
-    if (!editor.entitlements.analyses) return
     const controller = new AbortController()
     setState({ status: 'loading' })
     api<StormCheck>(`/maps/${editor.map.id}/relief/storm?feature_id=${p.id}`, { signal: controller.signal })
@@ -43,7 +42,7 @@ export default function StormSection({ feature }: { feature: MapFeature }) {
         if (!controller.signal.aborted) setState({ status: 'error', message: error instanceof ApiError ? error.message : String(error) })
       })
     return () => controller.abort()
-  }, [editor.map.id, editor.entitlements.analyses, p.id, p.lockVersion])
+  }, [editor.map.id, p.id, p.lockVersion])
 
   function setTime(value: string) {
     const date = new Date(value)
@@ -73,7 +72,7 @@ export default function StormSection({ feature }: { feature: MapFeature }) {
           onChange={(e) => setTime(e.target.value)} />
       </label>
 
-      {editor.entitlements.analyses && state.status === 'loading' && (
+      {state.status === 'loading' && (
         <p className="flex items-center gap-1.5 text-sm text-loam-500"><Loader2 className="h-4 w-4 animate-spin" />{t('relief.storm.loading')}</p>
       )}
       {state.status === 'error' && <p className="text-sm text-clay-700">{state.message}</p>}
