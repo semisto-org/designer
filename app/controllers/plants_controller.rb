@@ -11,7 +11,7 @@ class PlantsController < ApplicationController
       region: region_json,
       catalogueSize: PlantSpecies.reviewed.count,
       # The species waiting for a catalogue reviewer, for the ones who review.
-      toReview: Current.user&.can_review_catalogue? ? PlantSpecies.proposed.count : nil
+      toReview: Current.user&.can_review_catalogue? ? PlantSpecies.proposed.count + PlantCorrection.pending.count : nil
     }
   end
 
@@ -30,11 +30,21 @@ class PlantsController < ApplicationController
       # In the ground on other people's places, when their owners show it.
       sharedPlantings: SharedPlantings.new(species, Current.user).as_json,
       materials: PropagationRequest::MATERIALS,
-      region: region_json
+      region: region_json,
+      # « Suggérer une correction »: what can be corrected, for a signed-in person.
+      correction: Current.user && species.review_status == "reviewed" ? correction_json(species) : nil
     }
   end
 
   private
+    def correction_json(species)
+      {
+        fields: PlantCorrection::FIELDS,
+        choices: PlantCorrection::SINGLE_FIELDS.index_with { PlantCorrection.keys_for(_1) },
+        pending: species.corrections.pending.where(user: Current.user).count
+      }
+    end
+
     def json_request? = request.format.json? && !request.inertia?
 
     def region = @region ||= Region.default

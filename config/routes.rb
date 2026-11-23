@@ -310,7 +310,17 @@ Rails.application.routes.draw do
       post :check
     end
   end
-  resources :plants, only: %i[index show]
+  # Corrections suggested for a species of the catalogue (« Suggérer une
+  # correction »), accepted or rejected by a catalogue reviewer.
+  resources :plant_corrections, path: "plants/review/corrections", only: [] do
+    member do
+      post :accept
+      post :reject
+    end
+  end
+  resources :plants, only: %i[index show] do
+    resources :corrections, only: :create, controller: "plants/corrections"
+  end
   # --- drone pilots ---
   # The directory of drone pilots, my pilot profile, and the missions booked
   # with a pilot (DronePilotsController, DronePilotProfilesController,

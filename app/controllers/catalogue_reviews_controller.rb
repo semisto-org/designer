@@ -22,6 +22,8 @@ class CatalogueReviewsController < ApplicationController
     render inertia: "catalogue_reviews/index", props: {
       proposals:,
       summary: STATES.index_with { |state| proposals.count { _1[:state] == state } },
+      # Corrections suggested for species already in the catalogue.
+      corrections: PlantCorrection.pending.includes(:user, species: :common_names).order(:created_at).map(&:as_json),
       jevAvailable: Providers::Jev.build.available?,
       vocabulary: { strata: PlantVocabulary::STRATA }
     }

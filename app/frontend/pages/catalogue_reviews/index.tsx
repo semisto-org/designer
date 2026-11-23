@@ -2,6 +2,7 @@ import { Head, Link, router } from '@inertiajs/react'
 import { AlertTriangle, ArrowLeft, Check, CircleHelp, ExternalLink, GitMerge, LoaderCircle, Search, Sparkles, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { gbifCheck, type GbifCheck } from '@/components/plants/gbifQueue'
+import { correctionValueLabel } from '@/components/plants/SuggestCorrection'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/Card'
 import { Field, Input, Select } from '@/components/ui/Field'
@@ -32,8 +33,15 @@ type ValueCheck = {
   citable: boolean
 }
 
+type Correction = {
+  id: number; field: string; currentValue: unknown; proposedValue: unknown; note: string | null; sourceUrl: string | null
+  origin: 'web' | 'ai'; suggestedBy: string; suggestedAt: string
+  species: { id: number; latinName: string; commonName: string | null; slug: string }
+}
+
 type Props = {
   proposals: Proposal[]
+  corrections: Correction[]
   summary: Record<ReviewState, number>
   jevAvailable: boolean
   vocabulary: { strata: Strata[] }
@@ -70,7 +78,7 @@ function formatValue(field: string, value: unknown): string {
 }
 
 /** The species people added from their palettes, waiting for a catalogue reviewer. */
-export default function CatalogueReviews({ proposals, summary, jevAvailable, vocabulary }: Props) {
+export default function CatalogueReviews({ proposals, corrections, summary, jevAvailable, vocabulary }: Props) {
   const [filter, setFilter] = useState<Filter>(() => (summary.ready > 0 ? 'ready' : 'all'))
   const counts: Record<Filter, number> = { ...summary, all: proposals.length }
   const shown = filter === 'all' ? proposals : proposals.filter((p) => p.state === filter)
@@ -122,7 +130,55 @@ export default function CatalogueReviews({ proposals, summary, jevAvailable, voc
           )}
         </>
       )}
+      {corrections.length > 0 && (
+        <section id="corrections" className="mt-10">
+          <h2 className="text-xl">{t('plants.corrections.review.title')} <span className="text-loam-500">{corrections.length}</span></h2>
+          <p className="mt-1 max-w-2xl text-sm text-loam-500">{t('plants.corrections.review.intro')}</p>
+          <ul className="mt-4 space-y-3">
+            {corrections.map((c) => <CorrectionCard key={c.id} correction={c} />)}
+          </ul>
+        </section>
+      )}
     </>
+  )
+}
+
+/** A correction someone suggested for a species already in the catalogue. */
+function CorrectionCard({ correction: c }: { correction: Correction }) {
+  const post = (action: 'accept' | 'reject') => router.post(`/plants/review/corrections/${c.id}/${action}`, {}, { preserveScroll: true })
+  const from = correctionValueLabel(c.field, c.currentValue) ?? '—'
+  const to = correctionValueLabel(c.field, c.proposedValue)
+  return (
+    <li className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-loam-200">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <a href={`/plants/${c.species.slug}`} className="font-serif text-lg text-loam-900 hover:underline">{c.species.commonName ?? c.species.latinName}</a>
+          <p className="text-sm italic text-loam-600">{c.species.latinName}</p>
+          <p className="mt-1 text-sm text-loam-500">
+            {t('plants.corrections.review.suggested_by', { name: c.suggestedBy, date: relativeTime(c.suggestedAt) })}
+            {c.origin === 'ai' && <> ({t('plants.corrections.review.by_ai')})</>}
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" variant="leaf" onClick={() => post('accept')}>
+            <Check className="h-4 w-4" aria-hidden />{t(c.field === 'other' ? 'plants.corrections.review.close' : 'plants.corrections.review.apply')}
+          </Button>
+          <Button size="sm" variant="danger-ghost" onClick={() => post('reject')}>
+            <X className="h-4 w-4" aria-hidden />{t('plants.corrections.review.reject')}
+          </Button>
+        </div>
+      </div>
+      <p className="mt-3 text-sm">
+        <span className="font-medium text-loam-700">{t(`plants.corrections.fields.${c.field}`)}</span>
+        {to && <> : {t('plants.corrections.review.from_to', { from, to })}</>}
+      </p>
+      {c.note && <p className="mt-1 whitespace-pre-line text-sm text-loam-700">{c.note}</p>}
+      {c.sourceUrl && (
+        <a href={c.sourceUrl} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-sm text-prune-700 hover:underline">
+          <ExternalLink className="h-3.5 w-3.5" aria-hidden />{t('plants.corrections.review.source')}
+        </a>
+      )}
+    </li>
   )
 }
 

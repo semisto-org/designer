@@ -8,6 +8,7 @@ import { SharedPlantingsSection } from '@/components/plants/SharedPlantingsSecti
 import { SpeciesPlantingsMap } from '@/components/plants/SpeciesPlantingsMap'
 import { SpeciesSheetPhoto } from '@/components/plants/SpeciesPhoto'
 import { SpeciesTags } from '@/components/plants/SpeciesTags'
+import { SuggestCorrection, type CorrectionOptions } from '@/components/plants/SuggestCorrection'
 import { countryNames, formatDecimal, metres, strataLabel, vocab } from '@/components/plants/format'
 import { t } from '@/lib/i18n'
 import { STRATA_COLORS } from '@/map/plants/strata'
@@ -28,12 +29,14 @@ const LOOK_ROWS: { trait: LookTrait; field: string; swatches?: Record<string, st
 type Props = {
   species: SpeciesSheet; observations: ObservationStats | null; plantings: SpeciesPlantings; region: CatalogueRegion | null
   sharedPlantings: SharedPlace[]; materials: string[]
+  /** « Suggérer une correction », for a signed-in person on a reviewed species. */
+  correction: CorrectionOptions | null
 }
 
 const camel = (field: string) => field.replace(/_([a-z])/g, (_, c: string) => c.toUpperCase())
 
 /** Species sheet: values with units and their provenance, calendar, varieties, garden observations. */
-export default function PlantShow({ species: s, observations, plantings, region, sharedPlantings, materials }: Props) {
+export default function PlantShow({ species: s, observations, plantings, region, sharedPlantings, materials, correction }: Props) {
   const p = (field: string): Provenance | undefined => s.provenance[camel(field)]
   const list = (facet: string, keys: string[]) => (keys.length ? keys.map((k) => vocab(facet, k)).join(', ') : null)
   const range = (min: number | null, max: number | null) =>
@@ -81,6 +84,7 @@ export default function PlantShow({ species: s, observations, plantings, region,
             {t('plants.show.crown_hint', { value: formatDecimal(s.crownM) })}
             {s.crownIndicative && <> ({t('plants.show.crown_indicative')})</>}
           </p>
+          {correction && <SuggestCorrection species={s} options={correction} />}
         </div>
         <SpeciesSheetPhoto photo={s.photo} name={s.commonName ?? s.latinName} strata={s.strata} className="md:mt-2" />
       </header>

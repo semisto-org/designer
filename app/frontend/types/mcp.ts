@@ -71,7 +71,7 @@ export type McpToolDoc = {
   name: string
   title: string
   description: string
-  requirement: 'read' | 'propose' | 'withdraw' | 'write'
+  requirement: 'read' | 'propose' | 'withdraw' | 'write' | 'suggest'
   readOnly: boolean
   parameters: McpToolParameter[]
 }

@@ -44,8 +44,8 @@ fr:
       title: "Espèces à relire"
       intro: "Les espèces que les utilisateurs ont ajoutées depuis leurs palettes. Accepte-les dans le catalogue commun (en corrigeant le nom si besoin), fusionne-les avec l'espèce qu'elles doublonnent, ou garde-les hors du catalogue : elles restent sur les cartes qui les utilisent."
       link:
-        one: "1 espèce à relire"
-        other: "%{count} espèces à relire"
+        one: "1 fiche à relire"
+        other: "%{count} fiches à relire"
       empty: "Rien à relire : toutes les espèces proposées ont été traitées."
       proposed_by: "Ajoutée par %{name}, %{date}"
       proposed_by_unknown: "Ajoutée %{date}"

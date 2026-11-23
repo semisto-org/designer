@@ -45,6 +45,7 @@ class PlantSpecies < ApplicationRecord
   has_many :palette_items, foreign_key: :species_id, inverse_of: :species, dependent: :restrict_with_error
   has_many :observations, class_name: "PlantObservation", foreign_key: :species_id, inverse_of: :species, dependent: :nullify
   has_many :value_checks, class_name: "PlantValueCheck", foreign_key: :species_id, inverse_of: :species, dependent: :delete_all
+  has_many :corrections, class_name: "PlantCorrection", foreign_key: :species_id, inverse_of: :species, dependent: :delete_all
   has_many :photos, -> { order(:position, :id) }, class_name: "PlantPhoto", foreign_key: :species_id,
            inverse_of: :species, dependent: :destroy
 
