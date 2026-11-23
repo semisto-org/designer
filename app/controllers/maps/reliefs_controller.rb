@@ -4,7 +4,6 @@
 module Maps
   class ReliefsController < ApplicationController
     include MapScoped
-    include ReliefGate
 
     # The files change only with a new import, and their URL carries its
     # version (`?v=`): a year of private cache is safe.
@@ -13,7 +12,6 @@ module Maps
                       "landcover" => "application/octet-stream", "texture" => "image/jpeg" }.freeze
 
     before_action :set_map
-    before_action :require_analyses!
 
     def show
       terrain = @map.terrain

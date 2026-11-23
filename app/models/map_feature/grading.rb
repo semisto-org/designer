@@ -34,7 +34,7 @@ module MapFeature::Grading
 
     def grading_for(map)
       terrain = map&.terrain
-      return nil unless terrain&.ready? && terrain.grid.attached? && Entitlements.for_map(map).analyses?
+      return nil unless terrain&.ready? && terrain.grid.attached?
 
       Relief::Grading.new(terrain)
     end

@@ -2,12 +2,12 @@ import clsx from 'clsx'
 import { useEffect, useState } from 'react'
 import { api } from '@/lib/api'
 import { formatArea, formatLength, formatNumber, t } from '@/lib/i18n'
-import { Facts, Indicative, LockedNote, Muted, Section, SubTitle, fr } from '@/dossier/parts'
+import { Facts, Indicative, Muted, Section, SubTitle, fr } from '@/dossier/parts'
 import type { Dossier } from '@/types/dossier'
 import type { IdentifyLayerResult, IdentifyResponse } from '@/types/map_data'
 
 /** Area, limits, what the region's layers say here, relief and rainwater. */
-export function TerrainSection({ dossier, number, isOwner }: { dossier: Dossier; number: number; isOwner: boolean }) {
+export function TerrainSection({ dossier, number }: { dossier: Dossier; number: number; isOwner?: boolean }) {
   const { terrain } = dossier
   const point = terrain.point
   return (
@@ -23,7 +23,7 @@ export function TerrainSection({ dossier, number, isOwner }: { dossier: Dossier;
         <p><span className="text-loam-500">{t('dossier.terrain.parcels')}{'\u00a0: '}</span>{terrain.parcels.join(' · ')}</p>
       )}
       {terrain.identify && point && <LayerReadings mapId={dossier.map.id} point={point} identify={terrain.identify} />}
-      <Relief relief={terrain.relief} dossier={dossier} isOwner={isOwner} />
+      <Relief relief={terrain.relief} />
     </Section>
   )
 }
@@ -91,15 +91,7 @@ function LayerReadings({ mapId, point, identify }: {
   )
 }
 
-function Relief({ relief, dossier, isOwner }: { relief: Dossier['terrain']['relief']; dossier: Dossier; isOwner: boolean }) {
-  if ('locked' in relief) {
-    return (
-      <div className="space-y-2 print:hidden">
-        <SubTitle>{t('dossier.terrain.relief_title')}</SubTitle>
-        <LockedNote feature="dossier_terrain" dossier={dossier} isOwner={isOwner} />
-      </div>
-    )
-  }
+function Relief({ relief }: { relief: Dossier['terrain']['relief'] }) {
   const stats = relief.available ? relief.stats : null
   const rain = relief.rainwater
   const percent = (value: number | null | undefined) => (value == null ? '' : `${fr(value)} %`)

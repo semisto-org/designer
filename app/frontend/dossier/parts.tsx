@@ -55,7 +55,7 @@ export function Indicative() {
 }
 
 /** Shown instead of a paid block: on screen only, never on paper. */
-export function LockedNote({ feature, dossier, isOwner }: { feature: 'dossier_terrain' | 'dossier_climate' | 'dossier_soil'; dossier: Dossier; isOwner: boolean }) {
+export function LockedNote({ feature, dossier, isOwner }: { feature: 'dossier_climate' | 'dossier_soil'; dossier: Dossier; isOwner: boolean }) {
   return (
     <PlanGate
       feature={feature}

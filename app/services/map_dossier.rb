@@ -200,9 +200,8 @@ class MapDossier
       Map.where(id: map.id).pick(Arel.sql(sql))&.to_f
     end
 
-    # Relief key numbers and the roofs' rainwater: an analysis (ReliefGate).
+    # Relief key numbers and the roofs' rainwater: for every plan, like the 3D view.
     def relief_json
-      return { locked: true } unless analyses?
       terrain = map.terrain
       relief = if terrain&.ready?
         { available: true, stats: terrain.stats.transform_keys { |k| k.camelize(:lower) }, cellSizeM: terrain.cell_size_m,
@@ -441,7 +440,7 @@ class MapDossier
     end
 
     def relief_sources
-      return [] unless analyses? && map.terrain&.ready?
+      return [] unless map.terrain&.ready?
       metadata = map.terrain.metadata
       details = metadata.fetch("sources", {}).values.map(&:to_s).uniq
       label = plain(metadata["attribution"]).presence || details.first

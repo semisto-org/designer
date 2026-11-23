@@ -89,24 +89,20 @@ class Maps::ReliefControllersTest < ActionDispatch::IntegrationTest
     assert_match(/trop étendu/, response.parsed_body["message"])
   end
 
-  test "analyses are gated by the owner's plan when billing is on" do
+  test "the relief, the 3D view and the water are open on the free plan, like on every plan" do
     with_billing do
       sign_in_as users(:michael)
+      assert_not Entitlements.for_map(@map).analyses?
       get map_terrain_path(@map), as: :json
-      assert_response :payment_required
-      assert response.parsed_body["upsell"]
-      post map_terrain_path(@map), as: :json
-      assert_response :payment_required
+      assert_response :success
       patch map_water_settings_path(@map), params: { water_settings: { annual_rainfall_mm: 900 } }, as: :json
-      assert_response :payment_required
+      assert_not_equal 402, response.status, "never a paid extra (the map may still be read-only by its map count)"
       get map_relief_path(@map)
-      assert_redirected_to map_path(@map)
-      get contour_map_relief_path(@map, lng: 4.9001, lat: 50.3401), as: :json
-      assert_response :payment_required
-      get catchment_map_relief_path(@map, lng: 4.9001, lat: 50.3401), as: :json
-      assert_response :payment_required
+      assert_response :success
+      get map_window_path(@map)
+      assert_response :success
       get keypoints_map_relief_path(@map), as: :json
-      assert_response :payment_required
+      assert_not_equal 402, response.status
     end
   end
 

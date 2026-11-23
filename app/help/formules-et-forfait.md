@@ -7,7 +7,7 @@ order: 90
 
 ## La carte gratuite
 
-Une carte active à toi, pour toujours, avec **1 Go** pour tes photos et documents et tout ce qu'il faut pour concevoir : fond de carte et couches du Géoportail, dessin, palette et liste de plants, fiche projet, commentaires, partage, et ton IA en lecture. Tu peux aussi **essayer ses brouillons pendant 14 jours** (voir plus bas). **Le design lui-même tend vers la gratuité** : une formule ne paie pas le droit de concevoir.
+Une carte active à toi, pour toujours, avec **1 Go** pour tes photos et documents et tout ce qu'il faut pour concevoir : fond de carte et couches du Géoportail, dessin, **le relief en 3D avec la pluie, le ruissellement et le soleil sur ta pente**, palette et liste de plants, fiche projet, commentaires, partage, et ton IA en lecture. Tu peux aussi **essayer ses brouillons pendant 14 jours** (voir plus bas). **Le design lui-même tend vers la gratuité** : une formule ne paie pas le droit de concevoir.
 
 ## Home : 79 € par an, payé une fois
 
@@ -16,7 +16,7 @@ La formule de qui conçoit son propre lieu. Elle ajoute :
 - **3 cartes actives**, et autant de cartes archivées que tu veux ;
 - **5 Go** pour tes photos, vidéos et documents ;
 - **le PDF à l'échelle** ;
-- **les analyses** : eau et relief, climat futur, sol ;
+- **les analyses** : climat futur et lecture du sol ;
 - **les brouillons de ton IA** sur la carte ;
 - **10 images par mois** avec « Mettre en image ».
 

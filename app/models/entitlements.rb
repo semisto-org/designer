@@ -1,6 +1,7 @@
 # What a user's plan allows. Free: one active map with everything except the
 # paid extras. Paid plans (Home for individuals, Pro and Team for
-# professionals) unlock more active maps, more storage, scaled PDF, analyses,
+# professionals) unlock more active maps, more storage, scaled PDF, analyses (future climate and soil reading;
+# the relief, the 3D view and the water are for every plan),
 # AI drafts and « Mettre en image ». Archived maps never count against the
 # map limit (their files still count against storage). Editors invited on a
 # map work with the payer's entitlements. A free user also gets AI drafts

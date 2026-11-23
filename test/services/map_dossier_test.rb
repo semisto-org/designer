@@ -143,20 +143,19 @@ class MapDossierTest < ActiveSupport::TestCase
     assert_equal "sub_canopy", crown[:properties]["dossierStrata"]
   end
 
-  test "analyses are locked on a free plan: no relief, no projections, no soil reading" do
+  test "on a free plan the relief is there; projections and the soil reading stay locked" do
     @map.create_terrain!(status: "ready", cell_size_m: 1, metadata: { "stats" => { "z_min" => 101.2, "z_max" => 118.9, "drop" => 17.7 } })
     @map.soil_samples.create!(label: "S1", depth_from_cm: 0, depth_to_cm: 30, status: "sampled", results: { "ph_water" => "6,4" })
     json = with_plan("free") { dossier }
 
     assert_not json[:entitlements][:analyses]
-    assert_equal({ locked: true }, json[:terrain][:relief])
+    assert json[:terrain][:relief][:available], "the relief is for every plan"
     assert json[:climate][:current]["available"], "today's climate is free"
     assert json[:climate][:projections]["locked"]
     assert json[:climate][:plants]["locked"]
     sample = json[:soil][:samples].first
     assert_equal 6.4, sample[:results]["ph_water"], "figures stay visible"
     assert_nil sample[:interpretation]
-    assert_not json[:sources].any? { |s| s[:key] == "relief" }
   end
 
   test "with analyses: relief numbers, rainwater, projections and the soil reading" do

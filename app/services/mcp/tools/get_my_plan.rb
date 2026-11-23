@@ -22,6 +22,9 @@ module Mcp
           includes: {
             max_active_maps: entitlements.max_maps, storage_bytes: entitlements.storage_bytes,
             renderings_per_month: entitlements.renderings_per_month, pdf_export: entitlements.pdf_export?,
+            # The relief, the 3D view and the water on the slope are open on every plan, from the free one;
+            # `analyses` is the future climate and the soil reading.
+            relief_and_water: true,
             analyses: entitlements.analyses?, ai_drafts: entitlements.ai_drafts?, offers: entitlements.offers?
           },
           usage: {
