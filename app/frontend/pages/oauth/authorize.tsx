@@ -6,7 +6,7 @@ import { Logo } from '@/components/Logo'
 import { Button } from '@/components/ui/Button'
 import { t } from '@/lib/i18n'
 import PublicLayout from '@/layouts/PublicLayout'
-import { formatTrialDate, type AiAccessLevel, type AiTrialData } from '@/types/mcp'
+import { formatTrialDate, joinTeamNames, type AiAccessLevel, type AiTrialData } from '@/types/mcp'
 
 type Props = {
   client: { name: string; redirectHost: string; clientUri: string | null }
@@ -149,8 +149,12 @@ OauthAuthorize.layout = PublicLayout
 
 /** What the drafts access gives on the user's own plan: the trial and its end date, or the plan it needs. */
 function DraftsPlanNote({ planAllowsDrafts, aiTrial }: { planAllowsDrafts: boolean; aiTrial: AiTrialData }) {
+  const teams = aiTrial?.coveredTeams ?? []
+  const teamsText = teams.length > 0
+    ? ` ${t('oauth.authorize.access.drafts.teams', { count: teams.length, teams: joinTeamNames(teams) })}`
+    : ''
   const text = aiTrial
-    ? t(`oauth.authorize.access.drafts.trial_${aiTrial.state}`, { date: formatTrialDate(aiTrial.endsAt) })
+    ? t(`oauth.authorize.access.drafts.trial_${aiTrial.state}`, { date: formatTrialDate(aiTrial.endsAt) }) + teamsText
     : planAllowsDrafts ? null : t('oauth.authorize.access.drafts.plan')
   if (!text) return null
   return <span className={clsx('mt-1 block text-xs', aiTrial?.state === 'ended' || !aiTrial ? 'text-humus-700' : 'text-leaf-700')}>{text}</span>

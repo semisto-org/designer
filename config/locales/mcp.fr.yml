@@ -1235,6 +1235,9 @@ fr:
       ended_title: "Ton essai des brouillons est terminé"
       ended: "Il a pris fin le %{date}. Ton IA lit toujours tes cartes, et tout ce que tu as accepté reste sur la carte. Pour qu'elle y pose de nouveaux brouillons, passe au forfait."
       plans: "Voir les formules"
+      teams:
+        one: "Sur les cartes de l'équipe %{teams}, rien ne change : sa formule comprend les brouillons, avant, pendant et après l'essai. L'essai ne concerne que tes cartes personnelles, hors équipe."
+        other: "Sur les cartes des équipes %{teams}, rien ne change : leur formule comprend les brouillons, avant, pendant et après l'essai. L'essai ne concerne que tes cartes personnelles, hors équipe."
     claude_ai:
       title: "Dans claude.ai ou Claude Desktop"
       step1: "Ouvre Paramètres → Connecteurs."
@@ -1318,6 +1321,9 @@ fr:
           trial_available: "Essai offert : en choisissant cet accès, tu essaies les brouillons sur tes cartes pendant 14 jours, jusqu'au %{date}. Ensuite, ton IA continue de lire tes cartes ; ses brouillons viennent avec le forfait."
           trial_active: "Ton essai des brouillons court jusqu'au %{date}. Ensuite, ton IA continue de lire tes cartes ; ses brouillons viennent avec le forfait."
           trial_ended: "Ton essai de 14 jours est terminé : les brouillons demandent maintenant le forfait sur tes propres cartes. Ton IA peut toujours les lire."
+          teams:
+            one: "Sur les cartes de l'équipe %{teams}, les brouillons sont compris dans sa formule, sans limite de temps."
+            other: "Sur les cartes des équipes %{teams}, les brouillons sont compris dans leur formule, sans limite de temps."
       guardrails_title: "Garde-fous"
       mobile_app:
         title: "Connecter l'app Semisto Terranova de ce téléphone"

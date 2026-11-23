@@ -47,8 +47,26 @@ module AiTrial
     {
       state:, days: LENGTH.in_days.to_i,
       endsAt: ends_at&.iso8601,
-      daysLeft: state == "active" ? days_left_in_ai_trial(ends_at, at) : nil
+      daysLeft: state == "active" ? days_left_in_ai_trial(ends_at, at) : nil,
+      coveredTeams: ai_drafts_teams(at:).map(&:name)
     }
+  end
+
+  # The teams of this user whose payer's plan includes AI drafts. On their
+  # maps the trial plays no part: a map follows its payer's plan
+  # (Entitlements.for_map), so drafts stay open there before, during and
+  # after the trial.
+  def ai_drafts_teams(at: Time.current)
+    organizations.where.not(billing_user_id: nil).includes(:billing_user).order(:name).select do |team|
+      Entitlements::PLANS.fetch(team.billing_user.current_plan_key(at:))[:ai_drafts]
+    end
+  end
+
+  # The trial only changes something on the maps this user pays for: their
+  # own maps outside the teams someone pays for. A member of a team that pays
+  # for drafts, without such a map, loses nothing when it ends.
+  def ai_trial_matters?(at: Time.current)
+    ai_drafts_teams(at:).empty? || own_billed_maps.exists?
   end
 
   private

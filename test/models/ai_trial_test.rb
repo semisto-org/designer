@@ -37,7 +37,7 @@ class AiTrialTest < ActiveSupport::TestCase
         assert user.entitlements.ai_drafts?
         assert_equal Time.zone.local(2027, 3, 15, 10, 0), user.entitlements.ai_trial_ends_at
         refute user.entitlements.pdf_export?, "the trial opens drafts only"
-        assert_equal({ state: "active", days: 14, endsAt: "2027-03-15T10:00:00+01:00", daysLeft: 10 }, user.ai_trial_as_json)
+        assert_equal({ state: "active", days: 14, endsAt: "2027-03-15T10:00:00+01:00", daysLeft: 10, coveredTeams: [] }, user.ai_trial_as_json)
       end
 
       travel_to Time.zone.local(2027, 3, 15, 10, 1) do
