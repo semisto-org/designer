@@ -2,8 +2,17 @@
 # at publication time (the snapshot), served without an account at
 # /p/:token until unpublished. Publishing again takes a new snapshot at the
 # same address.
+#
+# A map has up to two publications (`kind`): the public view, which its
+# people share freely, and the client deliverable (« Livrable client », Pro
+# and Team plans), the whole project file of a design office's client: the
+# same kind of snapshot of the plan, at a private link (/livrable/:token),
+# plus the documents, photos, videos and soil analyses the team marks
+# `in_deliverable`. Those are read live, so a file marked today is there
+# today; the plan changes for the client only when the team publishes again.
 class MapPublication < ApplicationRecord
   TOKEN_PATTERN = /[a-z0-9][a-z0-9-]{8,80}/
+  KINDS = %w[public deliverable].freeze
 
   belongs_to :map
   belongs_to :published_by, class_name: "User", optional: true
@@ -18,6 +27,7 @@ class MapPublication < ApplicationRecord
   has_one_attached :preview_image
   PREVIEW_MAX_BYTES = 4.megabytes
 
+  validates :kind, inclusion: { in: KINDS }
   validates :title, presence: true, length: { maximum: 120 }
   validates :description, length: { maximum: 2_000 }
   validates :token, presence: true, uniqueness: true, format: { with: /\A#{TOKEN_PATTERN}\z/ }
@@ -29,12 +39,27 @@ class MapPublication < ApplicationRecord
     "#{base}-#{SecureRandom.alphanumeric(14).downcase}"
   end
 
+  scope :public_views, -> { where(kind: "public") }
+  scope :deliverables, -> { where(kind: "deliverable") }
+
+  # What a deliverable shows by default that a public view hides: the client
+  # reads their own project, address, names and plan to come included. The
+  # team's notes stay out unless asked; networks stay hidden by default.
+  DELIVERABLE_DEFAULTS = {
+    "hide_address" => false, "show_zone_names" => true, "show_planned" => true, "show_sectors" => true
+  }.freeze
+
   # Which layers a publication shows and which private things it hides.
-  # Unknown keys are dropped; privacy flags default to hiding.
-  def self.normalize_options(raw, map)
+  # Unknown keys are dropped; privacy flags default to hiding (a deliverable
+  # starts from DELIVERABLE_DEFAULTS instead, and never enters the gallery).
+  def self.normalize_options(raw, map, kind: "public")
     raw = (raw.respond_to?(:to_unsafe_h) ? raw.to_unsafe_h : raw.to_h).stringify_keys
-    flag = ->(key, default) { raw.key?(key) ? ActiveModel::Type::Boolean.new.cast(raw[key]) == true : default }
-    {
+    deliverable = kind == "deliverable"
+    flag = lambda do |key, default|
+      default = DELIVERABLE_DEFAULTS.fetch(key, default) if deliverable
+      raw.key?(key) ? ActiveModel::Type::Boolean.new.cast(raw[key]) == true : default
+    end
+    options = {
       "feature_layers" => raw.key?("feature_layers") ? Array(raw["feature_layers"]).map(&:to_s) & MapFeature::LAYERS : MapFeature::LAYERS - %w[networks],
       "region_layers" => Array(raw["region_layers"]).map(&:to_s) & map.region.catalogue.enabled.pluck(:key),
       "hide_networks" => flag.call("hide_networks", true),
@@ -55,14 +80,17 @@ class MapPublication < ApplicationRecord
       # The owner's consent to « Carnets ouverts » on the public site.
       "in_gallery" => flag.call("in_gallery", false)
     }
+    options["in_gallery"] = false if deliverable
+    options
   end
 
   # Creates the publication or refreshes it (new snapshot, same address).
-  def self.publish!(map, by:, title: nil, description: nil, options: nil)
-    publication = map.publication || map.build_publication(version: 0)
+  def self.publish!(map, by:, title: nil, description: nil, options: nil, kind: "public")
+    raise ArgumentError, "unknown publication kind #{kind}" unless KINDS.include?(kind)
+    publication = kind == "deliverable" ? (map.deliverable || map.build_deliverable(version: 0)) : (map.publication || map.build_publication(version: 0))
     publication.title = title.presence || publication.title.presence || map.name
     publication.description = description unless description.nil?
-    publication.options = normalize_options(options || publication.options.presence, map)
+    publication.options = normalize_options(options || publication.options.presence, map, kind:)
     publication.snapshot = Collab::PublicSnapshot.new(map, publication.options).build
     publication.version += 1
     publication.published_at = Time.current
@@ -77,10 +105,11 @@ class MapPublication < ApplicationRecord
   end
 
   def live? = unpublished_at.nil? && map.archived_at.nil?
+  def deliverable? = kind == "deliverable"
 
   # « Carnets ouverts »: live publications whose owner offered them…
   scope :offered_to_gallery, -> {
-    joins(:map).where(unpublished_at: nil, maps: { archived_at: nil }).where("map_publications.options ->> 'in_gallery' = 'true'")
+    public_views.joins(:map).where(unpublished_at: nil, maps: { archived_at: nil }).where("map_publications.options ->> 'in_gallery' = 'true'")
   }
   # …and that Semisto chose to show, in its order.
   scope :in_gallery, -> { offered_to_gallery.where.not(gallery_position: nil).order(:gallery_position, :id) }
@@ -91,7 +120,7 @@ class MapPublication < ApplicationRecord
     in_gallery.where(site_tour: true).first || in_gallery.first
   end
 
-  def offered_to_gallery? = options["in_gallery"] == true
+  def offered_to_gallery? = !deliverable? && options["in_gallery"] == true
 
   # Semisto's choice: shown at the end of the gallery, or taken out of it.
   def choose_for_gallery!
@@ -170,7 +199,12 @@ class MapPublication < ApplicationRecord
     id && options["show_aerial_view"] ? map.aerial_views.ready.find_by(id:) : nil
   end
 
+  # Where the snapshot's own files are served (tiles, drone view, 3D):
+  # the same routes for both kinds.
   def public_path = "/p/#{token}"
+
+  # The page a visitor opens: the public view, or the client's deliverable.
+  def page_path = deliverable? ? "/livrable/#{token}" : public_path
 
   # The link preview's address, versioned so that a new snapshot is fetched
   # again by the networks that cache images.
@@ -186,7 +220,7 @@ class MapPublication < ApplicationRecord
 
   def as_inertia
     {
-      title:, description:, version:, publishedAt: published_at.iso8601, token:, path: public_path,
+      kind:, title:, description:, version:, publishedAt: published_at.iso8601, token:, path: page_path,
       live: live?, stale: stale?, options:, previewPath: preview_path,
       # « 31 personnes ont regardé ton jardin, 2 ont commencé le leur ».
       views: views_count, gardensStarted: sourced_users.count

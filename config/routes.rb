@@ -67,6 +67,10 @@ Rails.application.routes.draw do
         post :renew
         resource :preview, only: :create, controller: "publication_previews"
       end
+      # « Livrable client »: the plan and the files the team marks, at a private link.
+      resource :deliverable, only: %i[show create update destroy] do
+        post :renew
+      end
     end
   end
 
@@ -79,6 +83,12 @@ Rails.application.routes.draw do
     get "p/:token/3d", to: "public_maps/reliefs#show", as: :public_map_relief
     get "p/:token/3d/files/:kind", to: "public_maps/reliefs#file", as: :public_map_relief_file, constraints: { kind: /grid|surface|landcover|texture/ }
     get "p/:token/3d/buildings", to: "public_maps/reliefs#buildings", as: :public_map_relief_buildings
+    # The client deliverable (« Livrable client ») and its files: the plan's
+    # tiles, drone view and 3D are served by the routes above.
+    get "livrable/:token", to: "deliverables#show", as: :deliverable
+    get "livrable/:token/documents/:id/file", to: "deliverables#document", as: :deliverable_document
+    get "livrable/:token/photos/:id/image", to: "deliverables#photo", as: :deliverable_photo
+    get "livrable/:token/soil/:id/reports/:report_id", to: "deliverables#soil_report", as: :deliverable_soil_report
   end
   # « Et chez toi ? »: a map tried from an address, without an account.
   get "essai", to: "trials#new", as: :new_trial

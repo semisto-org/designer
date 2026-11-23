@@ -43,7 +43,10 @@ class Map < ApplicationRecord
   has_one :share_link, class_name: "MapShareLink", dependent: :destroy
   # The private link to the project sheet, for the people behind the project.
   has_one :project_sheet_link, dependent: :destroy
-  has_one :publication, class_name: "MapPublication", dependent: :destroy
+  has_one :publication, -> { where(kind: "public") }, class_name: "MapPublication", dependent: :destroy
+  # The client deliverable (« Livrable client »): the plan and the files the
+  # team marks for it, at a private link (Pro and Team plans).
+  has_one :deliverable, -> { where(kind: "deliverable") }, class_name: "MapPublication", dependent: :destroy
   has_one :offline_site, class_name: "MapOfflineSite", dependent: :destroy
   # Every comment of the map, whatever it hangs on (`comments` is the map's own thread).
   has_many :discussion_comments, class_name: "Comment", dependent: :destroy

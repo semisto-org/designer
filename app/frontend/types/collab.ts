@@ -164,6 +164,67 @@ export type PublicationData = {
   aerialView?: Pick<AerialView, 'name' | 'capturedOn'> | null
   /** After publishing: what the public view shows, to paint the link preview from. */
   publicProps?: PublicMapProps
+  /** Client deliverable only: whether the map's plan includes it (Pro and Team). */
+  entitled?: boolean
+  /** Client deliverable only: how many files the team marked for it. */
+  contents?: DeliverableCounts
+}
+
+export type DeliverableCounts = { documents: number; photos: number; videos: number; soilSamples: number }
+
+/** A photo or video of the client deliverable: stills only, never the original file. */
+export type DeliverablePhoto = {
+  id: number
+  kind: 'photo' | 'video'
+  caption: string | null
+  takenAt: string | null
+  lng: number | null
+  lat: number | null
+  heading: number | null
+  width: number | null
+  height: number | null
+  durationS: number | null
+  thumbUrl: string
+  largeUrl: string
+  videoUrl: string | null
+}
+
+export type DeliverableDocument = {
+  id: number
+  title: string
+  description: string | null
+  tags: string[]
+  kind: string
+  preview: 'image' | 'pdf' | 'audio' | null
+  filename: string | null
+  byteSize: number | null
+  createdAt: string
+  thumbUrl: string | null
+  previewUrl: string | null
+  downloadUrl: string
+}
+
+export type DeliverableSoilSample = {
+  id: number
+  label: string
+  lng: number | null
+  lat: number | null
+  depthFromCm: number | null
+  depthToCm: number | null
+  sampledOn: string | null
+  lab: string | null
+  results: Record<string, number>
+  otherResults: { name: string; value: string; unit?: string | null }[]
+  interpretation: import('./soil_photos').SoilReading | null
+  reports: { filename: string; byteSize: number; url: string }[]
+  photos: DeliverablePhoto[]
+}
+
+/** /livrable/:token: the published plan, plus what the team marked for the client, read live. */
+export type DeliverableProps = PublicMapProps & {
+  path: string
+  madeBy: string | null
+  contents: { documents: DeliverableDocument[]; photos: DeliverablePhoto[]; soilSamples: DeliverableSoilSample[] }
 }
 
 /** A region layer as the public view receives it: tiles come from our own proxy. */

@@ -1,6 +1,7 @@
-import { Check, Copy, Download, ExternalLink, Film, Globe, Loader2, RefreshCw, Sprout } from 'lucide-react'
+import { Camera, Check, Copy, Download, ExternalLink, FileText, FlaskConical, Film, Globe, Loader2, Lock, RefreshCw, Sprout } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { Button, buttonClass } from '@/components/ui/Button'
+import { confirmAction } from '@/components/ui/confirm'
 import { Field, Input, Textarea } from '@/components/ui/Field'
 import { aerialViewLabel } from '@/drone/format'
 import { ApiError, api } from '@/lib/api'
@@ -8,7 +9,7 @@ import { track } from '@/lib/analytics'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { LAYER_COLORS } from '@/map/layers/features'
-import type { PublicMapProps, PublicationData, PublicationOptions } from '@/types/collab'
+import type { DeliverableCounts, PublicMapProps, PublicationData, PublicationOptions } from '@/types/collab'
 import { formatDateTime } from './time'
 
 /**
@@ -18,8 +19,28 @@ import { formatDateTime } from './time'
  * decides otherwise.
  */
 export default function PublishPanel() {
+  return <PublicationPanel kind="public" />
+}
+
+export type PublicationKind = 'public' | 'deliverable'
+
+// Wordings the client deliverable says its own way; every other one is shared.
+const DELIVERABLE_WORDS = new Set([
+  'intro', 'live', 'unpublished', 'published', 'updated', 'update', 'publish', 'snapshot_hint',
+  'unpublish_confirm', 'renew_confirm', 'title', 'address', 'open', 'description', 'description_hint', 'stale', 'unpublished_done', 'republish_hint',
+])
+
+/**
+ * The form behind « Publier » and « Livrable client » (collab/DeliverablePanel):
+ * the same snapshot of the plan, at a public address or at the client's
+ * private one. The deliverable adds the files the team marked for it, and
+ * leaves out the link preview, the video and the gallery.
+ */
+export function PublicationPanel({ kind }: { kind: PublicationKind }) {
   const editor = useEditor()
-  const base = `/maps/${editor.map.id}/publication`
+  const deliverable = kind === 'deliverable'
+  const base = `/maps/${editor.map.id}/${deliverable ? 'deliverable' : 'publication'}`
+  const w = (key: string) => (deliverable && DELIVERABLE_WORDS.has(key) ? `deliverables.panel.${key}` : `collab.publish.${key}`)
   const [data, setData] = useState<PublicationData | null>(null)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -64,8 +85,8 @@ export default function PublishPanel() {
       adopt(next)
       if (success) editor.notify(success)
       if (next.publicProps) {
-        track('publish', { first: method === 'POST' })
-        void paintPreview(next)
+        track(deliverable ? 'deliverable_publish' : 'publish', { first: method === 'POST' })
+        if (!deliverable) void paintPreview(next)
       }
     } catch (e) {
       setError(e instanceof ApiError || e instanceof Error ? e.message : t('collab.publish.error'))
@@ -79,6 +100,8 @@ export default function PublishPanel() {
   if (!data || !options) return <p className="text-sm text-loam-500">{error ?? t('common.loading')}</p>
   const publication = data.publication
   const live = publication?.live ?? false
+  // Without Pro or Team: a deliverable already published stays readable, it can no longer be refreshed.
+  const locked = deliverable && data.entitled === false
 
   const toggleIn = (key: 'feature_layers' | 'region_layers', value: string, on: boolean) =>
     setOptions((o) => o && { ...o, [key]: on ? [...new Set([...o[key], value])] : o[key].filter((v) => v !== value) })
@@ -103,13 +126,13 @@ export default function PublishPanel() {
 
       {live && publication ? (
         <div className="space-y-3 rounded-lg bg-leaf-50 p-3">
-          <p className="flex items-center gap-1.5 text-sm font-medium text-leaf-800"><Globe className="h-4 w-4" />{t('collab.publish.live')}</p>
+          <p className="flex items-center gap-1.5 text-sm font-medium text-leaf-800"><Globe className="h-4 w-4" />{t(w('live'))}</p>
           <div className="flex gap-2">
-            <Input id="publication-url" readOnly value={publication.url} onFocus={(e) => e.currentTarget.select()} aria-label={t('collab.publish.address')} className="min-w-0 flex-1 text-xs" />
+            <Input id="publication-url" readOnly value={publication.url} onFocus={(e) => e.currentTarget.select()} aria-label={t(w('address'))} className="min-w-0 flex-1 text-xs" />
             <Button variant="secondary" size="sm" onClick={() => void copy()} aria-label={t('collab.share.copy')}>
               {copied ? <Check className="h-4 w-4 text-leaf-600" /> : <Copy className="h-4 w-4" />}
             </Button>
-            <a href={publication.url} target="_blank" rel="noopener" className={buttonClass('secondary', 'sm')} aria-label={t('collab.publish.open')} title={t('collab.publish.open')}>
+            <a href={publication.url} target="_blank" rel="noopener" className={buttonClass('secondary', 'sm')} aria-label={t(w('open'))} title={t(w('open'))}>
               <ExternalLink className="h-4 w-4" />
             </a>
           </div>
@@ -122,32 +145,41 @@ export default function PublishPanel() {
               {audience(publication.views ?? 0, publication.gardensStarted ?? 0)}
             </p>
           )}
-          {publication.stale && <p className="rounded bg-humus-50 px-2 py-1 text-xs text-humus-700">{t('collab.publish.stale')}</p>}
-          {publication.previewPath && (
+          {publication.stale && <p className="rounded bg-humus-50 px-2 py-1 text-xs text-humus-700">{t(w('stale'))}</p>}
+          {!deliverable && publication.previewPath && (
             <figure className="space-y-1">
               <img src={publication.previewPath} alt={t('collab.publish.preview')} width={1200} height={630} className="w-full rounded-lg ring-1 ring-loam-200" />
               <figcaption className="text-sm text-loam-600">{t('collab.publish.preview_hint')}</figcaption>
             </figure>
           )}
-          <GardenVideo base={base} url={publication.url} />
+          {!deliverable && <GardenVideo base={base} url={publication.url} />}
         </div>
       ) : (
         <p className="text-sm text-loam-600">
-          {publication ? t('collab.publish.unpublished') : t('collab.publish.intro')}
+          {publication ? t(w('unpublished')) : t(w('intro'))}
         </p>
       )}
 
+      {deliverable && data.contents && <DeliverableContents mapId={editor.map.id} counts={data.contents} />}
+
+      {locked ? (
+        <div className="space-y-2 rounded-lg bg-prune-50 p-3 text-sm text-prune-800">
+          <p className="flex items-center gap-1.5 font-medium"><Lock className="h-4 w-4" aria-hidden />{t('deliverables.panel.locked_title')}</p>
+          <p>{t(live ? 'deliverables.panel.locked_live' : 'deliverables.panel.locked')}</p>
+          <a href="/tarifs" className={buttonClass('secondary', 'sm')}>{t('deliverables.panel.see_plans')}</a>
+        </div>
+      ) : (
       <form
         className="space-y-4"
         onSubmit={(e) => {
           e.preventDefault()
-          void call(publication ? 'PATCH' : 'POST', '', payload, t(live ? 'collab.publish.updated' : 'collab.publish.published'))
+          void call(publication ? 'PATCH' : 'POST', '', payload, t(w(live ? 'updated' : 'published')))
         }}
       >
-        <Field label={t('collab.publish.title')}>
+        <Field label={t(w('title'))}>
           <Input value={title} maxLength={120} required onChange={(e) => setTitle(e.target.value)} />
         </Field>
-        <Field label={t('collab.publish.description')} hint={t('collab.publish.description_hint')}>
+        <Field label={t(w('description'))} hint={t(w('description_hint'))}>
           <Textarea rows={2} maxLength={2000} value={description} onChange={(e) => setDescription(e.target.value)} />
         </Field>
 
@@ -249,6 +281,7 @@ export default function PublishPanel() {
           <p className="mt-1 text-xs text-loam-400">{t('collab.publish.privacy_hint')}</p>
         </fieldset>
 
+        {!deliverable && (
         <fieldset>
           <legend className="text-sm font-medium text-loam-700">{t('collab.publish.gallery')}</legend>
           <div className="mt-1">
@@ -256,15 +289,17 @@ export default function PublishPanel() {
           </div>
           <p className="mt-1 text-sm text-loam-500">{t('collab.publish.gallery_hint')}</p>
         </fieldset>
+        )}
 
         <div className="sticky -bottom-4 -mx-4 space-y-1 border-t border-loam-100 bg-white px-4 py-3">
           <Button type="submit" className="w-full" disabled={busy || title.trim() === ''}>
             <Globe className="h-4 w-4" />
-            {live ? t('collab.publish.update') : t('collab.publish.publish')}
+            {live ? t(w('update')) : t(w('publish'))}
           </Button>
-          {live && <p className="text-xs text-loam-400">{t('collab.publish.snapshot_hint')}</p>}
+          {live && <p className="text-xs text-loam-400">{t(w('snapshot_hint'))}</p>}
         </div>
       </form>
+      )}
 
       {live && (
         <div className="flex flex-wrap gap-2 border-t border-loam-100 pt-3">
@@ -272,7 +307,7 @@ export default function PublishPanel() {
             variant="secondary"
             size="sm"
             disabled={busy}
-            onClick={() => { if (window.confirm(t('collab.publish.unpublish_confirm'))) void call('DELETE', '', undefined, t('collab.publish.unpublished_done')) }}
+            onClick={() => void confirmAction({ title: t(w('unpublish_confirm')), tone: 'danger' }).then((ok) => { if (ok) void call('DELETE', '', undefined, t(w('unpublished_done'))) })}
           >
             {t('collab.publish.unpublish')}
           </Button>
@@ -280,7 +315,7 @@ export default function PublishPanel() {
             variant="ghost"
             size="sm"
             disabled={busy}
-            onClick={() => { if (window.confirm(t('collab.publish.renew_confirm'))) void call('POST', '/renew', undefined, t('collab.publish.renewed')) }}
+            onClick={() => void confirmAction({ title: t(w('renew_confirm')) }).then((ok) => { if (ok) void call('POST', '/renew', undefined, t('collab.publish.renewed')) })}
           >
             <RefreshCw className="h-4 w-4" />
             {t('collab.publish.renew')}
@@ -288,9 +323,35 @@ export default function PublishPanel() {
         </div>
       )}
       {!live && publication && (
-        <p className="text-xs text-loam-400">{t('collab.publish.republish_hint')}</p>
+        <p className="text-xs text-loam-400">{t(w('republish_hint'))}</p>
       )}
     </div>
+  )
+}
+
+/**
+ * What the client finds beside the plan: the files the team marked « Dans
+ * le livrable », read live, with where to mark more.
+ */
+function DeliverableContents({ mapId, counts }: { mapId: number; counts: DeliverableCounts }) {
+  const rows = [
+    { icon: FileText, count: counts.documents, label: t('deliverables.panel.documents', { count: counts.documents }), href: `/maps/${mapId}/documents` },
+    { icon: Camera, count: counts.photos + counts.videos, label: counts.videos > 0 ? `${t('deliverables.panel.photos', { count: counts.photos })} · ${t('deliverables.panel.videos', { count: counts.videos })}` : t('deliverables.panel.photos', { count: counts.photos }), href: `/maps/${mapId}/photos` },
+    { icon: FlaskConical, count: counts.soilSamples, label: t('deliverables.panel.soil', { count: counts.soilSamples }), href: null },
+  ]
+  return (
+    <section className="space-y-2 rounded-lg bg-loam-50 p-3">
+      <h3 className="text-sm font-medium text-loam-800">{t('deliverables.panel.contents_title')}</h3>
+      <ul className="space-y-1.5">
+        {rows.map(({ icon: Icon, count, label, href }) => (
+          <li key={label} className={'flex items-center gap-2 text-sm ' + (count > 0 ? 'text-loam-800' : 'text-loam-500')}>
+            <Icon className="h-4 w-4 shrink-0" aria-hidden />
+            {href ? <a href={href} className="hover:text-prune-700 hover:underline">{label}</a> : <span>{label}</span>}
+          </li>
+        ))}
+      </ul>
+      <p className="text-sm text-loam-600">{t('deliverables.panel.contents_hint')}</p>
+    </section>
   )
 }
 

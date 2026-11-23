@@ -660,6 +660,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_180000) do
     t.boolean "in_library", default: true, null: false
     t.string "pdf_conversion"
     t.bigint "converted_from_id"
+    t.boolean "in_deliverable", default: false, null: false
     t.index ["content_edited_by_id"], name: "index_map_documents_on_content_edited_by_id"
     t.index ["converted_from_id"], name: "index_map_documents_on_converted_from_id"
     t.index ["map_id", "created_at"], name: "index_map_documents_on_map_id_and_created_at"
@@ -788,6 +789,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_180000) do
     t.bigint "drone_mission_id"
     t.bigint "soil_sample_id"
     t.string "playback"
+    t.boolean "in_deliverable", default: false, null: false
     t.index "((location)::geography)", name: "index_map_photos_on_location_geography", using: :gist
     t.index ["derived_from_id"], name: "index_map_photos_on_derived_from_id"
     t.index ["drone_mission_id"], name: "index_map_photos_on_drone_mission_id"
@@ -830,8 +832,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_180000) do
     t.integer "views_count", default: 0, null: false
     t.integer "gallery_position"
     t.boolean "site_tour", default: false, null: false
+    t.string "kind", default: "public", null: false
     t.index ["gallery_position"], name: "index_map_publications_on_gallery_position"
-    t.index ["map_id"], name: "index_map_publications_on_map_id", unique: true
+    t.index ["map_id", "kind"], name: "index_map_publications_on_map_id_and_kind", unique: true
     t.index ["published_by_id"], name: "index_map_publications_on_published_by_id"
     t.index ["site_tour"], name: "index_map_publications_on_site_tour", unique: true, where: "site_tour"
     t.index ["token"], name: "index_map_publications_on_token", unique: true
@@ -1835,6 +1838,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_180000) do
     t.datetime "updated_at", null: false
     t.jsonb "other_results", default: [], null: false
     t.jsonb "results_draft"
+    t.boolean "in_deliverable", default: false, null: false
     t.index ["created_by_id"], name: "index_soil_samples_on_created_by_id"
     t.index ["location"], name: "index_soil_samples_on_location", using: :gist
     t.index ["map_id", "label"], name: "index_soil_samples_on_map_id_and_label"

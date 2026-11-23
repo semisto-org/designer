@@ -17,6 +17,7 @@ module Mcp
             pdf_conversion: document.pdf_conversion_state,
             pdf_document_id: (document.pdf_copy&.id if OfficePdf.convertible?(document.extension)),
             converted_from_id: document.converted_from_id,
+            in_deliverable: document.in_deliverable? || nil,
             uploaded_by: document.uploaded_by&.display_name || (document.project_sheet_link_id && t("notes.project_link_author")),
             created_at: document.created_at.iso8601, updated_at: document.updated_at.iso8601
           }.compact

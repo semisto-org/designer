@@ -10,6 +10,7 @@ import ResultsDraftReview from '@/map/soil/ResultsDraftReview'
 import SampleReading from '@/map/soil/SampleReading'
 import SamplePhotos from '@/map/soil/SamplePhotos'
 import SampleReports from '@/map/soil/SampleReports'
+import { DeliverableToggle } from '@/deliverables/DeliverableToggle'
 import { soilActions, useSoil, type SamplePayload } from '@/map/soil/store'
 import type { SoilOtherResult, SoilResultKey, SoilSampleData } from '@/types/soil_photos'
 
@@ -86,6 +87,17 @@ export default function SampleEditor({ sample, onClose }: { sample: SoilSampleDa
       setError((e as Error).message)
     } finally {
       setSaving(false)
+    }
+  }
+
+  // Its own save: the mark never sends the form's unsaved figures along.
+  async function markForDeliverable(on: boolean) {
+    setError(null)
+    try {
+      await soilActions.saveSample(mapId, sample.id, { in_deliverable: on })
+      editor.notify(t(on ? 'deliverables.mark.saved_on' : 'deliverables.mark.saved_off'))
+    } catch (e) {
+      setError((e as Error).message)
     }
   }
 
@@ -248,6 +260,10 @@ export default function SampleEditor({ sample, onClose }: { sample: SoilSampleDa
           <p className="text-xs text-loam-500">{t('soil.sample.reading_empty')}</p>
         )}
       </section>
+
+      {canEdit && editor.entitlements.deliverables && sample.status === 'sampled' && (
+        <DeliverableToggle checked={!!sample.inDeliverable} onChange={(on) => void markForDeliverable(on)} />
+      )}
 
       {error && <p role="alert" className="rounded-lg bg-clay-50 p-2.5 text-sm text-clay-700">{error}</p>}
 

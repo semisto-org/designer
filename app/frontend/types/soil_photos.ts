@@ -43,6 +43,8 @@ export type MapPhotoData = {
   bioindicatorStatus: 'to_analyze' | 'analyzed' | null
   /** What the AI read in the photo about the soil, when analyzed. */
   bioindicatorSummary: string | null
+  /** Shown to the client in the map's deliverable (« Livrable client »). */
+  inDeliverable?: boolean
 }
 
 /** Camera tags of a photo file; a DJI drone adds its flight and gimbal. Only what the file had. */
@@ -155,6 +157,8 @@ export type SoilSampleData = {
   createdAt: string
   /** Null when the owner's plan has no analyses. */
   interpretation: SoilReading | null
+  /** Shown to the client in the map's deliverable (« Livrable client »), once sampled. */
+  inDeliverable?: boolean
 }
 
 export type SoilOtherResult = { name: string; value: string; unit?: string }
