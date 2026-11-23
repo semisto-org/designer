@@ -529,3 +529,117 @@
   flowering_months: [8, 9]
   harvest_months: [9, 10]
   maturity_years: 2
+
+# Wild perennials and annuals of the Terranova import, whose sheets came in
+# empty with the import's default strata (« arbuste »). Names checked on
+# GBIF (accepted names), values to verify like the rest of this file.
+- latin_name: Geum urbanum
+  common_names: [Benoîte commune, Benoîte des villes, Herbe de saint Benoît]
+  plant_type: herbaceous
+  strata: herbaceous
+  foliage_type: semi-evergreen
+  life_cycle: perennial
+  growth_rate: fast
+  root_system: fibrous
+  height_m: [0.3, 0.6]
+  spread_m: [0.2, 0.4]
+  hardiness_zone: 5
+  exposures: [sun, partial-shade, shade]
+  soil_moisture: [moist]
+  soil_ph: [acidic, neutral, alkaline]
+  soil_richness: rich
+  watering_need: 3
+  edible_rating: 2
+  medicinal_rating: 3
+  edible_parts: [root, leaf]
+  eco_services: [beneficial-insects]
+  flowering_months: [5, 6, 7, 8, 9]
+  harvest_months: [3, 4, 9, 10]
+  native_countries: [BE, FR, LU, NL]
+  maturity_years: 2
+
+- latin_name: Campanula trachelium
+  common_names: [Campanule gantelée, Gant de Notre-Dame]
+  plant_type: herbaceous
+  strata: herbaceous
+  foliage_type: deciduous
+  life_cycle: perennial
+  growth_rate: medium
+  height_m: [0.5, 1]
+  spread_m: [0.3, 0.5]
+  hardiness_zone: 4
+  exposures: [sun, partial-shade, shade]
+  soil_moisture: [moist]
+  soil_ph: [neutral, alkaline]
+  watering_need: 3
+  edible_rating: 2
+  edible_parts: [leaf, root]
+  eco_services: [mellifere, ornamental]
+  flowering_months: [7, 8, 9]
+  harvest_months: [3, 4, 5]
+  native_countries: [BE, FR, LU, NL]
+  maturity_years: 2
+
+- latin_name: Epilobium hirsutum
+  common_names: [Épilobe hérissé, Épilobe à grandes fleurs]
+  plant_type: herbaceous
+  strata: herbaceous
+  foliage_type: deciduous
+  life_cycle: perennial
+  growth_rate: fast
+  root_system: spreading
+  height_m: [0.8, 2]
+  spread_m: [0.5, 1]
+  hardiness_zone: 5
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist, wet]
+  watering_need: 4
+  edible_rating: 1
+  edible_parts: [shoot, leaf]
+  eco_services: [mellifere, beneficial-insects]
+  flowering_months: [7, 8, 9]
+  harvest_months: [4, 5]
+  native_countries: [BE, FR, LU, NL]
+  maturity_years: 2
+
+- latin_name: Linum usitatissimum
+  common_names: [Lin cultivé, Lin commun]
+  plant_type: herbaceous
+  strata: herbaceous
+  foliage_type: deciduous
+  life_cycle: annual
+  growth_rate: fast
+  root_system: taproot
+  height_m: [0.4, 1.2]
+  spread_m: [0.1, 0.3]
+  exposures: [sun]
+  soil_moisture: [dry, moist]
+  watering_need: 2
+  edible_rating: 3
+  medicinal_rating: 3
+  edible_parts: [seed]
+  eco_services: [mellifere]
+  flowering_months: [6, 7]
+  harvest_months: [8, 9]
+  maturity_years: 1
+
+- latin_name: Dianthus carthusianorum
+  common_names: [Œillet des chartreux]
+  plant_type: herbaceous
+  strata: herbaceous
+  foliage_type: evergreen
+  life_cycle: perennial
+  growth_rate: medium
+  height_m: [0.2, 0.6]
+  spread_m: [0.2, 0.3]
+  hardiness_zone: 5
+  exposures: [sun]
+  soil_moisture: [dry]
+  soil_types: [chalky, sandy, stony]
+  soil_ph: [neutral, alkaline]
+  soil_richness: poor
+  watering_need: 1
+  eco_services: [mellifere, beneficial-insects, ornamental]
+  flowering_months: [6, 7, 8, 9]
+  native_countries: [BE, FR, LU]
+  maturity_years: 2

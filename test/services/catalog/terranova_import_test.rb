@@ -65,6 +65,7 @@ class Catalog::TerranovaImportTest < ActiveSupport::TestCase
     Catalog::TerranovaImport.new(provider: @provider, baskets: ALL).call
     shell = PlantSpecies.find_by!(terranova_id: 103)
     assert_nil shell.plant_type
+    assert_nil shell.strata, "Terranova's default « arbustive » is not a fact"
     assert_nil shell.foliage_type
     assert_nil shell.fertility
     assert_nil shell.watering_need
