@@ -13,6 +13,9 @@ import { PARCELS_SOURCE } from '@/map/layers/parcels'
 import { inTag } from '@/map/tags/tags'
 import { inVariant } from '@/map/variants/variants'
 import { applyPresentRender } from '@/map/presentation/render'
+import { PLANT_NUMBER_LAYERS } from '@/map/plants/visibility'
+import type { PlantListRow } from '@/map/drawing/plantList'
+import { drawPlantList } from '@/map/drawing/plantListPdf'
 import { DESIGN_MODE_STATE, DRAWN_VIEW_STATE } from '@/map/scenario'
 import { isZoneKind } from '@/map/zones/zones'
 import type { MapFeature } from '@/types'
@@ -198,6 +201,8 @@ type RenderOptions = {
    * left on the map would cover them. Icons stay.
    */
   withoutNames?: boolean
+  /** Each plant shows its number in its dot, as in the « Numéro » mode, whatever the editor shows (its name steps aside). */
+  numbered?: boolean
   /** Called with the offscreen map once drawn, before it goes (to project points on the page). */
   inspect?: (map: MapLibreMap) => void
 }
@@ -242,7 +247,13 @@ function hideDesignNames(map: MapLibreMap) {
   }
 }
 
-export async function renderMap(source: MapLibreMap, { center, scale, frame, hiddenLayers, variant, tag, hiddenKinds, hiddenIds, theme, hideBoundary, planLook, paintOnly, withoutNames, inspect }: RenderOptions): Promise<string> {
+/** The plants' numbers in their dots, their names beside them hidden. */
+function showPlantNumbers(map: MapLibreMap) {
+  for (const id of PLANT_NUMBER_LAYERS) if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'visible')
+  if (map.getLayer('plant-labels-text')) map.setLayoutProperty('plant-labels-text', 'visibility', 'none')
+}
+
+export async function renderMap(source: MapLibreMap, { center, scale, frame, hiddenLayers, variant, tag, hiddenKinds, hiddenIds, theme, hideBoundary, planLook, paintOnly, withoutNames, numbered, inspect }: RenderOptions): Promise<string> {
   const widthCss = Math.round(mmToCss(frame.w))
   const heightCss = Math.round(mmToCss(frame.h))
   const pixelRatio = Math.min(PRINT_DPI / CSS_DPI, MAX_CANVAS_PX / Math.max(widthCss, heightCss))
@@ -270,6 +281,7 @@ export async function renderMap(source: MapLibreMap, { center, scale, frame, hid
     if (theme) applyTheme(map, theme)
     if (hideBoundary) hideBoundaryLayers(map)
     if (hiddenIds?.length) hidePlantOverlay(map, hiddenIds)
+    if (numbered && !hiddenLayers.includes('plants')) showPlantNumbers(map)
     if (planLook) {
       // The project as designed, in the designer's plan look; the working marks step aside.
       map.setGlobalStateProperty(DESIGN_MODE_STATE, 'project')
@@ -443,6 +455,8 @@ export type PdfInput = {
   sources: string[]
   /** « Carnet de planches »: the overall plan, then one sheet per design layer. Without it, the single plan. */
   sheets?: Sheet[]
+  /** The plants numbered on the map, listed on pages that follow the plan (« Liste des plantes »). */
+  plantList?: PlantListRow[]
 }
 
 /** One page of the PDF: `theme` is the design layer it is about (null: the whole design). */
@@ -482,11 +496,13 @@ export async function exportPdf(source: MapLibreMap, input: PdfInput, onProgress
     const image = await renderMap(source, {
       center: input.center, scale: input.scale, frame: layout.frame, hiddenLayers: input.hiddenLayers, variant: input.variant, tag: input.tag,
       hiddenKinds: input.hiddenKinds, hiddenIds: input.hiddenIds, theme: sheet.theme, hideBoundary: input.hideBoundary,
+      numbered: input.plantList != null,
     })
     onProgress?.('pdf', { page: i + 1, pages: sheets.length })
     if (i > 0) doc.addPage()
     drawSheet(doc, layout, input, sheet, image, sheets.length > 1 ? { page: i + 1, pages: sheets.length } : null)
   }
+  if (input.plantList?.length) drawPlantList(doc, input.plantList, input)
   const kind = sheets.length > 1 ? `-${slug(t('drawing.pdf.book_file'))}` : ''
   const fileName = `${slug(input.title) || 'plan'}${kind}-1-${input.scale}.pdf`
   doc.save(fileName)

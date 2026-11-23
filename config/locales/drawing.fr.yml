@@ -558,6 +558,30 @@ fr:
       north: "N"
       sources: "Sources"
       made_with: "Semisto Terranova · terranova.semisto.org"
+      plant_list:
+        option: "Numéroter les plantes et joindre leur liste"
+        option_hint:
+          one: "Le numéro de la plante s'écrit dans son point, et sa fiche suit le plan sur une page à part."
+          other: "Le numéro de chaque plante s'écrit dans son point, et la liste des %{count} plantes du cadre suit le plan, sur des pages à part."
+        title: "Liste des plantes"
+        plants:
+          one: "1 plante numérotée"
+          other: "%{plants} plantes numérotées"
+        species:
+          one: "1 espèce"
+          other: "%{species} espèces"
+        number: "N°"
+        columns:
+          name: "Plante"
+          variety: "Variété"
+          latin: "Nom latin"
+          strata: "Strate"
+          state: "En terre"
+        planted: "Plantée"
+        planted_in: "Plantée en %{year}"
+        to_plant: "À planter"
+        unknown: "Plante sans espèce"
+        page: "Liste des plantes · page %{page} / %{pages}"
       boundary: "Limite du terrain"
       more: "+ %{count} autres"
 

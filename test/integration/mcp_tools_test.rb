@@ -75,6 +75,7 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_equal %w[sun wind], data.dig("sectors", "groups")
     assert_equal "http://www.example.com/maps/#{@map.id}?sectors=all", data.dig("sectors", "show_url")
     assert_equal "http://www.example.com/maps/#{@map.id}?export=book", data.dig("exports", "book_pdf_url")
+    assert_equal "http://www.example.com/maps/#{@map.id}?export=plan&plant_list=1", data.dig("exports", "plan_pdf_with_plant_list_url")
     assert_equal "http://www.example.com/maps/#{@map.id}/dossier", data.dig("exports", "dossier_url")
   end
 

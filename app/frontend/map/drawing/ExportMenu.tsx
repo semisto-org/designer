@@ -6,22 +6,25 @@ import { useEditor } from '@/map/editor/EditorContext'
 import { deferred } from '@/map/panels/deferred'
 
 // The PDF maker and the offline site are fetched when first asked for.
-const PdfExportPanel = deferred<{ onClose: () => void; initialKind?: 'plan' | 'book' | 'master' }>(() => import('@/map/drawing/PdfExportPanel').then((m) => ({ default: m.PdfExportPanel })), 'none')
+const PdfExportPanel = deferred<{ onClose: () => void; initialKind?: 'plan' | 'book' | 'master'; initialPlantList?: boolean }>(() => import('@/map/drawing/PdfExportPanel').then((m) => ({ default: m.PdfExportPanel })), 'none')
 const OfflineSiteDialog = deferred<{ mapId: number; onClose: () => void }>(() => import('@/map/drawing/OfflineSiteDialog').then((m) => ({ default: m.OfflineSiteDialog })), 'none')
 
 /**
  * `?export=plan` or `?export=book` (the links an AI gives through the MCP)
  * opens the PDF plan ready to make, as one plan, a book of sheets or
- * (`?export=master_plan`) the « Plan directeur ».
+ * (`?export=master_plan`) the « Plan directeur »; `&plant_list=1` ticks
+ * « Numéroter les plantes et joindre leur liste ».
  */
-function exportFromUrl(): 'plan' | 'book' | 'master_plan' | null {
+function exportFromUrl(): { kind: 'plan' | 'book' | 'master_plan'; plantList: boolean } | null {
   if (typeof window === 'undefined') return null
   const url = new URL(window.location.href)
   const value = url.searchParams.get('export')
   if (!value) return null
+  const plantList = url.searchParams.get('plant_list') === '1'
   url.searchParams.delete('export')
+  url.searchParams.delete('plant_list')
   window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash)
-  return value === 'plan' || value === 'book' || value === 'master_plan' ? value : null
+  return value === 'plan' || value === 'book' || value === 'master_plan' ? { kind: value, plantList } : null
 }
 
 function MenuItem({ icon: Icon, label, hint, badge, href, onClick }: {
@@ -120,7 +123,7 @@ export default function ExportMenu() {
           )}
         </div>
       )}
-      {pdfOpen && <PdfExportPanel initialKind={asked === 'book' ? 'book' : asked === 'master_plan' ? 'master' : 'plan'} onClose={() => setPdfOpen(false)} />}
+      {pdfOpen && <PdfExportPanel initialKind={asked?.kind === 'book' ? 'book' : asked?.kind === 'master_plan' ? 'master' : 'plan'} initialPlantList={asked?.plantList} onClose={() => setPdfOpen(false)} />}
       {offlineOpen && <OfflineSiteDialog mapId={editor.map.id} onClose={() => setOfflineOpen(false)} />}
     </div>
   )
