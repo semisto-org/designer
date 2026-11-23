@@ -78,12 +78,11 @@ class Relief::SectionTest < ActiveSupport::TestCase
     assert_in_delta 44.5, crossing[:from], 1
   end
 
-  test "on a plan without the analyses the section is drawn flat, and says why" do
+  test "the relief is drawn on the free plan too" do
     synthetic_terrain(@map) { |_dx, dy| 200 + dy * 0.1 }
     with_billing do
-      data = Relief::Section.new(@map, line: @line).as_json
-      assert_equal "flat", data[:relief]
-      assert data[:reliefLocked]
+      assert_not Entitlements.for_map(@map).analyses?
+      assert_equal "terrain", Relief::Section.new(@map, line: @line).as_json[:relief]
     end
   end
 end

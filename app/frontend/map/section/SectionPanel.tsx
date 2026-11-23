@@ -176,7 +176,7 @@ export default function SectionPanel() {
           {data.plants.length === 0
             ? <p className="text-sm text-loam-700">{t('section.empty', { corridor })}</p>
             : <ul className="list-disc space-y-1 pl-5 text-sm text-loam-800">{reading.map((r) => <li key={r}>{r}</li>)}</ul>}
-          {data.relief === 'flat' && <p className="text-sm text-humus-800">{t(data.reliefLocked ? 'section.flat_locked' : 'section.flat')}</p>}
+          {data.relief === 'flat' && <p className="text-sm text-humus-800">{t('section.flat')}</p>}
           <p className="text-sm text-loam-500">{t('section.adult_ghost')}</p>
           <Button variant="secondary" onClick={download}>
             <Download className="h-4 w-4" />

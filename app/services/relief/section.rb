@@ -66,7 +66,6 @@ module Relief
         origin: growing[:origin],
         moments: MOMENTS.map { |key, years| { key:, year: years, calendarYear: (years ? origin.next_year(years) : Date.current).year } },
         relief: heights ? "terrain" : "flat",
-        reliefLocked: (true if relief_locked?),
         ground:, plants: plants(growing, origin), crossings: crossings(origin),
         bearing: bearing.round
       }.compact
@@ -76,17 +75,10 @@ module Relief
       def heights
         return @heights if defined?(@heights)
 
-        # The relief is an analysis: it follows the map's plan, like the relief panel.
-        @heights = terrain_ready? && Entitlements.for_map(@map).analyses? ? Heights.new(@map.terrain) : nil
-      end
-
-      def terrain_ready?
+        # The relief of the section is for everyone, from the free plan, like the 3D view.
         terrain = @map.terrain
-        terrain&.ready? && terrain.grid.attached?
+        @heights = terrain&.ready? && terrain.grid.attached? ? Heights.new(terrain) : nil
       end
-
-      # The terrain is there but the plan does not cover analyses: the section is drawn flat.
-      def relief_locked? = heights.nil? && terrain_ready?
 
       # The ground every few metres: [{ d:, z: }] (z nil where the terrain has no data; all nil when flat).
       def ground

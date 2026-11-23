@@ -18,7 +18,6 @@ fr:
     calendar_year: "en %{year}"
     adult_ghost: "En pointillé : la taille adulte."
     flat: "Relief non téléchargé : le sol est dessiné plat. Télécharge-le dans « Eau et relief » pour voir la pente."
-    flat_locked: "Le relief fait partie des analyses de la formule Home et plus : la coupe est dessinée à plat, avec toutes ses plantes."
     start: "A"
     end: "A′"
     length: "%{length} de coupe"
