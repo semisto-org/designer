@@ -11,6 +11,8 @@ import { MarkdownPreview } from '@/documents/markdown/MarkdownPreview'
 import { PdfPages } from '@/documents/PdfPages'
 import { TagEditor } from '@/documents/TagEditor'
 import { DeliverableToggle } from '@/deliverables/DeliverableToggle'
+import { ShareLinkButton } from '@/components/ShareLinkButton'
+import { PublicLinkSection } from '@/components/PublicLinkSection'
 import { documentSize } from '@/documents/compression'
 import type { MapDocumentData } from '@/types/documents'
 
@@ -20,13 +22,13 @@ import type { MapDocumentData } from '@/types/documents'
  * page of its own (`pageUrl`), anything else waits for a download. Its title,
  * note and tags sit beside it; arrows and keys move through the list.
  */
-export function DocumentViewer({ docs, openId, onOpen, canEdit, tagSuggestions, onSave, onDelete, onConvert, pageUrl, deliverable = false }: {
+export function DocumentViewer({ docs, openId, onOpen, canEdit, tagSuggestions, onSave, onDelete, onConvert, pageUrl, sharePath, deliverable = false }: {
   docs: MapDocumentData[]
   openId: number | null
   onOpen: (id: number | null) => void
   canEdit: boolean
   tagSuggestions: string[]
-  onSave?: (doc: MapDocumentData, patch: { title?: string; description?: string; tags?: string[]; in_deliverable?: boolean }) => Promise<void>
+  onSave?: (doc: MapDocumentData, patch: { title?: string; description?: string; tags?: string[]; in_deliverable?: boolean; public_link?: boolean }) => Promise<boolean | void>
   onDelete?: (doc: MapDocumentData) => Promise<void>
   /** Asks the server for a PDF of a word-processor file (the map's library only). */
   onConvert?: (doc: MapDocumentData) => Promise<void>
@@ -34,6 +36,8 @@ export function DocumentViewer({ docs, openId, onOpen, canEdit, tagSuggestions, 
   pageUrl?: (doc: MapDocumentData) => string
   /** The map's plan includes the client deliverable: editors mark documents for it. */
   deliverable?: boolean
+  /** The address that reopens this document here (« Copier le lien »), when it has one. */
+  sharePath?: (doc: MapDocumentData) => string | null
 }) {
   const index = docs.findIndex((d) => d.id === openId)
   const doc = index >= 0 ? docs[index] : null
@@ -77,6 +81,7 @@ export function DocumentViewer({ docs, openId, onOpen, canEdit, tagSuggestions, 
   const page = doc.markdown && pageUrl ? pageUrl(doc) : null
   const save = (patch: Parameters<NonNullable<typeof onSave>>[1]) => onSave?.(doc, patch)
   // The PDF made from this file, or the file this PDF was made from, when on screen.
+  const share = sharePath?.(doc) ?? null
   const pdfCopy = doc.pdfCopyId ? docs.find((d) => d.id === doc.pdfCopyId) : undefined
   const source = doc.convertedFromId ? docs.find((d) => d.id === doc.convertedFromId) : undefined
 
@@ -213,7 +218,9 @@ export function DocumentViewer({ docs, openId, onOpen, canEdit, tagSuggestions, 
               <ExternalLink className="h-4 w-4" />{t('documents.viewer.open_tab')}
             </a>
           )}
+          {share && <ShareLinkButton path={share} title={doc.title} variant="ghost" />}
         </div>
+        {share && <PublicLinkSection publicPath={doc.publicPath} canEdit={canEdit && !!onSave} onChange={(on) => save({ public_link: on }) ?? Promise.resolve(false)} />}
         {canEdit && onDelete && (
           <Button size="sm" variant="danger-ghost" onClick={() => {
             if (!window.confirm(t('documents.viewer.confirm_delete'))) return

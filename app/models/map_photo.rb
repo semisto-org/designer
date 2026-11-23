@@ -12,6 +12,8 @@
 # about the camera (model, settings, a drone's height and gimbal) is read
 # afterwards by PhotoCameraJob into `camera`.
 class MapPhoto < ApplicationRecord
+  include PubliclyShareable
+  PUBLIC_LINK_SEGMENT = "photo"
   include PointLocation
   include HeicAttachment
   include CountsTowardStorage
@@ -135,6 +137,11 @@ class MapPhoto < ApplicationRecord
 
   def video? = kind == "video"
 
+  # The page that opens this photo (or video) in its lightbox, with its
+  # sidebar: the link « Copier le lien » gives and the MCP hands out. It
+  # opens for whoever has a role on the map, after signing in if need be.
+  def share_path = "/maps/#{map_id}/photos?open=#{id}"
+
   # The file a video player reads: the H.264 copy when there is one.
   def player_blob = playable.attached? ? playable.blob : image.blob
 
@@ -156,7 +163,7 @@ class MapPhoto < ApplicationRecord
       width: meta["width"], height: meta["height"], durationS: meta["duration"]&.to_f&.round,
       byteSize: blob&.byte_size, filename: blob&.filename&.to_s,
       uploadedBy: uploaded_by&.display_name,
-      bioindicatorStatus: bioindicator_status, bioindicatorSummary: bioindicator_summary, inDeliverable: in_deliverable,
+      bioindicatorStatus: bioindicator_status, bioindicatorSummary: bioindicator_summary, inDeliverable: in_deliverable, publicPath: public_path,
       distanceM: has_attribute?(:distance_m) ? self[:distance_m]&.to_f&.round : nil
     }
   end

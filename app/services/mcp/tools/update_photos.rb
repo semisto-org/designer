@@ -14,7 +14,10 @@ module Mcp
             type: "array", minItems: 1, maxItems: PhotoHelpers::MAX_PHOTOS, description: :photo_changes,
             items: {
               type: "object", additionalProperties: false, required: %w[photo_id], minProperties: 2,
-              properties: { photo_id: { type: "integer", minimum: 1, description: :any_photo_id }, **PhotoHelpers::PLACE_PROPERTIES }
+              properties: {
+                photo_id: { type: "integer", minimum: 1, description: :any_photo_id }, **PhotoHelpers::PLACE_PROPERTIES,
+                public_link: { type: "boolean", description: :public_link }
+              }
             }
           }
         },
@@ -32,6 +35,7 @@ module Mcp
           photo = find_photo!(map, line["photo_id"])
           MapPhoto.transaction do
             assign_photo(map, photo, line)
+            photo.public_link = line["public_link"] if line.key?("public_link")
             photo.save!
           end
           updated << photo

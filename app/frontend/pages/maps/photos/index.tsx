@@ -20,6 +20,7 @@ import { PhotoThumb } from '@/map/photos/PhotoThumb'
 import { photoAccept, photoActions, usePhotos } from '@/map/photos/store'
 import { uploadActions, useUploads } from '@/map/photos/upload'
 import type { MapPhotoData, PhotoAlbumData } from '@/types/soil_photos'
+import { readOpenParam, useOpenParam } from '@/lib/openParam'
 
 type Props = {
   map: { id: number; name: string; role: string | null; teamId?: number | null; offerBuilder?: boolean; timeEntries?: boolean; deliverable?: boolean }
@@ -79,6 +80,16 @@ export default function MapPhotos({ map, canEdit }: Props) {
   const fileInput = useRef<HTMLInputElement>(null)
 
   useEffect(() => { photoActions.load(map.id) }, [map.id])
+  // ?open=ID (a shared link) opens that photo once the photos are in; the
+  // address then follows the open photo, so it can be copied and shared.
+  const wanted = useRef(readOpenParam())
+  useEffect(() => {
+    if (!state.loaded || state.mapId !== map.id || wanted.current == null) return
+    const id = wanted.current
+    wanted.current = null
+    if (state.photos.some((p) => p.id === id)) photoActions.open(id)
+  }, [state.loaded, state.mapId, state.photos, map.id])
+  useOpenParam(state.openId, state.loaded && state.mapId === map.id && wanted.current == null)
   useEffect(() => {
     try {
       window.localStorage.setItem(PREFS_KEY, JSON.stringify(prefs))

@@ -45,6 +45,8 @@ export type MapPhotoData = {
   bioindicatorSummary: string | null
   /** Shown to the client in the map's deliverable (« Livrable client »). */
   inDeliverable?: boolean
+  /** « Lien public »: the address that opens this file alone, without an account. */
+  publicPath?: string | null
 }
 
 /** Camera tags of a photo file; a DJI drone adds its flight and gimbal. Only what the file had. */

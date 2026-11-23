@@ -60,6 +60,12 @@ Sélectionne un élément sur la carte (un arbre, une mare, un patch) : la secti
 
 Pour suivre la reprise d'un plant, vois aussi [Planter puis observer](/help/planter-puis-observer).
 
+## Partager une photo ou une vidéo
+
+Ouvre-la, puis **Copier le lien** : le lien rouvre cette photo avec sa fiche, pour une personne qui a déjà accès à la carte (après connexion si besoin). Sur téléphone, le bouton ouvre directement le partage (Messages, WhatsApp, e-mail).
+
+Pour quelqu'un sans compte (un voisin, un artisan, un élu), **Créer un lien public** : le lien n'ouvre que cette photo, sans sa position GPS, et rien d'autre de la carte. **Couper le lien** l'arrête aussitôt ; tu pourras en créer un nouveau.
+
 ## Qui voit les photos ?
 
 Toutes les personnes qui ont accès à la carte les voient ; seuls le propriétaire et les éditeurs peuvent en ajouter. Les visages ne sont jamais analysés.

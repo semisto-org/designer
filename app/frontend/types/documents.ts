@@ -11,9 +11,13 @@ export type MapDocumentData = {
   tags: string[]
   /** « library »: added in Documents; « project_sheet »: sent with the project sheet; « form »: an answer to a team's form. */
   origin: 'library' | 'project_sheet' | 'form'
+  /** False for a file joined to a message of the discussion only, not on the library's shelves. */
+  inLibrary?: boolean
   kind: DocumentKind
   /** Shown to the client in the map's deliverable (« Livrable client »). */
   inDeliverable?: boolean
+  /** « Lien public »: the address that opens this file alone, without an account. */
+  publicPath?: string | null
   /** What the browser shows as is (« audio »: the visit recorded with the phone, played in place). */
   preview: 'image' | 'pdf' | 'audio' | null
   filename: string | null

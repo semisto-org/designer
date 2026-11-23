@@ -18,7 +18,8 @@ module Mcp
           tags: {
             type: "array", maxItems: MapFeature::Tags::MAX_TAGS, uniqueItems: true, description: :tags_change,
             items: { type: "string", minLength: 1, maxLength: MapFeature::Tags::MAX_LENGTH }
-          }
+          },
+          public_link: { type: "boolean", description: :public_link }
         },
         required: %w[map_id document_id],
         minProperties: 3
@@ -31,7 +32,7 @@ module Mcp
         document = find_document!(map, document_id)
         content = changes.delete(:content)
         raise ToolError, t("errors.document_not_markdown") if content && !document.markdown?
-        document.assign_attributes(changes.slice(:title, :description, :tags))
+        document.assign_attributes(changes.slice(:title, :description, :tags, :public_link))
         save_document!(document)
         document.replace_markdown!(content, by: user) if content
         document_json(document).merge(url: documents_url(map))

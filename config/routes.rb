@@ -90,6 +90,9 @@ Rails.application.routes.draw do
     get "livrable/:token/photos/:id/image", to: "deliverables#photo", as: :deliverable_photo
     get "livrable/:token/soil/:id/reports/:report_id", to: "deliverables#soil_report", as: :deliverable_soil_report
   end
+  # « Lien public » of one photo, video or document (SharedFilesController).
+  get "partage/photo/:token", to: "shared_files#photo", as: :shared_photo
+  get "partage/document/:token", to: "shared_files#document", as: :shared_document
   # « Et chez toi ? »: a map tried from an address, without an account.
   get "essai", to: "trials#new", as: :new_trial
   post "essai", to: "trials#create", as: :trials

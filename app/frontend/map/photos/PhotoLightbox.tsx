@@ -7,6 +7,8 @@ import { Field, Input, Select, Textarea } from '@/components/ui/Field'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { usePhotoHost } from '@/map/photos/host'
+import { ShareLinkButton } from '@/components/ShareLinkButton'
+import { PublicLinkSection } from '@/components/PublicLinkSection'
 import { DeliverableToggle } from '@/deliverables/DeliverableToggle'
 import { formatDateTime, formatDuration, headingLabel, photoDate, photoLabel, photoUrl } from '@/map/photos/format'
 import { PhotoCameraDetails } from '@/map/photos/PhotoCameraDetails'
@@ -333,7 +335,9 @@ export function PhotoLightbox({ order }: { order?: MapPhotoData[] } = {}) {
             <Download className="h-4 w-4" />
             {canEdit || isVideo ? t('soil_photos.lightbox.download') : t('soil_photos.lightbox.download_variant')}
           </a>
+          <ShareLinkButton path={`/maps/${mapId}/photos?open=${photo.id}`} title={photo.caption || photo.filename || undefined} />
         </div>
+        <PublicLinkSection publicPath={photo.publicPath} canEdit={canEdit} photo={!isVideo} onChange={(on) => save({ public_link: on })} />
 
         {!isVideo && <section aria-label={t('photo_sketches.list_label')}>
           <h3 className="text-xs font-semibold uppercase tracking-wide text-loam-500">{t('photo_sketches.list_label')}</h3>
