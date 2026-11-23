@@ -219,13 +219,15 @@ module Mcp
 
         # Where the person prints the design: the project dossier (sector
         # page included) and the PDF plan at scale, as one plan or as a book
-        # of thematic sheets. The PDF is drawn in the browser: the links open
-        # it ready to make.
+        # of thematic sheets, with or without the list of the numbered plants
+        # after it. The PDF is drawn in the browser: the links open it ready
+        # to make.
         def exports(map)
           {
             dossier_url: "#{map_url(map)}/dossier",
             plan_pdf_url: "#{map_url(map)}?export=plan",
             book_pdf_url: "#{map_url(map)}?export=book",
+            plan_pdf_with_plant_list_url: "#{map_url(map)}?export=plan&plant_list=1",
             pdf_in_plan: Entitlements.for_map(map).pdf_export?
           }
         end
