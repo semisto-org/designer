@@ -20,6 +20,7 @@ import { drawsCrown, plantIsSupport, plantStrata, STRATA_COLORS } from '@/map/pl
 import { ensureSupportHatch, SUPPORT_HATCH } from '@/map/plants/supportHatch'
 import { crownOrder, darken, inkOn, PLAN_COLORS, PLAN_STRATA_COLORS } from '@/map/plants/strataColors'
 import { applyPlantsVisibility } from '@/map/plants/visibility'
+import { LEADERS_SOURCE, spreadPlantNumbers } from '@/map/plants/numberSpread'
 import { setPlantLabels } from '@/map/plants/labelIndex'
 import { DESIGN_MODE_STATE, GROUND_IN_PROJECT_OPACITY, IN_DRAWN_VIEW, IN_PLAN_LOOK, isPlannedPlant, PLANNED_OPACITY } from '@/map/scenario'
 import { inMoment } from '@/map/time/moment'
@@ -196,7 +197,7 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
   if (crowns) {
     crowns.setData(data.crowns)
     ;(map.getSource(LABELS) as GeoJSONSource | undefined)?.setData(data.labels)
-    ;(map.getSource(NUMBERS) as GeoJSONSource | undefined)?.setData(data.numbers)
+    spreadPlantNumbers(map, data.numbers)
     ;(map.getSource(TRUNKS) as GeoJSONSource | undefined)?.setData(data.trunks)
     raiseNumbers(map)
     stackFeatureLayers(map)
@@ -208,6 +209,7 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
   map.addSource(CROWNS, { type: 'geojson', data: data.crowns })
   map.addSource(LABELS, { type: 'geojson', data: data.labels })
   map.addSource(NUMBERS, { type: 'geojson', data: data.numbers })
+  map.addSource(LEADERS_SOURCE, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } })
   map.addSource(TRUNKS, { type: 'geojson', data: data.trunks })
   // Every crown wears its strata colour over a white ring, readable on aerial
   // photos as on plans. Planted: solid crown. Planned: faint fill and a
@@ -316,6 +318,20 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
   }, map.getLayer('features-label') ? 'features-label' : undefined)
   // « Numéro »: the number inside a pastille in the strata colour, over the
   // plant's point, as on a hand-drawn planting plan (hidden otherwise).
+  // Where plants crowd, a pastille steps aside (map/plants/numberLayout)
+  // and a thin line in its strata colour ties it back to its plant.
+  map.addLayer({
+    id: `${NUMBERS}-leader`,
+    type: 'line',
+    source: LEADERS_SOURCE,
+    minzoom: 15,
+    layout: { visibility: 'none', 'line-cap': 'round' },
+    paint: {
+      'line-color': ['get', 'color'],
+      'line-width': ['interpolate', ['linear'], ['zoom'], 15, 1, 20, 1.6],
+      'line-opacity': ['case', PLANTED, ['*', 0.9, GROUND_FADE], 0.75],
+    },
+  })
   map.addLayer({
     id: `${NUMBERS}-disc`,
     type: 'circle',
@@ -348,11 +364,12 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
   // The tracing sheets (map/tracing): a planned plant waits for the planting sheet.
   for (const id of map.getLayersOrder()) {
     const source = map.getLayer(id)?.source
-    if (source !== CROWNS && source !== LABELS && source !== NUMBERS && source !== TRUNKS) continue
+    if (source !== CROWNS && source !== LABELS && source !== NUMBERS && source !== LEADERS_SOURCE && source !== TRUNKS) continue
     const own = map.getFilter(id)
     map.setFilter(id, (own ? ['all', own, PLANT_SHEET_SHOWN] : PLANT_SHEET_SHOWN) as FilterSpecification)
   }
   raiseNumbers(map)
+  spreadPlantNumbers(map, data.numbers)
   // Over the zones and surfaces, whichever was added first.
   stackFeatureLayers(map)
 }
@@ -364,7 +381,7 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
  * the next one, keeping the map busy for as long as it is open.
  */
 function raiseNumbers(map: MapLibreMap) {
-  const ids = [`${NUMBERS}-disc`, `${NUMBERS}-text`]
+  const ids = [`${NUMBERS}-leader`, `${NUMBERS}-disc`, `${NUMBERS}-text`]
   if (!mustRaise(map.getLayersOrder(), ids)) return
   for (const id of ids) map.moveLayer(id)
 }
@@ -427,12 +444,22 @@ export default function PlantsOverlay() {
     const onSource = (e: { sourceId?: string; sourceDataType?: string }) => {
       if (e.sourceId === FEATURES_SOURCE && e.sourceDataType === 'metadata') colorPoints(map, latest.current.points)
     }
+    // The pastilles are laid out in screen pixels: again when the zoom or the view's angle changes.
+    let view = ''
+    const onMove = () => {
+      const next = `${map.getZoom().toFixed(2)}:${map.getBearing().toFixed(1)}:${map.getPitch().toFixed(1)}`
+      if (next === view) return
+      view = next
+      if (map.getSource(NUMBERS)) spreadPlantNumbers(map, latest.current.numbers)
+    }
     safeInstall(map, latest.current)
     map.on('styledata', apply)
     map.on('sourcedata', onSource)
+    map.on('moveend', onMove)
     return () => {
       map.off('styledata', apply)
       map.off('sourcedata', onSource)
+      map.off('moveend', onMove)
     }
   }, [map])
   useEffect(() => safeInstall(map, layers), [map, layers])

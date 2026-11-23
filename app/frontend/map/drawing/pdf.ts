@@ -14,6 +14,7 @@ import { inTag } from '@/map/tags/tags'
 import { inVariant } from '@/map/variants/variants'
 import { applyPresentRender } from '@/map/presentation/render'
 import { PLANT_NUMBER_LAYERS } from '@/map/plants/visibility'
+import { LEADERS_SOURCE, NUMBERS_SOURCE, respreadCopiedNumbers } from '@/map/plants/numberSpread'
 import type { PlantListRow } from '@/map/drawing/plantList'
 import { drawPlantList } from '@/map/drawing/plantListPdf'
 import { DESIGN_MODE_STATE, DRAWN_VIEW_STATE } from '@/map/scenario'
@@ -149,7 +150,7 @@ export function attributions(source: MapLibreMap): string[] {
 }
 
 /** Sources of the plants overlay (crowns, names, numbers): they belong to the plants layer. */
-const PLANT_SOURCES = ['plant-crowns', 'plant-labels', 'plant-numbers']
+const PLANT_SOURCES = ['plant-crowns', 'plant-labels', NUMBERS_SOURCE, LEADERS_SOURCE]
 /** Context kept as it is on every sheet. */
 const CONTEXT_SOURCES = [BOUNDARY_SOURCE, PARCELS_SOURCE]
 
@@ -218,7 +219,7 @@ function hideBoundaryLayers(map: MapLibreMap) {
 /** The working marks a painted plan leaves out: every text and icon, and the trunk discs; a plant keeps a painted dot. */
 function hideMarks(map: MapLibreMap) {
   for (const layer of map.getStyle().layers) {
-    if (layer.type === 'symbol' || layer.id === 'plant-trunks' || layer.id === 'plant-numbers-disc') map.setLayoutProperty(layer.id, 'visibility', 'none')
+    if (layer.type === 'symbol' || layer.id === 'plant-trunks' || layer.id === 'plant-numbers-disc' || layer.id === 'plant-numbers-leader') map.setLayoutProperty(layer.id, 'visibility', 'none')
   }
   // A plant keeps its place: a small painted dot, no white ring (a vine without a crown stays on the sheet).
   paintPlantPoints(map)
@@ -282,6 +283,8 @@ export async function renderMap(source: MapLibreMap, { center, scale, frame, hid
     if (hideBoundary) hideBoundaryLayers(map)
     if (hiddenIds?.length) hidePlantOverlay(map, hiddenIds)
     if (numbered && !hiddenLayers.includes('plants')) showPlantNumbers(map)
+    // Crowded pastilles step aside again, at the print's own scale (map/plants/numberLayout).
+    respreadCopiedNumbers(map, new Set(hiddenIds ?? []))
     if (planLook) {
       // The project as designed, in the designer's plan look; the working marks step aside.
       map.setGlobalStateProperty(DESIGN_MODE_STATE, 'project')

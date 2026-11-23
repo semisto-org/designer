@@ -44,6 +44,8 @@ Chaque plante de ta carte porte un numéro. Coche **Numéroter les plantes et jo
 
 La liste reprend, dans l'ordre des numéros, chaque plante du cadre imprimé : sa **Plante** (le nom que tu lui as donné, sinon son espèce), sa **Variété**, son **Nom latin**, sa **Strate**, et si elle est déjà **En terre** (avec l'année) ou **À planter**. Les plantes masquées dans **Calques**, hors du cadre ou en brouillon n'y figurent pas, comme sur le plan.
 
+Là où les plantes se serrent, en multi-strates par exemple, les pastilles ne se chevauchent plus : celles qui se toucheraient s'écartent et un fin trait à la couleur de la strate les relie à leur plante. C'est aussi le cas sur la carte, en mode **Numéro**.
+
 C'est la feuille à emporter le jour de la plantation : le plan pour trouver l'endroit, la liste pour savoir quoi y mettre. La case est déjà cochée quand la légende de la carte montre les plantes par **Numéro**.
 
 ## Le carnet de planches
