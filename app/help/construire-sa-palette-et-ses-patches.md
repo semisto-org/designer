@@ -32,6 +32,8 @@ Un arbre déjà sur la carte, noté « pommier » sans plus ? Touche-le, ouvre s
 
 Pour chercher plus largement, le catalogue **Plantes** se filtre par strate, port, rusticité, exposition, humidité du sol, usages, plantes comestibles, fixatrices d'azote, mellifères ou indigènes, et peut écarter les invasives.
 
+Une fiche te semble fausse, une vivace de 40 cm rangée parmi les arbustes, une taille qui ne colle pas avec ce que tu vois chez toi ? Sur la fiche de la plante, touche **Suggérer une correction** : choisis ce qui est faux, donne la bonne valeur et, si tu l'as, la page qui la dit. Une personne de Semisto relit chaque suggestion avant de changer la fiche. Ton IA peut aussi en suggérer, avec sa source.
+
 Pour chaque espèce de la palette, **Modifier** permet de préciser sa strate sur ce terrain, son rôle (nourricière, fertilité, pionnière, haie…), un objectif de nombre de plants et tes notes. L'**Équilibre des strates** montre combien de plants sont prévus à chaque étage.
 
 Tu peux aussi [connecter ton IA](/help/connecter-son-ia) : elle cherche dans le même catalogue et te suggère des espèces selon tes objectifs.

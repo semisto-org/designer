@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_23_180000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_23_190000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -1347,6 +1347,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_180000) do
     t.index ["nameable_type", "nameable_id"], name: "index_plant_common_names_on_nameable"
   end
 
+  create_table "plant_corrections", force: :cascade do |t|
+    t.bigint "species_id", null: false
+    t.bigint "user_id", null: false
+    t.string "field", null: false
+    t.jsonb "current_value"
+    t.jsonb "proposed_value"
+    t.text "note"
+    t.string "source_url"
+    t.string "origin", default: "web", null: false
+    t.string "status", default: "pending", null: false
+    t.bigint "reviewed_by_id"
+    t.datetime "reviewed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["reviewed_by_id"], name: "index_plant_corrections_on_reviewed_by_id"
+    t.index ["species_id"], name: "index_plant_corrections_on_species_id"
+    t.index ["status"], name: "index_plant_corrections_on_status"
+    t.index ["user_id"], name: "index_plant_corrections_on_user_id"
+  end
+
   create_table "plant_field_sources", force: :cascade do |t|
     t.string "record_type", null: false
     t.bigint "record_id", null: false
@@ -2234,6 +2254,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_180000) do
   add_foreign_key "plan_images", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "plan_purchases", "users"
   add_foreign_key "plan_subscriptions", "users"
+  add_foreign_key "plant_corrections", "plant_species", column: "species_id", on_delete: :cascade
+  add_foreign_key "plant_corrections", "users", column: "reviewed_by_id", on_delete: :nullify
+  add_foreign_key "plant_corrections", "users", on_delete: :cascade
   add_foreign_key "plant_harvests", "map_features", on_delete: :cascade
   add_foreign_key "plant_harvests", "maps", on_delete: :cascade
   add_foreign_key "plant_harvests", "plant_species", column: "species_id", on_delete: :nullify
