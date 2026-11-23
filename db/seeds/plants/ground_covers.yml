@@ -206,3 +206,87 @@
   flowering_months: [6, 7]
   harvest_months: [4, 5, 6, 7, 8, 9]
   maturity_years: 1
+
+# Sheets of the Terranova import that came in empty with the import's
+# default strata (« arbuste »). Names checked on GBIF, values to verify.
+- latin_name: Stellaria media
+  common_names: [Mouron des oiseaux, Stellaire intermédiaire]
+  plant_type: ground-cover
+  strata: ground_cover
+  life_cycle: annual
+  growth_rate: fast
+  root_system: shallow
+  height_m: [0.05, 0.3]
+  spread_m: [0.2, 0.4]
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist]
+  soil_richness: rich
+  watering_need: 3
+  edible_rating: 4
+  medicinal_rating: 2
+  edible_parts: [leaf]
+  eco_services: [ground-cover, birds]
+  flowering_months: [3, 4, 5, 6, 7, 8, 9, 10]
+  harvest_months: [3, 4, 5, 6, 9, 10, 11]
+  native_countries: [BE, FR, LU, NL]
+  maturity_years: 1
+
+- latin_name: Claytonia sibirica
+  common_names: [Claytone de Sibérie, Pourpier de Sibérie]
+  plant_type: ground-cover
+  strata: ground_cover
+  foliage_type: semi-evergreen
+  life_cycle: perennial
+  growth_rate: fast
+  height_m: [0.15, 0.4]
+  spread_m: [0.2, 0.3]
+  hardiness_zone: 3
+  exposures: [partial-shade, shade]
+  soil_moisture: [moist]
+  watering_need: 3
+  edible_rating: 4
+  edible_parts: [leaf, flower]
+  eco_services: [ground-cover]
+  flowering_months: [3, 4, 5, 6, 7]
+  harvest_months: [2, 3, 4, 5, 6]
+  maturity_years: 1
+
+- latin_name: Tropaeolum majus
+  common_names: [Capucine, Grande capucine]
+  plant_type: ground-cover
+  strata: ground_cover
+  life_cycle: annual
+  growth_rate: fast
+  height_m: [0.2, 0.5]
+  spread_m: [0.5, 2]
+  hardiness_zone: 10
+  exposures: [sun, partial-shade]
+  soil_moisture: [dry, moist]
+  soil_richness: poor
+  watering_need: 2
+  edible_rating: 4
+  edible_parts: [leaf, flower, seed]
+  eco_services: [ground-cover, mellifere, beneficial-insects]
+  flowering_months: [6, 7, 8, 9, 10]
+  harvest_months: [6, 7, 8, 9, 10]
+  maturity_years: 1
+
+- latin_name: Mesembryanthemum crystallinum
+  common_names: [Ficoïde glaciale, Glaciale]
+  plant_type: ground-cover
+  strata: ground_cover
+  life_cycle: annual
+  growth_rate: fast
+  height_m: [0.1, 0.3]
+  spread_m: [0.3, 0.6]
+  hardiness_zone: 10
+  exposures: [sun]
+  soil_moisture: [dry]
+  soil_types: [sandy]
+  watering_need: 2
+  edible_rating: 3
+  edible_parts: [leaf]
+  eco_services: [ground-cover]
+  flowering_months: [6, 7, 8, 9]
+  harvest_months: [6, 7, 8, 9, 10]
+  maturity_years: 1

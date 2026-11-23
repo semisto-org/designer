@@ -8,7 +8,7 @@
    "eco_services_provided": ["nitrogen-fixer"], "flowering_months": [5], "fruiting_months": [], "harvest_months": [9, 10],
    "pruning_months": [], "toxicity": {}, "audited_at": null},
   {"id": 103, "genus_id": 12, "latin_name": "Elaeagnus multiflora", "common_names_fr": "",
-   "plant_type": "tree", "strate": null, "height_min_cm": null, "height_max_cm": null, "spread_min_cm": null, "spread_max_cm": null,
+   "plant_type": "tree", "strate": "shrub", "height_min_cm": null, "height_max_cm": null, "spread_min_cm": null, "spread_max_cm": null,
    "foliage_type": "deciduous", "life_cycle": "perennial", "growth_rate": "medium", "root_system": "fibrous",
    "hardiness": "", "native_countries": [], "is_native_belgium": false, "is_invasive": false,
    "edible_rating": null, "edible_parts": [], "exposures": [], "soil_types": [], "soil_moisture": "moist",

@@ -30,7 +30,10 @@ module Catalog
     UNASSESSED_DEFAULTS = {
       "plant_type" => %w[shrub tree], "soil_moisture" => %w[moist], "soil_richness" => %w[moderate],
       "fertility" => %w[self-fertile], "foliage_type" => %w[deciduous], "life_cycle" => %w[perennial],
-      "root_system" => %w[fibrous], "growth_rate" => %w[medium], "watering_need" => %w[3]
+      "root_system" => %w[fibrous], "growth_rate" => %w[medium], "watering_need" => %w[3],
+      # An empty Terranova sheet is « arbustive » by default: the benoîte
+      # commune came in as a 1.5 m shrub.
+      "strate" => %w[shrub arbustive arbuste]
     }.freeze
 
     COUNTRY_NAMES = {
@@ -81,7 +84,7 @@ module Catalog
 
       {
         "plant_type" => single.(:plant_type),
-        "strata" => PlantVocabulary.canonical(:strata, row["strate"]),
+        "strata" => known.("strate", row["strate"]) ? PlantVocabulary.canonical(:strata, row["strate"]) : nil,
         "foliage_type" => single.(:foliage_type),
         "life_cycle" => single.(:life_cycle),
         "growth_rate" => single.(:growth_rate),
