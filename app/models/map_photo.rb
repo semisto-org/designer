@@ -26,6 +26,14 @@ class MapPhoto < ApplicationRecord
   VIDEO_MAX_BYTES = 1.gigabyte
   KINDS = %w[photo video].freeze
   UPLOAD_TYPES = (CONTENT_TYPES + HeicImage::TYPES + VIDEO_TYPES).freeze
+
+  # A file's weight as the messages say it (« 12 Mo », « 1,2 Go »).
+  def self.megabytes(bytes)
+    mb = bytes / 1.megabyte.to_f
+    return format("%.1f", bytes / 1.gigabyte.to_f).tr(".", ",").delete_suffix(",0") + " Go" if bytes >= 1.gigabyte
+    (mb >= 10 || mb == mb.round ? mb.round.to_s : format("%.1f", mb).tr(".", ",")) + " Mo"
+  end
+
   # « ai »: painted by « Mettre en image » (PhotoRendering) from another photo.
   SOURCES = %w[web phone import ai].freeze
   LOCATION_SOURCES = %w[exif device map manual].freeze
@@ -245,11 +253,7 @@ class MapPhoto < ApplicationRecord
       errors.add(:base, I18n.t("soil_photos.errors.soil_sample_elsewhere")) if soil_sample && soil_sample.map_id != map_id
     end
 
-    def megabytes(bytes)
-      mb = bytes / 1.megabyte.to_f
-      return format("%.1f", bytes / 1.gigabyte.to_f).tr(".", ",").delete_suffix(",0") + " Go" if bytes >= 1.gigabyte
-      (mb >= 10 || mb == mb.round ? mb.round.to_s : format("%.1f", mb).tr(".", ",")) + " Mo"
-    end
+    def megabytes(bytes) = self.class.megabytes(bytes)
 
     def heading_close?(other_heading, tolerance)
       return true if heading.nil? || other_heading.nil?

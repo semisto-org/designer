@@ -20,16 +20,26 @@
 # The files a drone pilot delivers with a mission (point clouds, 3D
 # models…, kind "mission_file") travel the same way and are put together
 # by DroneMissionFileJob.
+#
+# A large video sent from the « Photos » panel (kind "web_photo",
+# Maps::PhotoUploadsController) travels in smaller parts (web_photo_part_size):
+# whoever films the garden often sends from a modest connection, and a
+# single long request is cut by the proxies in front of the app. What was
+# typed with it waits in `photo_params`; PhotoUploadJob puts the parts
+# together and makes the photo (`map_photo`), or says why not (`failure`).
 class McpUpload < ApplicationRecord
   KINDS = %w[photo document].freeze
   AERIAL_VIEW = "aerial_view".freeze
   MISSION_FILE = "mission_file".freeze
+  WEB_PHOTO = "web_photo".freeze
   LONG_LIVED = [ AERIAL_VIEW, MISSION_FILE ].freeze
   UNATTACHED_LIFETIME = 24.hours
   AERIAL_LIFETIME = 3.days
   URL_LIFETIME = 15.minutes
   # A whole number of MiB, so `dd bs=1048576` cuts the parts (smaller in tests).
   class_attribute :part_size_for_new, default: 32.megabytes
+  # A video's parts go through in well under a minute at 2 Mbit/s.
+  class_attribute :web_photo_part_size, default: 8.megabytes
   # Long enough to send a 1 GB video over a slow connection.
   PARTS_URL_LIFETIME = 6.hours
   PART_PURPOSE = :mcp_upload_part
@@ -48,8 +58,9 @@ class McpUpload < ApplicationRecord
   belongs_to :blob, class_name: "ActiveStorage::Blob"
   belongs_to :map
   belongs_to :user
+  belongs_to :map_photo, optional: true
 
-  validates :kind, inclusion: { in: KINDS + LONG_LIVED }
+  validates :kind, inclusion: { in: KINDS + LONG_LIVED + [ WEB_PHOTO ] }
   validates :part_size, numericality: { greater_than: 0 }, allow_nil: true
 
   scope :unattached, -> { where(attached_at: nil) }

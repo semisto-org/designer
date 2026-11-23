@@ -13,6 +13,8 @@ export type UploadFailure = {
    */
   reason: 'unreadable' | 'stalled' | 'network' | 'refused' | 'redirected' | 'not_a_document'
   code?: string
+  /** What was being sent (one Sentry issue each): a document by default. */
+  what?: 'document' | 'photo'
 }
 
 /**
@@ -20,11 +22,11 @@ export type UploadFailure = {
  * issue per reason: the person sees the message on the page, and we see it
  * happened (status, size and type of the file, never its name).
  */
-export function reportUploadFailure({ endpoint, file, status, reason, code }: UploadFailure) {
+export function reportUploadFailure({ endpoint, file, status, reason, code, what = 'document' }: UploadFailure) {
   if (!sentryEnabled) return
-  Sentry.captureMessage('Document upload failed', {
+  Sentry.captureMessage(what === 'photo' ? 'Photo upload failed' : 'Document upload failed', {
     level: 'warning',
-    fingerprint: ['document-upload-failed', reason],
+    fingerprint: [`${what}-upload-failed`, reason],
     tags: { upload_reason: reason, upload_status: String(status), upload_code: code ?? 'none' },
     contexts: {
       upload: {
