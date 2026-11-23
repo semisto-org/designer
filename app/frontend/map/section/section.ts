@@ -39,8 +39,6 @@ export type SectionData = {
   origin: string
   moments: { key: SectionMoment; year: number | null; calendarYear: number }[]
   relief: 'terrain' | 'flat'
-  /** The terrain is there, but the map's plan does not cover the analyses. */
-  reliefLocked?: boolean
   ground: { d: number; z: number | null }[]
   plants: SectionPlant[]
   crossings: SectionCrossing[]
