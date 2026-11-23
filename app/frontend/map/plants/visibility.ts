@@ -6,7 +6,7 @@ import { isPresentRendering, isWorkingLayer } from '../presentation/renderRules.
 export const PLANT_OVERLAY_LAYERS = ['plant-crowns-shadow', 'plant-crowns-fill', 'plant-crowns-reach', 'plant-crowns-support', 'plant-crowns-reach-line', 'plant-crowns-casing', 'plant-crowns-line', 'plant-trunks', 'plant-labels-text']
 
 /** The numbered pastilles, shown instead of the names in « Numéro » mode. */
-export const PLANT_NUMBER_LAYERS = ['plant-numbers-disc', 'plant-numbers-text']
+export const PLANT_NUMBER_LAYERS = ['plant-numbers-leader', 'plant-numbers-disc', 'plant-numbers-text']
 
 /**
  * The « Calques » panel hides design layers by filtering the features
