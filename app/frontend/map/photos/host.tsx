@@ -9,6 +9,8 @@ import type { MapPhotoData } from '@/types/soil_photos'
 export type PhotoHost = {
   mapId: number
   canEdit: boolean
+  /** The map's plan includes the client deliverable: editors mark photos for it. */
+  deliverable?: boolean
   notify: (message: string, tone?: 'info' | 'error') => void
   /** Shows the photo's spot on the map. */
   locate: (photo: MapPhotoData) => void

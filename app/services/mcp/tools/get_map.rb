@@ -63,6 +63,7 @@ module Mcp
           exports: exports(map),
           presentations: presentations(map),
           publication: publication(map),
+          deliverable: deliverable(map),
           implementation: implementation(map),
           season: season(map),
           team_season: team_season(map),
@@ -149,6 +150,26 @@ module Mcp
             shows_growth: publication.options.fetch("show_growth", true) != false,
             views: publication.views_count, places_tried: publication.trials.count, gardens_started: publication.sourced_users.count,
             note: t("notes.publication")
+          }.compact
+        end
+
+        # The client deliverable (« Livrable client », Pro and Team): the
+        # plan as published for the map's client, and how many files the
+        # team marked for it (mark_for_deliverable). For editors only: the
+        # link is the client's private key to the project.
+        def deliverable(map)
+          return nil unless %w[owner editor].include?(@role)
+          entitled = Entitlements.for_map(map).deliverables?
+          publication = map.deliverable
+          return nil if !entitled && publication.nil?
+          contents = Deliverable::Contents.new(map).counts.transform_keys { _1.to_s.underscore }
+          return { published: false, available: entitled, marked: contents, note: t("notes.deliverable_none") } unless publication
+          {
+            published: publication.live?, url: "#{origin}#{publication.page_path}", title: publication.title,
+            version: publication.version, published_at: publication.published_at.iso8601,
+            unpublished_at: publication.unpublished_at&.iso8601, stale: publication.stale?,
+            available: entitled, marked: contents, views: publication.views_count,
+            note: t("notes.deliverable")
           }.compact
         end
 

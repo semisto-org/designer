@@ -90,6 +90,9 @@ class MapDocument < ApplicationRecord
 
   scope :newest_first, -> { order(created_at: :desc, id: :desc) }
   scope :from_project_sheet, -> { where(origin: "project_sheet") }
+  # Shown to the client in the map's deliverable (« Livrable client »); a
+  # document joined to a message only once it is in the library.
+  scope :in_deliverable, -> { where(in_library: true, in_deliverable: true) }
 
   def extension = file.attached? ? File.extname(file.filename.to_s).delete(".").downcase : nil
 
@@ -235,7 +238,7 @@ class MapDocument < ApplicationRecord
   def as_inertia(url:, excerpt: false)
     blob = file.attached? ? file.blob : nil
     {
-      id:, title:, description:, tags:, origin:, kind:, preview:, inLibrary: in_library,
+      id:, title:, description:, tags:, origin:, kind:, preview:, inLibrary: in_library, inDeliverable: in_deliverable,
       filename: blob&.filename&.to_s, contentType: blob&.content_type, byteSize: blob&.byte_size,
       compression:, originalByteSize: original_byte_size,
       createdAt: created_at.iso8601, updatedAt: updated_at.iso8601,

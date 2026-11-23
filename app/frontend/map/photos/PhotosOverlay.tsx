@@ -230,6 +230,7 @@ export default function PhotosOverlay() {
   const host = useMemo<PhotoHost>(() => ({
     mapId: editor.map.id,
     canEdit: editor.canEdit,
+    deliverable: editor.entitlements.deliverables === true,
     notify: editor.notify,
     locate: (photo) => {
       if (photo.lng == null || photo.lat == null) return
@@ -237,7 +238,7 @@ export default function PhotosOverlay() {
       photoActions.open(null)
     },
     place: (photo) => photoActions.startPlacing(photo.id),
-  }), [editor.map.id, editor.canEdit, editor.notify, editor.activePanel, map])
+  }), [editor.map.id, editor.canEdit, editor.entitlements.deliverables, editor.notify, editor.activePanel, map])
 
   const placing = photos.find((p) => p.id === placingId)
   const group = useMemo(() => (state.group ? photos.filter((p) => state.group?.includes(p.id)) : undefined), [photos, state.group])

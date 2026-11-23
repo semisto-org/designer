@@ -24,7 +24,7 @@ module Admin
 
       def maps
         { total: Map.active.count, new30d: Map.active.where(created_at: (@at - 30.days)..).count, archived: Map.where.not(archived_at: nil).count,
-          published: MapPublication.where(unpublished_at: nil).distinct.count(:map_id), teams: Organization.count,
+          published: MapPublication.public_views.where(unpublished_at: nil).distinct.count(:map_id), teams: Organization.count,
           areaHa: (Map.active.sum(:area_m2).to_f / 10_000).round(1) }
       end
 

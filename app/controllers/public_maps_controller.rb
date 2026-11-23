@@ -9,6 +9,8 @@ class PublicMapsController < ApplicationController
 
   def show
     publication = MapPublication.includes(:map).find_by!(token: params[:token])
+    # A client deliverable's snapshot files live under /p/ too; its page does not.
+    return redirect_to(publication.page_path) if publication.deliverable?
     if publication.live?
       count_visit(publication)
       render inertia: "public_maps/show", props: publication.as_public, meta: public_meta(publication)

@@ -12,6 +12,8 @@ export type MapDocumentData = {
   /** « library »: added in Documents; « project_sheet »: sent with the project sheet; « form »: an answer to a team's form. */
   origin: 'library' | 'project_sheet' | 'form'
   kind: DocumentKind
+  /** Shown to the client in the map's deliverable (« Livrable client »). */
+  inDeliverable?: boolean
   /** What the browser shows as is (« audio »: the visit recorded with the phone, played in place). */
   preview: 'image' | 'pdf' | 'audio' | null
   filename: string | null

@@ -35,6 +35,7 @@ export type SamplePayload = {
   other_results: SoilOtherResult[]
   lng?: number
   lat?: number
+  in_deliverable?: boolean
 }
 
 /**

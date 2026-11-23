@@ -34,6 +34,8 @@ class SoilSample < ApplicationRecord
   validate :lab_reports_are_pdfs
 
   scope :ordered, -> { order(:id) }
+  # Shown to the client in the map's deliverable (« Livrable client »).
+  scope :in_deliverable, -> { where(in_deliverable: true) }
   scope :with_photos, -> { includes(photos: [ :uploaded_by, { image_attachment: :blob } ]) }
 
   # Results arrive from forms as strings, with commas: store clean numbers,
@@ -73,7 +75,7 @@ class SoilSample < ApplicationRecord
 
   def as_inertia(analyses: false)
     {
-      id:, label:, lng:, lat:, status:, source:,
+      id:, label:, lng:, lat:, status:, source:, inDeliverable: in_deliverable,
       depthFromCm: depth_from_cm, depthToCm: depth_to_cm,
       sampledOn: sampled_on&.iso8601, lab:, labReference: lab_reference,
       results: results.slice(*RESULT_KEYS), notes:,

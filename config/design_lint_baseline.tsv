@@ -12,7 +12,6 @@ small-text	2	app/frontend/collab/DiscussionSection.tsx
 bare-button	2	app/frontend/collab/DiscussionsPanel.tsx
 hex-color	1	app/frontend/collab/DiscussionsPanel.tsx
 small-text	6	app/frontend/collab/DiscussionsPanel.tsx
-native-confirm	2	app/frontend/collab/PublishPanel.tsx
 small-text	9	app/frontend/collab/PublishPanel.tsx
 bare-button	3	app/frontend/collab/ShareDialog.tsx
 native-confirm	3	app/frontend/collab/ShareDialog.tsx

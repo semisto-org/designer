@@ -8,6 +8,7 @@ import { Input, Select } from '@/components/ui/Field'
 import { useCompressionRefresh } from '@/documents/compression'
 import { DocumentTile } from '@/documents/DocumentTile'
 import { DocumentViewer } from '@/documents/DocumentViewer'
+import { toast } from '@/components/ui/toast'
 import { usePdfConversionRefresh } from '@/documents/pdfConversion'
 import { NewDocumentDialog } from '@/documents/markdown/NewDocumentDialog'
 import { TagHeading } from '@/documents/TagHeading'
@@ -21,7 +22,7 @@ import { groupByTag, hasTag, tagCounts, UNTAGGED } from '@/map/tags/tags'
 import type { DocumentLimits, MapDocumentData } from '@/types/documents'
 
 type Props = {
-  map: { id: number; name: string; role: string | null; teamId?: number | null; offerBuilder?: boolean; timeEntries?: boolean }
+  map: { id: number; name: string; role: string | null; teamId?: number | null; offerBuilder?: boolean; timeEntries?: boolean; deliverable?: boolean }
   documents: MapDocumentData[]
   canEdit: boolean
   limits: DocumentLimits
@@ -97,11 +98,12 @@ export default function MapDocuments({ map, documents, canEdit, limits }: Props)
     if (canEdit) addFiles(event.dataTransfer.files)
   }
 
-  async function save(doc: MapDocumentData, patch: { title?: string; description?: string; tags?: string[] }) {
+  async function save(doc: MapDocumentData, patch: { title?: string; description?: string; tags?: string[]; in_deliverable?: boolean }) {
     setError(null)
     try {
       const saved = await api<MapDocumentData>(`${endpoint}/${doc.id}`, { method: 'PATCH', body: { document: patch } })
       setDocs((list) => list.map((d) => (d.id === saved.id ? saved : d)))
+      if (patch.in_deliverable !== undefined) toast(t(patch.in_deliverable ? 'deliverables.mark.saved_on' : 'deliverables.mark.saved_off'))
     } catch (e) {
       setError(e instanceof ApiError ? e.message : t('documents.errors.generic'))
     }
@@ -253,6 +255,7 @@ export default function MapDocuments({ map, documents, canEdit, limits }: Props)
           .filter((tag, i, all) => all.findIndex((o) => o.toLowerCase() === tag.toLowerCase()) === i)}
         onSave={save} onDelete={remove} onConvert={convert}
         pageUrl={(doc) => `${endpoint}/${doc.id}`}
+        deliverable={!!map.deliverable}
       />
       {canEdit && (
         <NewDocumentDialog open={writing} onClose={() => setWriting(false)} endpoint={endpoint}

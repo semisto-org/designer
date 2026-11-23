@@ -31,6 +31,7 @@ module Mcp
             duration_s: blob&.metadata&.dig("duration")&.to_f&.round,
             width: blob&.metadata&.dig("width"), height: blob&.metadata&.dig("height"), filename: blob&.filename&.to_s,
             uploaded_by: photo.uploaded_by&.display_name, bioindicator_status: photo.bioindicator_status,
+            in_deliverable: photo.in_deliverable? || nil,
             created_at: photo.created_at.iso8601
           }.compact
         end

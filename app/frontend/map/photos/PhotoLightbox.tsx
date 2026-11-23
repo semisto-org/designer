@@ -7,6 +7,7 @@ import { Field, Input, Select, Textarea } from '@/components/ui/Field'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { usePhotoHost } from '@/map/photos/host'
+import { DeliverableToggle } from '@/deliverables/DeliverableToggle'
 import { formatDateTime, formatDuration, headingLabel, photoDate, photoLabel, photoUrl } from '@/map/photos/format'
 import { PhotoCameraDetails } from '@/map/photos/PhotoCameraDetails'
 import { PhotoThumb } from '@/map/photos/PhotoThumb'
@@ -135,8 +136,10 @@ export function PhotoLightbox({ order }: { order?: MapPhotoData[] } = {}) {
     try {
       const saved = await api<MapPhotoData>(base, { method: 'PATCH', body: { photo: patch } })
       photoActions.upsert(saved)
+      return true
     } catch (error) {
       host.notify((error as Error).message, 'error')
+      return false
     }
   }
 
@@ -266,6 +269,10 @@ export function PhotoLightbox({ order }: { order?: MapPhotoData[] } = {}) {
             onChange={(e) => setCaption(e.target.value)}
             onBlur={() => caption.trim() !== (photo.caption ?? '') && save({ caption: caption.trim() })} />
         </Field>
+
+        {canEdit && host.deliverable && (
+          <DeliverableToggle checked={!!photo.inDeliverable} onChange={(on) => void save({ in_deliverable: on }).then((ok) => ok && host.notify(t(on ? 'deliverables.mark.saved_on' : 'deliverables.mark.saved_off')))} />
+        )}
 
         <dl className="space-y-1 text-sm">
           <div className="flex items-start gap-2">
