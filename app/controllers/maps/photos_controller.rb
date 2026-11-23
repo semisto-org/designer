@@ -20,7 +20,8 @@ module Maps
       if request.format.html?
         return render inertia: "maps/photos/index", props: {
           map: @map.as_inertia(Current.user).slice(:id, :name, :areaM2, :role, :teamId)
-            .merge(offerBuilder: Offer.shown_to?(@map, Current.user), timeEntries: TimeEntry.tab_for?(@map, Current.user)),
+            .merge(offerBuilder: Offer.shown_to?(@map, Current.user), timeEntries: TimeEntry.tab_for?(@map, Current.user),
+                   deliverable: Entitlements.for_map(@map).deliverables?),
           canEdit: editor?
         }
       end
@@ -79,11 +80,16 @@ module Maps
       head :no_content
     end
 
-    # Files several photos at once into an album (or out of any album).
+    # Files several photos at once into an album (or out of any album), or
+    # puts them in the client deliverable (`in_deliverable`) or out of it.
     def bulk_update
-      album_id = params[:photo_album_id].presence
-      album = album_id && @map.photo_albums.find(album_id)
-      @photos.update_all(photo_album_id: album&.id, updated_at: Time.current)
+      if params.key?(:in_deliverable)
+        @photos.update_all(in_deliverable: ActiveModel::Type::Boolean.new.cast(params[:in_deliverable]) == true, updated_at: Time.current)
+      else
+        album_id = params[:photo_album_id].presence
+        album = album_id && @map.photo_albums.find(album_id)
+        @photos.update_all(photo_album_id: album&.id, updated_at: Time.current)
+      end
       render json: { photos: @map.photos.where(id: @photos.ids).includes(:uploaded_by, image_attachment: :blob).map(&:as_inertia), albums: albums_json }
     end
 
@@ -156,7 +162,7 @@ module Maps
       # Position arrives as lng/lat (read from the EXIF block by the browser, or
       # clicked on the map); empty values clear it.
       def photo_params
-        raw = params.require(:photo).permit(:image, :caption, :taken_at, :heading, :photo_album_id, :map_feature_id, :soil_sample_id, :source, :location_source, :lng, :lat, :bioindicator_status, :retake_of_id)
+        raw = params.require(:photo).permit(:image, :caption, :taken_at, :heading, :photo_album_id, :map_feature_id, :soil_sample_id, :source, :location_source, :lng, :lat, :bioindicator_status, :retake_of_id, :in_deliverable)
         if raw.key?(:lng) || raw.key?(:lat)
           raw[:location] = MapPhoto.point_from(raw[:lng], raw[:lat])
         end

@@ -88,6 +88,7 @@ function describe(action: AiActionData): string {
     case 'attach_documents': return t('ai_journal.actions.attach_documents', { count: n('attached') })
     case 'import_from_url': return t('ai_journal.actions.import_from_url', { count: n('imported') })
     case 'rename_document_tag': return t('ai_journal.actions.rename_document_tag', { count: n('renamed') })
+    case 'mark_for_deliverable': return t('ai_journal.actions.mark_for_deliverable', { count: n('changed') })
     case 'delete_documents': return t('ai_journal.actions.delete_documents', { count: n('deleted') })
     default: return t(`ai_journal.actions.${action.tool}`)
   }

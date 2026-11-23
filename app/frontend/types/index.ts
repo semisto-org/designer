@@ -32,6 +32,8 @@ export type EntitlementsData = {
   /** « Mettre en image » on photos. */
   renderings: boolean
   offers: boolean
+  /** The client deliverable (« Livrable client »), Pro and Team. */
+  deliverables?: boolean
 }
 
 export type SharedProps = {

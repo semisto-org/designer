@@ -3,6 +3,7 @@ import { ClipboardList, MessageSquareText } from 'lucide-react'
 import { useState } from 'react'
 import { t } from '@/lib/i18n'
 import { DocumentIcon, extensionLabel } from '@/documents/DocumentIcon'
+import { DeliverableBadge } from '@/deliverables/DeliverableToggle'
 import type { MapDocumentData } from '@/types/documents'
 
 /** A document as a sheet of paper in the library: its first page (or picture), its title, its tags. */
@@ -40,6 +41,7 @@ export function DocumentTile({ doc, onOpen, selected }: { doc: MapDocumentData; 
             <DocumentIcon kind={doc.kind} filename={doc.filename} className="h-16 w-16" />
           </span>
         )}
+        {doc.inDeliverable && <DeliverableBadge className="absolute bottom-2 right-2" />}
         {!doc.form && <span className="absolute bottom-2 left-2 rounded-full bg-white/90 px-2 py-0.5 text-sm font-medium text-loam-600 shadow-sm">{extensionLabel(doc.filename)}</span>}
         {doc.origin === 'form' && (
           <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-lichen-700/90 px-2 py-0.5 text-sm text-white" title={t('forms.viewer.badge')}>

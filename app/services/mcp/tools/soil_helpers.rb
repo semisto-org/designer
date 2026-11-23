@@ -18,7 +18,8 @@ module Mcp
             reports: sample.lab_reports.map { |report| { report_id: report.id, filename: report.filename.to_s, byte_size: report.byte_size } },
             # The photos of the point (hole, core, profile), to look at with get_photo.
             photos: sample.photos.map { |photo| { photo_id: photo.id, caption: photo.caption, taken_at: photo.taken_at&.iso8601, kind: photo.kind }.compact },
-            draft_pending: sample.draft.pending? || nil
+            draft_pending: sample.draft.pending? || nil,
+            in_deliverable: sample.in_deliverable? || nil
           }.compact
         end
 

@@ -2,6 +2,7 @@ import { Head, router } from '@inertiajs/react'
 import clsx from 'clsx'
 import {
   Camera, Check, CheckSquare, Flower2, FolderInput, FolderPlus, Images, ImagePlus, Leaf, Loader2, MapPinOff, Paintbrush, Pencil, Snowflake, Sun, Trash2, X,
+  FolderLock,
 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type DragEvent, type MouseEvent, type ReactNode } from 'react'
 import { MapViewHeader } from '@/components/map_views/MapViews'
@@ -21,7 +22,7 @@ import { uploadActions, useUploads } from '@/map/photos/upload'
 import type { MapPhotoData, PhotoAlbumData } from '@/types/soil_photos'
 
 type Props = {
-  map: { id: number; name: string; role: string | null; teamId?: number | null; offerBuilder?: boolean; timeEntries?: boolean }
+  map: { id: number; name: string; role: string | null; teamId?: number | null; offerBuilder?: boolean; timeEntries?: boolean; deliverable?: boolean }
   canEdit: boolean
 }
 
@@ -95,10 +96,11 @@ export default function MapPhotos({ map, canEdit }: Props) {
   const host = useMemo<PhotoHost>(() => ({
     mapId: map.id,
     canEdit,
+    deliverable: !!map.deliverable,
     notify,
     locate: (photo) => router.visit(`/maps/${map.id}?photo=${photo.id}`),
     place: (photo) => router.visit(`/maps/${map.id}?place=${photo.id}`),
-  }), [map.id, canEdit])
+  }), [map.id, canEdit, map.deliverable])
 
   const photos = state.photos
   const albumName = useMemo(() => new Map(state.albums.map((a) => [a.id, a.name])), [state.albums])
@@ -175,6 +177,21 @@ export default function MapPhotos({ map, canEdit }: Props) {
     setSelecting(false)
     setSelected(new Set())
     setAnchor(null)
+  }
+
+  // « Mettre dans le livrable » / « Retirer du livrable » (Pro and Team).
+  async function markForDeliverable(on: boolean, ids: number[]) {
+    if (ids.length === 0) return
+    try {
+      const data = await api<{ photos: MapPhotoData[]; albums: PhotoAlbumData[] }>(`/maps/${map.id}/photos/bulk`, {
+        method: 'PATCH', body: { ids, in_deliverable: on },
+      })
+      data.photos.forEach((p) => photoActions.upsert(p))
+      notify(t('deliverables.mark.bulk_done', { count: ids.length }))
+      stopSelecting()
+    } catch (error) {
+      notify((error as Error).message, 'error')
+    }
   }
 
   async function fileInto(albumId: number | null, ids: number[]) {
@@ -357,6 +374,16 @@ export default function MapPhotos({ map, canEdit }: Props) {
             {state.albums.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
             <option value="none">{t('photo_pages.out_of_album')}</option>
           </Select>
+          {map.deliverable && (
+            <>
+              <Button size="sm" variant="secondary" disabled={selected.size === 0} onClick={() => void markForDeliverable(true, [...selected])}>
+                <FolderLock className="h-4 w-4" aria-hidden />{t('deliverables.mark.bulk_on')}
+              </Button>
+              <Button size="sm" variant="ghost" className="!text-white hover:!bg-white/10" disabled={selected.size === 0} onClick={() => void markForDeliverable(false, [...selected])}>
+                {t('deliverables.mark.bulk_off')}
+              </Button>
+            </>
+          )}
           <Button size="sm" variant="danger" disabled={selected.size === 0} onClick={destroySelected}><Trash2 className="h-4 w-4" />{t('common.delete')}</Button>
           <button type="button" onClick={stopSelecting} className="rounded-full p-1.5 hover:bg-white/10" aria-label={t('common.cancel')}><X className="h-5 w-5" /></button>
         </div>
@@ -413,6 +440,7 @@ function Tile({ mapId, photo, selecting, selected, draggable, onDragStart, onCli
         </span>
       )}
       <span className="absolute right-1.5 top-1.5 flex gap-1">
+        {photo.inDeliverable && <Badge className="bg-prune-600 text-white" label={t('deliverables.mark.badge')}><FolderLock className="h-3.5 w-3.5" /></Badge>}
         {photo.derivedFromId != null && <Badge className="bg-leaf-600 text-white" label={t('photo_renderings.badge')}><Paintbrush className="h-3.5 w-3.5" /></Badge>}
         {photo.sketchesCount > 0 && <Badge className="bg-prune-600 text-white" label={t('photo_sketches.badge', { count: photo.sketchesCount })}><Pencil className="h-3.5 w-3.5" /></Badge>}
         {photo.lng == null && <Badge className="bg-humus-100 text-humus-700" label={t('soil_photos.panel.not_placed')}><MapPinOff className="h-3.5 w-3.5" /></Badge>}

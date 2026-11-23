@@ -1,7 +1,7 @@
 import { ChevronDown, X } from 'lucide-react'
 import { area } from '@turf/turf'
 import type { Map as MapLibreMap, MapMouseEvent, StyleSpecification } from 'maplibre-gl'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { LayerLegend } from '@/components/legend/LayerLegend'
 import { formatArea, formatLength, t } from '@/lib/i18n'
 import { installPublicLayers } from '@/collab/publicLayers'
@@ -32,8 +32,10 @@ import { arcRadius, GROUP_COLORS, isSectorType, SECTOR_COLORS, sectorGroup, type
  * and region base layers, the garden through the years, the legend and a
  * card per element. Shared by the public view (/p/:token) and the offline
  * site (app/frontend/offline), which each add their own header and footer.
+ * `children` are drawn inside the map (the client deliverable's photo and
+ * soil points).
  */
-export function PublicMapView({ className, mapStyle, ...published }: PublicMapProps & { className?: string; mapStyle?: StyleSpecification }) {
+export function PublicMapView({ className, mapStyle, children, ...published }: PublicMapProps & { className?: string; mapStyle?: StyleSpecification; children?: ReactNode }) {
   const { map } = published
   // When the owner shows the project, the visitor switches between the land today and the project (project first).
   const project = useMemo(() => hasProject(published.features as never), [published.features])
@@ -76,6 +78,7 @@ export function PublicMapView({ className, mapStyle, ...published }: PublicMapPr
         {plants.length > 0 && <Garden plants={plants} year={moment.year} season={moment.season} latitude={map.center?.[1] ?? plants[0].lat} />}
         {props.growth && props.growth.plants.length > 0 && <PlantNumbers growth={props.growth} year={moment.year} visible={showNumbers} />}
         {published.sectors && map.center && <PublicSectorArcs sectors={published.sectors} center={map.center} bbox={map.bbox} hidden={hiddenSectorGroups} />}
+        {children}
       </MapView>
       {props.description && <About text={props.description} />}
       {props.growth && plants.length > 0 && published.showGrowth !== false && (

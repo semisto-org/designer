@@ -19,12 +19,17 @@ fr:
         Les jardiniers s'échangent aussi les plantes qui ont fait leurs preuves. Les propriétaires d'un lieu (place dans get_map) peuvent montrer ses plantes en terre aux autres et accepter leurs demandes de multiplication : get_plant dit dans sharedGardens où une espèce est en terre ailleurs (région et distance arrondie, jamais le lieu ni les personnes), et list_propagation_requests donne les demandes reçues et envoyées. Pour quelqu'un qui cherche une variété, regarde sharedGardens avant les pépinières ; la demande et la réponse se font par la personne, dans l'application.
         Le catalogue de plantes est commun à tous et se trompe parfois (une vivace rangée en arbuste, une taille absente) : quand une fiche de get_plant te semble fausse, dis-le à la personne et, si elle est d'accord, suggest_plant_corrections suggère la bonne valeur avec la page qui la dit. Un relecteur de Semisto décide ; la fiche ne change pas avant.
         Quand la personne veut garder sa carte hors de Terranova (sur le terrain sans réseau, une clé USB, une archive pour plus tard), prepare_offline_site prépare le site hors ligne : un dossier zip qui s'ouvre dans n'importe quel navigateur, sans compte ni connexion, avec le plan, le jardin au fil des années, les photos, les documents et les données.
+        Une équipe de conception (formules Pro et Team) remet à son client un livrable (« Livrable client », deliverable dans get_map) : le dossier complet du projet, à un lien privé, avec le plan publié et les documents, photos, vidéos et analyses de sol qu'elle y a cochés. mark_for_deliverable coche ou décoche ces fichiers quand la personne te le demande ; aide-la à choisir ce qui servira au client sur son terrain (plans, analyses, photos de l'existant et des repères) et ce qui reste interne à l'équipe.
         Les documents qu'envoient un compte Pro ou une équipe (l'offre, les documents des cartes) portent sa charte graphique : get_document_theme la lit ; quand la personne te demande de l'aligner sur son Design System ou sur sa marque, lis-les puis propose-la avec propose_document_theme (couleurs, polices de la liste, pied de page) : elle la prend ou la refuse sur la page « Charte graphique ».
         Pour l'équipe qui chiffre le projet, get_offer donne l'offre en cours et son document client bloc par bloc ; quand elle te demande la lettre « Votre projet », écris-la d'après la fiche projet, la carte et les documents de la visite, puis propose-la avec propose_offer_letter : elle la prend ou la refuse dans l'offre.
         Pour l'équipe qui mène un projet (formules Pro et Team), « Temps et dépenses » suit les heures et les kilomètres de chacun face à l'offre acceptée : list_time_entries avec map_id dit où en est chaque phase, sans map_id les heures de la personne et ce qu'il lui reste à facturer ; quand elle te dit ce qu'elle a fait (« 3 h hier chez Dupont, 64 km »), note-le avec record_time_entries, puis rappelle-lui son relevé de prestations à joindre à sa facture. Après une visite de terrain (list_site_visits), propose-lui de noter le temps passé dehors. Quand elle te dit ce qu'elle a acheté pour un projet (plants, paillage, protections…), note-le avec record_project_expenses, avec qui le paie. Jamais de tarif ni de marge. Le client ne voit rien de tout ça, sauf si l'équipe a activé « Montrer au client » : list_time_entries lui donne alors l'avancement de chaque phase en % et les dépenses (sans le prix d'achat, le fournisseur ni les notes de l'équipe), et il peut noter ses propres achats.
         list_site_visits donne les visites de terrain faites avec l'app mobile : quand, par qui, le compte rendu (un document Markdown, à lire avec get_document), l'enregistrement audio de la visite quand il y en a un (un document « Enregistrement audio de la visite du jj/mm/aaaa », que tu ne peux pas encore écouter : demande à la personne ce qui s'y est dit, ou sa transcription) et le tracé de la marche.
         Les réseaux (eau, gaz, électricité, câbles) sont masqués par défaut. Chaque appel est inscrit au journal IA de la carte, visible par son propriétaire.
     params:
+      in_deliverable: "true met ces fichiers dans le livrable client, false les en retire."
+      deliverable_document_ids: "Documents de la bibliothèque (list_documents) à mettre dans le livrable ou à en retirer."
+      deliverable_photo_ids: "Photos et vidéos (list_photos) à mettre dans le livrable ou à en retirer."
+      deliverable_soil_sample_ids: "Points d'analyse de sol (get_soil_samples) à mettre dans le livrable ou à en retirer. Seuls les points déjà prélevés y apparaissent, avec leurs photos et les rapports du laboratoire."
       map_id: "Identifiant de la carte, donné par list_maps."
       theme_team_id: "Identifiant d'une équipe de la personne (teams dans get_document_theme). Sans lui : la charte de son propre compte."
       layer: "Couche : existing (existant), water (eau), access (accès), structures, plants (plantes), animals (animaux), networks (réseaux), drawings (dessins : zones et lignes libres, nommées et colorées, kinds zone et line), notes (notes, mesures, croquis, secteurs, zones de permaculture). drawings et notes se dessinent par-dessus le terrain sans y exister."
@@ -90,6 +95,9 @@ fr:
       photo_location: "Endroit de la prise de vue, [longitude, latitude] en WGS84. null l'efface."
       heading: "Direction de l'appareil, en degrés depuis le nord (0 à 360, 90 = est). null l'efface."
     tools:
+      mark_for_deliverable:
+        title: "Choisir les fichiers du livrable client"
+        description: "Met des documents, photos, vidéos et points d'analyse de sol dans le livrable client de la carte (panneau « Livrable client », formules Pro et Team), ou les en retire, comme la case « Dans le livrable client » de chacun. Le livrable est le dossier complet du projet que l'équipe remet à son client par un lien privé : le plan publié, et à côté les fichiers cochés, visibles par le client dès qu'ils sont cochés. Ne le fais que quand la personne te le demande, après lui avoir dit quels fichiers partent chez le client (in_deliverable dans list_documents, list_photos et get_soil_samples dit ce qui y est déjà) ; garde hors du livrable ce qui est interne à l'équipe (offres, notes, comptes rendus de réunion). Rien d'autre ne change. Publier ou mettre à jour le plan du livrable reste un geste de l'équipe dans le panneau. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et une formule Pro ou Team pour la carte."
       list_maps:
         title: "Lister mes cartes"
         description: "Liste les cartes auxquelles l'utilisateur a accès (propriétaire, éditeur ou lecteur) : nom, rôle, étape, région, surface et brouillons en attente ; pour un projet d'équipe, team_board dit sa colonne sur le tableau de l'équipe (stage), la section de l'équipe où il est rangé (section, par exemple « Pré-design »), s'il est en veille (on_hold) ou sans suite (closed). Point de départ : passe ensuite l'identifiant d'une carte à get_map."
@@ -710,6 +718,10 @@ fr:
       plan_write: "Le forfait qui couvre la carte (celui de son équipe, sinon de son propriétaire) ne comprend pas l'écriture par l'IA, et il n'a pas d'essai en cours."
       read_only: "La carte dépasse le nombre de cartes du forfait de son propriétaire : elle est en lecture seule."
     notes:
+      deliverable: "Le livrable client (panneau « Livrable client », formules Pro et Team) : le dossier complet du projet que l'équipe remet à son client par un lien privé, jamais indexé. Le plan y est figé à la publication (stale = la carte a changé depuis, l'équipe peut le mettre à jour dans le panneau) ; les fichiers cochés (marked : documents, photos, vidéos, analyses de sol) y sont lus en direct. mark_for_deliverable en ajoute ou en retire quand la personne le demande. L'URL est la clé privée du client : ne la donne qu'à l'équipe."
+      deliverable_none: "Pas encore de livrable client. available = la formule de la carte le permet : l'équipe le publie depuis le panneau « Livrable client » ; marked dit combien de fichiers sont déjà cochés pour lui."
+      deliverable_marked: "C'est fait : le client les voit déjà dans son livrable, à l'adresse deliverable_url."
+      deliverable_marked_unpublished: "C'est noté sur les fichiers. Le livrable n'est pas encore en ligne : l'équipe le publie depuis le panneau « Livrable client », et le client y trouvera alors ces fichiers."
       reader_guide: "L'utilisateur est lecteur de cette carte, souvent la personne pour qui le jardin est conçu. Pour l'aider à lire le plan (pointillés, frise du temps, questions sur un élément, impression, tâches), réponds d'après ce guide (get_help avec ce slug) et donne-lui son lien ; invite-le à aller voir sur place ce que le plan prévoit."
       offer_letter: "Pour écrire la lettre « Votre projet », lis aussi get_project_sheet et les documents de la visite (list_documents), puis propose-la avec propose_offer_letter : l'équipe la revoit dans « Document client »."
       review_document_theme: "Charte proposée. Dis à la personne de la relire sur la page « Charte graphique » (review_url) pour la prendre ou la refuser ; le logo et l'image de page de garde s'y changent aussi."
@@ -772,6 +784,8 @@ fr:
       photos_attached: "Les photos sont sur la page « Photos » de la carte (url) ; celles qui ont un endroit apparaissent aussi sur la carte. L'appareil et la direction d'un drone sont lus dans la minute."
       photo_added: "La photo est sur la page « Photos » de la carte (url) ; placée, elle apparaît aussi sur la carte."
     errors:
+      deliverable_plan: "Le livrable client fait partie des formules Pro et Team : la formule qui couvre cette carte ne le comprend pas."
+      deliverable_unknown: "Ces fichiers ne sont pas sur cette carte : %{details}."
       time_not_allowed: "Le temps de ce projet est réservé à l'équipe qui le mène : l'équipe de la carte, ou ses éditeurs quand c'est la carte d'un compte Pro."
       time_plan: "Le suivi du temps de ce projet demande la formule Pro ou Team de son propriétaire."
       time_date: "« %{value} » n'est pas une date (AAAA-MM-JJ)."
@@ -1046,6 +1060,10 @@ fr:
     connect: "Connecter ton IA"
     docs: "Documentation du serveur MCP"
     actions:
+      mark_for_deliverable:
+        zero: "a revu les fichiers du livrable client"
+        one: "a changé 1 fichier du livrable client"
+        other: "a changé %{count} fichiers du livrable client"
       list_maps: "a listé les cartes"
       get_map: "a lu la fiche de la carte"
       list_features:

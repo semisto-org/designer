@@ -93,6 +93,8 @@ class MapPhoto < ApplicationRecord
   scope :for_bioindicators, -> { where.not(bioindicator_status: nil) }
   scope :images, -> { where(kind: "photo") }
   scope :videos, -> { where(kind: "video") }
+  # Shown to the client in the map's deliverable (« Livrable client »).
+  scope :in_deliverable, -> { where(in_deliverable: true) }
   scope :chronological, -> { order(Arel.sql("COALESCE(map_photos.taken_at, map_photos.created_at) DESC"), id: :desc) }
 
   # Photos linked to a map feature or taken within `meters` of it, each with
@@ -154,7 +156,7 @@ class MapPhoto < ApplicationRecord
       width: meta["width"], height: meta["height"], durationS: meta["duration"]&.to_f&.round,
       byteSize: blob&.byte_size, filename: blob&.filename&.to_s,
       uploadedBy: uploaded_by&.display_name,
-      bioindicatorStatus: bioindicator_status, bioindicatorSummary: bioindicator_summary,
+      bioindicatorStatus: bioindicator_status, bioindicatorSummary: bioindicator_summary, inDeliverable: in_deliverable,
       distanceM: has_attribute?(:distance_m) ? self[:distance_m]&.to_f&.round : nil
     }
   end

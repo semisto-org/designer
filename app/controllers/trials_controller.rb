@@ -133,7 +133,7 @@ class TrialsController < ApplicationController
     def source_publication
       token = params[:from].to_s
       return nil unless token.match?(/\A#{MapPublication::TOKEN_PATTERN}\z/)
-      MapPublication.includes(:map).find_by(token:)&.then { |p| p.live? ? p : nil }
+      MapPublication.public_views.includes(:map).find_by(token:)&.then { |p| p.live? ? p : nil }
     end
 
     def remember_source(publication)

@@ -54,6 +54,9 @@ class Entitlements
   def renderings_per_month = unlimited? ? BETA_RENDERINGS_PER_MONTH : PLANS[plan][:renderings_per_month]
   # The offer builder, for professionals (Offer.usable_by? adds team maps).
   def offers? = PLANS[plan][:offers] || unlimited?
+  # The client deliverable (« Livrable client »): the professional plans, the
+  # same ones as the offer builder.
+  def deliverables? = offers?
 
   # Drafts come from the trial only, not from the plan.
   def ai_trial? = !PLANS[plan][:ai_drafts] && @ai_trial_ends_at.present? && Time.current < @ai_trial_ends_at
@@ -63,7 +66,7 @@ class Entitlements
   def as_json(*)
     {
       plan:, maxMaps: max_maps, storageBytes: storage_bytes, pdfExport: pdf_export?, analyses: analyses?, aiDrafts: ai_drafts?,
-      renderings: renderings?, renderingsPerMonth: renderings_per_month, offers: offers?, aiTrialEndsAt: ai_trial_ends_at&.iso8601
+      renderings: renderings?, renderingsPerMonth: renderings_per_month, offers: offers?, deliverables: deliverables?, aiTrialEndsAt: ai_trial_ends_at&.iso8601
     }
   end
 

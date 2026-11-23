@@ -10,6 +10,7 @@ import { FormAnswers } from '@/documents/FormAnswers'
 import { MarkdownPreview } from '@/documents/markdown/MarkdownPreview'
 import { PdfPages } from '@/documents/PdfPages'
 import { TagEditor } from '@/documents/TagEditor'
+import { DeliverableToggle } from '@/deliverables/DeliverableToggle'
 import { documentSize } from '@/documents/compression'
 import type { MapDocumentData } from '@/types/documents'
 
@@ -19,18 +20,20 @@ import type { MapDocumentData } from '@/types/documents'
  * page of its own (`pageUrl`), anything else waits for a download. Its title,
  * note and tags sit beside it; arrows and keys move through the list.
  */
-export function DocumentViewer({ docs, openId, onOpen, canEdit, tagSuggestions, onSave, onDelete, onConvert, pageUrl }: {
+export function DocumentViewer({ docs, openId, onOpen, canEdit, tagSuggestions, onSave, onDelete, onConvert, pageUrl, deliverable = false }: {
   docs: MapDocumentData[]
   openId: number | null
   onOpen: (id: number | null) => void
   canEdit: boolean
   tagSuggestions: string[]
-  onSave?: (doc: MapDocumentData, patch: { title?: string; description?: string; tags?: string[] }) => Promise<void>
+  onSave?: (doc: MapDocumentData, patch: { title?: string; description?: string; tags?: string[]; in_deliverable?: boolean }) => Promise<void>
   onDelete?: (doc: MapDocumentData) => Promise<void>
   /** Asks the server for a PDF of a word-processor file (the map's library only). */
   onConvert?: (doc: MapDocumentData) => Promise<void>
   /** The page where a Markdown document is read and written (the map's library only). */
   pageUrl?: (doc: MapDocumentData) => string
+  /** The map's plan includes the client deliverable: editors mark documents for it. */
+  deliverable?: boolean
 }) {
   const index = docs.findIndex((d) => d.id === openId)
   const doc = index >= 0 ? docs[index] : null
@@ -188,6 +191,9 @@ export function DocumentViewer({ docs, openId, onOpen, canEdit, tagSuggestions, 
         ) : doc.description ? (
           <p className="whitespace-pre-line text-sm text-loam-700">{doc.description}</p>
         ) : null}
+        {deliverable && canEdit && onSave && (
+          <DeliverableToggle checked={!!doc.inDeliverable} onChange={(on) => save({ in_deliverable: on })} />
+        )}
         <div>
           <h3 className="mb-1 text-sm font-medium text-loam-700">{t('tags.title')}</h3>
           <TagEditor tags={doc.tags} suggestions={tagSuggestions} canEdit={canEdit && !!onSave} onChange={(tags) => save({ tags })} />

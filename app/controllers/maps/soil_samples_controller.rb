@@ -82,7 +82,7 @@ module Maps
       end
 
       def sample_params
-        raw = params.require(:soil_sample).permit(:label, :depth_from_cm, :depth_to_cm, :status, :sampled_on, :lab, :lab_reference, :notes, :lng, :lat, results: SoilSample::RESULT_KEYS, other_results: %i[name value unit])
+        raw = params.require(:soil_sample).permit(:label, :depth_from_cm, :depth_to_cm, :status, :sampled_on, :lab, :lab_reference, :notes, :lng, :lat, :in_deliverable, results: SoilSample::RESULT_KEYS, other_results: %i[name value unit])
         # An emptied list arrives as nothing at all in a JSON body.
         raw[:other_results] = [] if params[:soil_sample].key?(:other_results) && raw[:other_results].nil?
         raw[:location] = MapPhoto.point_from(raw[:lng], raw[:lat]) if raw.key?(:lng) || raw.key?(:lat)
