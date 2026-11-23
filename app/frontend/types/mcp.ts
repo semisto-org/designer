@@ -13,7 +13,13 @@ export type AiTrialData = {
   days: number
   endsAt: string
   daysLeft: number | null
+  /** Teams whose plan already covers drafts on their maps: the trial plays no part there. */
+  coveredTeams: string[]
 } | null
+
+/** « Semisto », « Semisto et Les 4 Sources », « A, B et C ». */
+export const joinTeamNames = (names: string[]) =>
+  names.length < 2 ? names.join('') : `${names.slice(0, -1).join(', ')} et ${names[names.length - 1]}`
 
 export const formatTrialDate = (iso: string) =>
   new Intl.DateTimeFormat('fr-BE', { dateStyle: 'long' }).format(new Date(iso))

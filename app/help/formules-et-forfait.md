@@ -68,7 +68,7 @@ Avec la carte gratuite, ton IA lit tes cartes. Pour voir ce qu'elle apporte vrai
 - trois jours avant la fin, tu reçois un e-mail de rappel ;
 - à la fin, rien ne disparaît : ton IA continue de lire tes cartes, et ce que tu as accepté reste sur la carte. Seuls les nouveaux brouillons demandent une formule.
 
-L'essai n'a lieu qu'une fois par compte.
+L'essai n'a lieu qu'une fois par compte. Il ne concerne que **tes propres cartes** : sur les cartes d'une équipe dont un admin paie le forfait, ton IA pose ses brouillons avec la formule de l'équipe, avant, pendant et après ton essai. Si toutes tes cartes sont dans une telle équipe, tu ne reçois pas l'e-mail de rappel.
 
 ## La mission drone : 380 €
 

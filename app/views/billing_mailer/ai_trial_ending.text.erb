@@ -3,6 +3,9 @@
 <%= t("billing_mailer.ai_trial_ending.body", date: @ends_on) %>
 
 <%= t("billing_mailer.ai_trial_ending.after") %>
+<% if @covered_teams.any? %>
+<%= t("billing_mailer.ai_trial_ending.teams", count: @covered_teams.size, teams: @covered_teams.to_sentence) %>
+<% end %>
 
 <%= t("billing_mailer.ai_trial_ending.cta") %> : <%= @billing_url %>
 

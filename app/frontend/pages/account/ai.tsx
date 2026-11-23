@@ -7,7 +7,7 @@ import { Card, EmptyState } from '@/components/ui/Card'
 import { Field, Input, Select } from '@/components/ui/Field'
 import { api, ApiError } from '@/lib/api'
 import { t } from '@/lib/i18n'
-import { formatTrialDate, type AiAccessLevel, type AiTrialData, type ApiTokenData, type AuthorizedAppData } from '@/types/mcp'
+import { formatTrialDate, joinTeamNames, type AiAccessLevel, type AiTrialData, type ApiTokenData, type AuthorizedAppData } from '@/types/mcp'
 
 type Props = {
   endpoints: { mcp: string; docs: string }
@@ -149,6 +149,9 @@ function TrialNote({ trial }: { trial: NonNullable<AiTrialData> }) {
     <div className={`mt-3 rounded-lg p-3 text-sm ${trial.state === 'ended' ? 'bg-humus-50 text-humus-800' : 'bg-leaf-50 text-leaf-800'}`}>
       <p className="flex items-center gap-2 font-semibold"><Icon className="h-4 w-4 shrink-0" />{title}</p>
       <p className="mt-1">{t(`account_ai.trial.${trial.state}`, { date })}</p>
+      {trial.coveredTeams.length > 0 && (
+        <p className="mt-1">{t('account_ai.trial.teams', { count: trial.coveredTeams.length, teams: joinTeamNames(trial.coveredTeams) })}</p>
+      )}
       {trial.state !== 'available' && (
         <a href="/billing" className="mt-2 inline-block font-medium text-prune-600 hover:text-prune-800">{t('account_ai.trial.plans')}</a>
       )}

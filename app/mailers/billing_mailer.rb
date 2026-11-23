@@ -25,6 +25,7 @@ class BillingMailer < ApplicationMailer
   def ai_trial_ending(user)
     @user = user
     @ends_on = french_date(user.ai_trial_ends_at)
+    @covered_teams = user.ai_drafts_teams.map(&:name)
     @billing_url = billing_url
     @account_ai_url = account_ai_url
     mail to: @user.email_address, subject: t(".subject", date: @ends_on)

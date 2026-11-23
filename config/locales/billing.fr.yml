@@ -268,6 +268,9 @@ fr:
       subject: "Ton essai des brouillons de ton IA se termine le %{date}"
       body: "Depuis bientôt deux semaines, ton IA peut poser des brouillons sur tes cartes Semisto Terranova. Ton essai se termine le %{date}."
       after: "Ensuite, rien ne disparaît : ton IA continue de lire tes cartes, et tout ce que tu as accepté reste sur la carte. Seuls les nouveaux brouillons demanderont le forfait."
+      teams:
+        one: "Sur les cartes de l'équipe %{teams}, rien ne change : sa formule comprend les brouillons de ton IA. L'essai ne concerne que tes cartes personnelles, hors équipe."
+        other: "Sur les cartes des équipes %{teams}, rien ne change : leur formule comprend les brouillons de ton IA. L'essai ne concerne que tes cartes personnelles, hors équipe."
       cta: "Voir les formules"
       account: "Où en est la connexion de ton IA : %{url}"
     plan_started:
