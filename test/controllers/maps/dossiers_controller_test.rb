@@ -74,7 +74,7 @@ class Maps::DossiersControllerTest < ActionDispatch::IntegrationTest
     with_billing_enabled { get map_dossier_path(@map, format: :json) }
     json = response.parsed_body
     assert_equal({ "analyses" => false, "pdfExport" => false }, json["entitlements"])
-    assert_equal({ "locked" => true }, json.dig("terrain", "relief"))
+    assert_nil json.dig("terrain", "relief", "locked"), "the relief is for every plan"
     assert json.dig("climate", "projections", "locked")
     assert json.dig("climate", "current", "available")
   end

@@ -29,7 +29,6 @@ export type DossierRaster = {
 }
 
 export type DossierRelief =
-  | { locked: true }
   | {
       available: true
       stats: TerrainStats

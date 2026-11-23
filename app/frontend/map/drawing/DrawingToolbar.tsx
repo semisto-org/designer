@@ -128,7 +128,7 @@ export default function DrawingToolbar() {
     setDrawingSpec(spec)
     setDrawingPlanned(planned)
     // A swale or a keyline belongs on the contour: it starts there whenever the relief allows it.
-    const available = !!spec.contour && editor.entitlements.analyses && (await reliefReady(editor.map.id))
+    const available = !!spec.contour && (await reliefReady(editor.map.id))
     setContourAvailable(available)
     let follow = available && (spec.kind === 'swale' || spec.kind === 'keyline')
     let geometry: Geometry | null = null

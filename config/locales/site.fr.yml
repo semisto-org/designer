@@ -532,11 +532,11 @@ fr:
           - age: 0
             tag: "an 0 · gratuit"
             title: "Tu lis ton lieu"
-            body: "Le contour, les couches de ta région, ce qui est déjà là."
+            body: "Le contour, les couches de ta région, ce qui est déjà là, le relief en 3D et l'eau sur ta pente."
           - age: 1
             tag: "an 1 · Home, %{yearly}"
             title: "Une année pour concevoir"
-            body: "L'eau et le relief, le climat qui vient, les brouillons de ton IA, le plan à l'échelle."
+            body: "Le climat qui vient, la lecture du sol, les brouillons de ton IA, le plan à l'échelle."
           - age: 2
             tag: "an 2 · sans formule"
             title: "Tu plantes"
@@ -584,7 +584,9 @@ fr:
             values: ["no", "yes", "yes", "yes"]
           - label: "PDF à l'échelle"
             values: ["no", "yes", "yes", "yes"]
-          - label: "Analyses : eau et relief, climat futur, sol"
+          - label: "Relief en 3D, pluie, ruissellement et soleil sur ta pente"
+            values: ["yes", "yes", "yes", "yes"]
+          - label: "Analyses : climat futur et lecture du sol"
             values: ["no", "yes", "yes", "yes"]
           - label: "Brouillons de ton IA sur la carte (14 jours d'essai offerts)"
             values: ["no", "yes", "yes", "yes"]

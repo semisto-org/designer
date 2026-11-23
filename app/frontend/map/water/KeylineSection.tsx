@@ -17,7 +17,6 @@ type State = { status: 'loading' } | { status: 'ready'; lines: ParallelLine[] } 
  * previewed on the map before they are added.
  */
 export default function KeylineSection({ feature }: { feature: MapFeature }) {
-  const editor = useEditor()
   const p = feature.properties
   const use = useOf(p.use)
   const isKeyline = p.role !== 'parallel'
@@ -29,7 +28,7 @@ export default function KeylineSection({ feature }: { feature: MapFeature }) {
       </h3>
       <p className="text-sm text-loam-600">{t(isKeyline ? 'relief.parallels.intro' : 'relief.parallels.intro_parallel')}</p>
       <p className="text-sm text-loam-600">{t(`relief.parallels.time.${use}`)}</p>
-      {isKeyline && editor.entitlements.analyses && <Parallels feature={feature} />}
+      {isKeyline && <Parallels feature={feature} />}
     </section>
   )
 }
