@@ -449,6 +449,10 @@ Rails.application.routes.draw do
   # --- soil-photos ---
   resources :maps, only: [] do
     scope module: :maps do
+      # A large video, sent in parts (Maps::PhotoUploadsController).
+      resources :photo_uploads, only: %i[create show] do
+        post :complete, on: :member
+      end
       resources :photos, only: %i[index create update destroy] do
         collection do
           patch :bulk, action: :bulk_update

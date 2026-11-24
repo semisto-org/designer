@@ -1013,6 +1013,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_200000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "part_size"
+    t.jsonb "photo_params"
+    t.bigint "map_photo_id"
+    t.string "failure"
     t.index ["blob_id"], name: "index_mcp_uploads_on_blob_id", unique: true
     t.index ["created_at"], name: "index_mcp_uploads_unattached", where: "(attached_at IS NULL)"
     t.index ["map_id"], name: "index_mcp_uploads_on_map_id"
@@ -2221,6 +2224,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_200000) do
   add_foreign_key "maps", "users", column: "lead_id", on_delete: :nullify
   add_foreign_key "maps", "users", column: "owner_id"
   add_foreign_key "mcp_uploads", "active_storage_blobs", column: "blob_id", on_delete: :cascade
+  add_foreign_key "mcp_uploads", "map_photos", on_delete: :nullify
   add_foreign_key "mcp_uploads", "maps", on_delete: :cascade
   add_foreign_key "mcp_uploads", "users", on_delete: :cascade
   add_foreign_key "oauth_access_tokens", "oauth_clients", on_delete: :cascade

@@ -1,4 +1,7 @@
 import { useSyncExternalStore } from 'react'
+import { reportUploadFailure } from '@/documents/uploadFailure'
+import { sendInParts } from '@/drone/upload'
+import { api, ApiError } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { trackWrite, writeOutcome } from '@/lib/saveStatus'
 import { readPhotoMeta } from '@/map/photos/exif'
@@ -40,6 +43,15 @@ export type UploadOptions = {
 }
 
 const CONCURRENCY = 3
+/**
+ * A video heavier than this travels in parts (Maps::PhotoUploadsController):
+ * one long request is cut by the proxies in front of the app well before a
+ * few hundred MB arrive from a modest connection.
+ */
+const PARTS_ABOVE = 8 * 1024 * 1024
+/** How often, and how long, to ask whether the parts became a photo. */
+const PREPARE_POLL_MS = 2000
+const PREPARE_WAIT_MS = 10 * 60 * 1000
 const EXTENSIONS = /\.(jpe?g|png|webp|heic|heif|mp4|mov|webm)$/i
 const VIDEO_EXTENSIONS = /\.(mp4|mov|webm)$/i
 const NO_META: PhotoMeta = { lng: null, lat: null, heading: null, takenAt: null }
@@ -111,6 +123,66 @@ function csrfToken(): string {
   return document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? ''
 }
 
+/** What to tell the person when the server answers `status` without a message of its own. */
+function statusMessage(status: number): string {
+  if (status === 401) return t('soil_photos.errors.signed_out')
+  if (status === 413) return t('soil_photos.errors.too_heavy_for_server')
+  if (status === 502 || status === 503 || status === 504) return t('soil_photos.errors.server_cut', { status })
+  if (status >= 400) return t('soil_photos.errors.server_refused', { status })
+  return t('soil_photos.errors.upload_failed')
+}
+
+/** The message of an error met while sending in parts. */
+function partsErrorMessage(error: unknown): string {
+  if (error instanceof ApiError) return typeof error.data.message === 'string' ? error.data.message : statusMessage(error.status)
+  return t('soil_photos.errors.connection_lost')
+}
+
+type PartsState = { status: 'processing' | 'done' | 'failed'; photo?: MapPhotoData; message?: string }
+
+const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+/**
+ * Sends a large video in parts, then waits while the server puts them
+ * together and makes the photo. Resolves like `send` does.
+ */
+async function sendVideoInParts(
+  mapId: number, file: File, fields: Record<string, string>, query: string, onProgress: (percent: number) => void,
+): Promise<{ status: number; body: Record<string, unknown> }> {
+  const base = `/maps/${mapId}/photo_uploads`
+  const endpoint = `${base}${query}`
+  // Counted by the header's « Enregistré » from the announce to the last part.
+  const finish = trackWrite()
+  try {
+    const { upload } = await api<{ upload: { id: number; partsUrl: string; partSize: number; partCount: number } }>(endpoint, {
+      method: 'POST',
+      body: { file: { filename: file.name, byte_size: file.size, content_type: file.type || 'video/mp4' } },
+    })
+    // The last few percent are for putting the parts together.
+    const checksum = await sendInParts(file, upload, { onProgress: ({ sent, total }) => onProgress(Math.round((sent / total) * 95)) })
+    let state = await api<PartsState>(`${base}/${upload.id}/complete`, { method: 'POST', body: { checksum, photo: fields } })
+    const deadline = Date.now() + PREPARE_WAIT_MS
+    while (state.status === 'processing') {
+      if (Date.now() > deadline) {
+        finish('ok')
+        return { status: 202, body: { message: t('soil_photos.errors.still_preparing') } }
+      }
+      await pause(PREPARE_POLL_MS)
+      state = await api<PartsState>(`${base}/${upload.id}`)
+    }
+    finish(state.status === 'done' ? 'ok' : 'rejected')
+    if (state.status === 'done' && state.photo) return { status: 201, body: state.photo as unknown as Record<string, unknown> }
+    return { status: 422, body: { message: state.message ?? t('soil_photos.errors.upload_failed') } }
+  } catch (error) {
+    const status = error instanceof ApiError ? error.status : 0
+    finish(error instanceof ApiError && status < 500 ? 'rejected' : 'lost')
+    if (!(error instanceof ApiError && typeof error.data.message === 'string')) {
+      reportUploadFailure({ endpoint, file, status, reason: status ? 'refused' : 'network', what: 'photo' })
+    }
+    throw new Error(partsErrorMessage(error))
+  }
+}
+
 /** POST with upload progress (fetch has none): a phone on 4G needs to see it move. */
 function send(url: string, form: FormData, onProgress: (percent: number) => void): Promise<{ status: number; body: Record<string, unknown> }> {
   // Counted by the header's « Enregistré »: a photo still on its way is not saved yet.
@@ -123,7 +195,8 @@ function send(url: string, form: FormData, onProgress: (percent: number) => void
     xhr.upload.onprogress = (event) => event.lengthComputable && onProgress(Math.round((event.loaded / event.total) * 100))
     xhr.onerror = () => {
       finish('lost')
-      reject(new Error(t('soil_photos.errors.upload_failed')))
+      reportUploadFailure({ endpoint: url, file: form.get('photo[image]') as File, status: 0, reason: 'network', what: 'photo' })
+      reject(new Error(t('soil_photos.errors.connection_lost')))
     }
     xhr.ontimeout = xhr.onerror
     xhr.onload = () => {
@@ -134,6 +207,9 @@ function send(url: string, form: FormData, onProgress: (percent: number) => void
         // Not JSON (proxy error page): handled below through the status.
       }
       finish(writeOutcome(xhr.status))
+      if (xhr.status >= 400 && typeof body.message !== 'string') {
+        reportUploadFailure({ endpoint: url, file: form.get('photo[image]') as File, status: xhr.status, reason: 'refused', what: 'photo' })
+      }
       resolve({ status: xhr.status, body })
     }
     xhr.send(form)
@@ -159,31 +235,42 @@ async function process(key: string) {
       locationSource = 'map'
     }
 
-    const form = new FormData()
-    form.append('photo[image]', file)
-    form.append('photo[source]', options.source ?? 'web')
-    if (meta.takenAt) form.append('photo[taken_at]', meta.takenAt)
-    if (meta.heading != null) form.append('photo[heading]', String(meta.heading))
+    const fields: Record<string, string> = { source: options.source ?? 'web' }
+    if (meta.takenAt) fields.taken_at = meta.takenAt
+    if (meta.heading != null) fields.heading = String(meta.heading)
     if (position && locationSource) {
-      form.append('photo[lng]', String(position.lng))
-      form.append('photo[lat]', String(position.lat))
-      form.append('photo[location_source]', locationSource)
+      fields.lng = String(position.lng)
+      fields.lat = String(position.lat)
+      fields.location_source = locationSource
     }
-    if (options.albumId) form.append('photo[photo_album_id]', String(options.albumId))
-    if (options.featureId) form.append('photo[map_feature_id]', String(options.featureId))
-    if (options.soilSampleId) form.append('photo[soil_sample_id]', String(options.soilSampleId))
-    if (options.bioindicatorStatus) form.append('photo[bioindicator_status]', options.bioindicatorStatus)
+    if (options.albumId) fields.photo_album_id = String(options.albumId)
+    if (options.featureId) fields.map_feature_id = String(options.featureId)
+    if (options.soilSampleId) fields.soil_sample_id = String(options.soilSampleId)
+    if (options.bioindicatorStatus) fields.bioindicator_status = options.bioindicatorStatus
 
-    const url = `/maps/${mapId}/photos${options.droneMissionId ? `?drone_mission_id=${options.droneMissionId}` : ''}`
-    const { status, body } = await send(url, form, (progress) => patch(key, { progress }))
+    const query = options.droneMissionId ? `?drone_mission_id=${options.droneMissionId}` : ''
+    const onProgress = (progress: number) => patch(key, { progress })
+    let result: { status: number; body: Record<string, unknown> }
+    if (isVideoFile(file) && file.size > PARTS_ABOVE) {
+      result = await sendVideoInParts(mapId, file, fields, query, onProgress)
+    } else {
+      const form = new FormData()
+      form.append('photo[image]', file)
+      Object.entries(fields).forEach(([name, value]) => form.append(`photo[${name}]`, value))
+      result = await send(`/maps/${mapId}/photos${query}`, form, onProgress)
+    }
+    const { status, body } = result
     // 200: a photo already on the map, sent again for the AI, comes back marked.
     if (status === 201 || status === 200) {
       const photo = body as unknown as MapPhotoData
       photoActions.upsert(photo)
       patch(key, { status: 'done', progress: 100, photo })
       options.onDone?.(photo)
+    } else if (status === 202) {
+      // Arrived, still being prepared: it shows up in the photos later.
+      patch(key, { status: 'done', progress: 100, message: body.message as string })
     } else {
-      const message = typeof body.message === 'string' ? body.message : t('soil_photos.errors.upload_failed')
+      const message = typeof body.message === 'string' ? body.message : statusMessage(status)
       patch(key, { status: body.code === 'duplicate' ? 'duplicate' : 'error', message })
     }
   } catch (error) {

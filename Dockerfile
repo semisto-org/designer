@@ -29,7 +29,9 @@ ENV RAILS_ENV="production" \
     BUNDLE_DEPLOYMENT="1" \
     BUNDLE_PATH="/usr/local/bundle" \
     BUNDLE_WITHOUT="development" \
-    LD_PRELOAD="/usr/local/lib/libjemalloc.so"
+    LD_PRELOAD="/usr/local/lib/libjemalloc.so" \
+    HTTP_READ_TIMEOUT="300" \
+    HTTP_WRITE_TIMEOUT="300"
 
 # go-pmtiles (BSD-3-Clause) packs imported drone views into one PMTiles
 # archive (AerialViews::Tiler). Built from its tagged module, which Go's
@@ -102,4 +104,7 @@ ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 
 # Start server via Thruster by default, this can be overwritten at runtime
 EXPOSE 80
+# Thruster cuts a request whose body takes over HTTP_READ_TIMEOUT to arrive
+# (30 s by default, too short for a 25 MB photo from a field connection):
+# raised above, while large videos travel in parts (PhotoUploadsController).
 CMD ["./bin/thrust", "./bin/rails", "server"]
