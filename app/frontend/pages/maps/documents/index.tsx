@@ -20,6 +20,7 @@ import { useFileDrag } from '@/lib/useFileDrag'
 import { formatMegabytes } from '@/map/photos/format'
 import { groupByTag, hasTag, tagCounts, UNTAGGED } from '@/map/tags/tags'
 import type { DocumentLimits, MapDocumentData } from '@/types/documents'
+import { readOpenParam, useOpenParam } from '@/lib/openParam'
 
 type Props = {
   map: { id: number; name: string; role: string | null; teamId?: number | null; offerBuilder?: boolean; timeEntries?: boolean; deliverable?: boolean }
@@ -48,8 +49,10 @@ export default function MapDocuments({ map, documents, canEdit, limits }: Props)
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState<Sort>('newest')
   const [grouped, setGrouped] = useState(true)
-  // ?open=ID (from the editor's panel) opens that document at once.
-  const [openId, setOpenId] = useState<number | null>(() => (typeof window === 'undefined' ? null : Number(new URLSearchParams(window.location.search).get('open')) || null))
+  // ?open=ID (from the editor's panel, or a shared link) opens that document
+  // at once; the address follows the open document, so it can be shared.
+  const [openId, setOpenId] = useState<number | null>(readOpenParam)
+  useOpenParam(openId)
   const dragging = useFileDrag(canEdit)
   const [error, setError] = useState<string | null>(null)
   const [writing, setWriting] = useState(false)
@@ -98,14 +101,16 @@ export default function MapDocuments({ map, documents, canEdit, limits }: Props)
     if (canEdit) addFiles(event.dataTransfer.files)
   }
 
-  async function save(doc: MapDocumentData, patch: { title?: string; description?: string; tags?: string[]; in_deliverable?: boolean }) {
+  async function save(doc: MapDocumentData, patch: { title?: string; description?: string; tags?: string[]; in_deliverable?: boolean; public_link?: boolean }) {
     setError(null)
     try {
       const saved = await api<MapDocumentData>(`${endpoint}/${doc.id}`, { method: 'PATCH', body: { document: patch } })
       setDocs((list) => list.map((d) => (d.id === saved.id ? saved : d)))
       if (patch.in_deliverable !== undefined) toast(t(patch.in_deliverable ? 'deliverables.mark.saved_on' : 'deliverables.mark.saved_off'))
+      return true
     } catch (e) {
       setError(e instanceof ApiError ? e.message : t('documents.errors.generic'))
+      return false
     }
   }
 
@@ -255,6 +260,7 @@ export default function MapDocuments({ map, documents, canEdit, limits }: Props)
           .filter((tag, i, all) => all.findIndex((o) => o.toLowerCase() === tag.toLowerCase()) === i)}
         onSave={save} onDelete={remove} onConvert={convert}
         pageUrl={(doc) => `${endpoint}/${doc.id}`}
+        sharePath={(doc) => (doc.inLibrary ? `${endpoint}?open=${doc.id}` : null)}
         deliverable={!!map.deliverable}
       />
       {canEdit && (

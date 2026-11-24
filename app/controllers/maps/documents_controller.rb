@@ -95,7 +95,7 @@ module Maps
     # it never takes one out (delete it from the library instead).
     def update
       @document.in_library = true if ActiveModel::Type::Boolean.new.cast(params.dig(:document, :in_library))
-      @document.assign_attributes(document_params(%i[title description in_deliverable]))
+      @document.assign_attributes(document_params(%i[title description in_deliverable public_link]))
       @document.save ? render(json: as_json(@document)) : render_document_errors(@document)
     end
 

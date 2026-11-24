@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_23_190000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_23_200000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -661,11 +661,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_190000) do
     t.string "pdf_conversion"
     t.bigint "converted_from_id"
     t.boolean "in_deliverable", default: false, null: false
+    t.string "share_token"
     t.index ["content_edited_by_id"], name: "index_map_documents_on_content_edited_by_id"
     t.index ["converted_from_id"], name: "index_map_documents_on_converted_from_id"
     t.index ["map_id", "created_at"], name: "index_map_documents_on_map_id_and_created_at"
     t.index ["map_id"], name: "index_map_documents_on_map_id"
     t.index ["project_sheet_link_id"], name: "index_map_documents_on_project_sheet_link_id"
+    t.index ["share_token"], name: "index_map_documents_on_share_token", unique: true
     t.index ["tags"], name: "index_map_documents_on_tags", using: :gin
     t.index ["uploaded_by_id"], name: "index_map_documents_on_uploaded_by_id"
   end
@@ -790,6 +792,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_190000) do
     t.bigint "soil_sample_id"
     t.string "playback"
     t.boolean "in_deliverable", default: false, null: false
+    t.string "share_token"
     t.index "((location)::geography)", name: "index_map_photos_on_location_geography", using: :gist
     t.index ["derived_from_id"], name: "index_map_photos_on_derived_from_id"
     t.index ["drone_mission_id"], name: "index_map_photos_on_drone_mission_id"
@@ -801,6 +804,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_190000) do
     t.index ["map_id"], name: "index_map_photos_on_map_id"
     t.index ["photo_album_id"], name: "index_map_photos_on_photo_album_id"
     t.index ["retake_of_id"], name: "index_map_photos_on_retake_of_id"
+    t.index ["share_token"], name: "index_map_photos_on_share_token", unique: true
     t.index ["soil_sample_id"], name: "index_map_photos_on_soil_sample_id"
     t.index ["uploaded_by_id"], name: "index_map_photos_on_uploaded_by_id"
   end

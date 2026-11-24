@@ -19,7 +19,9 @@ module Mcp
             converted_from_id: document.converted_from_id,
             in_deliverable: document.in_deliverable? || nil,
             uploaded_by: document.uploaded_by&.display_name || (document.project_sheet_link_id && t("notes.project_link_author")),
-            created_at: document.created_at.iso8601, updated_at: document.updated_at.iso8601
+            created_at: document.created_at.iso8601, updated_at: document.updated_at.iso8601,
+            link: document.share_path && "#{origin}#{document.share_path}",
+            public_link: document.public_path && "#{origin}#{document.public_path}"
           }.compact
         end
 

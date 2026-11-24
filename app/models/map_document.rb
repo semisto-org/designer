@@ -23,6 +23,8 @@
 # request (`request_pdf!`, ConvertMapDocumentToPdfJob): the PDF is a new
 # document beside it, which the browser shows and the AI reads page by page.
 class MapDocument < ApplicationRecord
+  include PubliclyShareable
+  PUBLIC_LINK_SEGMENT = "document"
   include HeicAttachment
   include CountsTowardStorage
   include MapFeature::Tags
@@ -97,6 +99,11 @@ class MapDocument < ApplicationRecord
   def extension = file.attached? ? File.extname(file.filename.to_s).delete(".").downcase : nil
 
   def kind = KINDS.find { |_, extensions| extensions.include?(extension) }&.first || "other"
+
+  # The library page that opens this document in its viewer, with its
+  # sidebar (see MapPhoto#share_path). A file joined to a message of the
+  # discussion only has none: it is not on the library's shelves.
+  def share_path = in_library? ? "/maps/#{map_id}/documents?open=#{id}" : nil
 
   def markdown? = file.attached? && MARKDOWN_EXTENSIONS.include?(extension)
 
@@ -238,7 +245,7 @@ class MapDocument < ApplicationRecord
   def as_inertia(url:, excerpt: false)
     blob = file.attached? ? file.blob : nil
     {
-      id:, title:, description:, tags:, origin:, kind:, preview:, inLibrary: in_library, inDeliverable: in_deliverable,
+      id:, title:, description:, tags:, origin:, kind:, preview:, inLibrary: in_library, inDeliverable: in_deliverable, publicPath: public_path,
       filename: blob&.filename&.to_s, contentType: blob&.content_type, byteSize: blob&.byte_size,
       compression:, originalByteSize: original_byte_size,
       createdAt: created_at.iso8601, updatedAt: updated_at.iso8601,

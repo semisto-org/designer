@@ -70,6 +70,12 @@ Sous la **Fiche projet**, la section **Documents du projet** permet d'y joindre 
 
 Par le lien privé, le porteur de projet ne voit que ce qu'il a lui-même envoyé, jamais les autres documents de la carte.
 
+## Partager un document
+
+Ouvre-le, puis **Copier le lien** : le lien rouvre ce document avec sa fiche, pour une personne qui a déjà accès à la carte (après connexion si besoin).
+
+Pour quelqu'un sans compte, **Créer un lien public** : le lien n'ouvre que ce fichier, rien d'autre de la carte. **Couper le lien** l'arrête aussitôt.
+
 ## Qui voit les documents ?
 
 Toutes les personnes qui ont accès à la carte les lisent et les téléchargent ; le propriétaire et les éditeurs les ajoutent, les écrivent, les renomment, les étiquettent et les suppriment.

@@ -1,0 +1,22 @@
+fr:
+  # « Copier le lien » beside a photo, a video or a document (ShareLinkButton).
+  share_link:
+    copy: "Copier le lien"
+    copied: "Lien copié"
+    failed: "Le lien n'a pas pu être copié. Copie l'adresse de la page."
+    hint: "Ouvre cette page pour qui a accès à la carte, après connexion."
+    # « Lien public »: the file alone, for someone without an account.
+    public:
+      title: "Lien public"
+      intro: "Pour quelqu'un sans compte : le lien n'ouvre que ce fichier, rien d'autre de la carte."
+      intro_photo: "Pour quelqu'un sans compte : le lien n'ouvre que cette photo, sans sa position GPS, rien d'autre de la carte."
+      create: "Créer un lien public"
+      confirm_title: "Créer un lien public ?"
+      confirm_body: "Toute personne qui reçoit ce lien pourra voir ce fichier, sans compte. Tu pourras le couper à tout moment."
+      confirm: "Créer le lien"
+      created: "Lien public créé"
+      cut: "Couper le lien"
+      cut_confirm_title: "Couper le lien public ?"
+      cut_confirm_body: "Le lien déjà envoyé n'ouvrira plus le fichier. Tu pourras en créer un nouveau."
+      cut_done: "Lien public coupé"
+      gone: "Ce lien ne mène plus à rien : il a été coupé, ou le fichier a été retiré de Terranova."
