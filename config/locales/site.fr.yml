@@ -239,7 +239,6 @@ fr:
           alt: "Le relief d'un terrain en 3D sous une averse simulée : l'eau ruisselle dans le creux et remplit une mare dessinée sur la carte."
           link: "/help/lire-le-relief-et-l-eau"
           link_label: "Lire le relief et l'eau"
-          plan: true
         - id: "ia"
           image: "ai-drafts"
           kicker: "ce soir, à deux"
@@ -383,7 +382,6 @@ fr:
               kicker: "l'eau avant les plantes"
               title: "Où va la pluie"
               body: "Le terrain en relief, la pluie qui ruisselle, le bassin versant d'une mare et son trop-plein, la courbe de niveau exacte pour une baissière : l'eau décide de l'emplacement de tout le reste."
-              plan: "yearly"
               link: "/help/lire-le-relief-et-l-eau"
               link_label: "Lire le relief et l'eau"
             - scene: "structure"
@@ -500,13 +498,14 @@ fr:
             unit: "pour toujours"
             lines:
               - "Fond de carte, couches de ta région, dessin, palette, liste de plants"
+              - "Le relief en 3D et la pluie sur ta pente"
               - "Commentaires et invités sans limite"
               - "Ton IA lit ta carte"
           yearly:
             story: "Tes lieux, une année pour les concevoir"
             unit: "par an, payé une fois, sans reconduction"
             lines:
-              - "L'eau et le relief, le climat de 2050, le sol"
+              - "Le climat de 2050 et la lecture de ton sol"
               - "Les brouillons de ton IA et le plan à l'échelle"
               - "%{storage} Go de photos et documents, %{images} images par mois"
             member: "%{member} pour les membres de Semisto"
