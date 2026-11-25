@@ -112,12 +112,12 @@ class TrialsController < ApplicationController
     def set_trial
       @trial = MapTrial.find_by(token: params[:token].to_s)
       return if @trial&.live?
-      # Kept already: its owner goes to the map.
-      return redirect_to(map_path(@trial.adopted_map)) if @trial&.adopted_map && authenticated? && @trial.adopted_map.owner_id == Current.user.id
-
+      # Kept already: its owner goes to the map (the page's JSON calls are
+      # told where, a redirect would hand them the map's HTML).
+      kept = @trial&.adopted_map if authenticated? && @trial&.adopted_map&.owner_id == Current.user.id
       respond_to do |format|
-        format.json { render json: { message: t("trials.errors.expired") }, status: :gone }
-        format.any { redirect_to new_trial_path, alert: t("trials.errors.expired") }
+        format.json { render json: { message: t("trials.errors.expired"), path: kept && map_path(kept) }.compact, status: :gone }
+        format.any { kept ? redirect_to(map_path(kept)) : redirect_to(new_trial_path, alert: t("trials.errors.expired")) }
       end
     end
 
