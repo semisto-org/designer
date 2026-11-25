@@ -1,6 +1,6 @@
 import type { Feature, FeatureCollection, LineString, Point } from 'geojson'
 import type { GeoJSONSource, Map as MapLibreMap, StyleImageMetadata } from 'maplibre-gl'
-import { layoutNumbers, pastilleRadius } from './numberLayout.ts'
+import { clusterLetter, layoutNumbers, pastilleRadius } from './numberLayout.ts'
 import { inkOn } from './strataColors.ts'
 
 /** The numbered pastilles and cluster pills (« Numéro » mode), and the leader lines of those that stepped aside. */
@@ -103,10 +103,10 @@ function ensurePill(map: MapLibreMap, color: string, planted: boolean): string {
  * back, the pills dropped); `leaveOut`: plants not drawn (a hidden strata,
  * a draft in the print), which must not join a cluster.
  */
-export function spreadPlantNumbers(map: MapLibreMap, numbers: FeatureCollection<Point, NumberProps>, leaveOut: ReadonlySet<number> = new Set()) {
+export function spreadPlantNumbers(map: MapLibreMap, numbers: FeatureCollection<Point, NumberProps>, leaveOut: ReadonlySet<number> = new Set(), options: { lettered?: boolean } = {}): PlacedCluster[] {
   const source = map.getSource(NUMBERS_SOURCE) as GeoJSONSource | undefined
   const leaders = map.getSource(LEADERS_SOURCE) as GeoJSONSource | undefined
-  if (!source) return
+  if (!source) return []
   const all = numbers.features
     .filter((f) => !f.properties.cluster)
     .map((f) => ({ ...f, geometry: { type: 'Point', coordinates: anchorOf(f) } as Point, properties: { ...f.properties, clustered: false } }))
@@ -131,8 +131,15 @@ export function spreadPlantNumbers(map: MapLibreMap, numbers: FeatureCollection<
       lines.push({ type: 'Feature', geometry: { type: 'LineString', coordinates: [[ax, ay], at] }, properties: { featureId, color, planted } })
     }
   }
-  for (const cluster of clusters) {
+  // On a printed plan, each pill gets a letter, from top left, that names its detail sheet.
+  // Only the pills on the sheet get one (the map may lay out plants beyond its edges).
+  const { clientWidth: width, clientHeight: height } = map.getContainer()
+  const onSheet = (c: { x: number; y: number }) => c.x >= 0 && c.y >= 0 && c.x <= width && c.y <= height
+  const ordered = options.lettered ? [...clusters].sort((a, b) => Number(onSheet(b)) - Number(onSheet(a)) || Math.round(a.y / 40) - Math.round(b.y / 40) || a.x - b.x) : clusters
+  const placed: PlacedCluster[] = []
+  for (const [index, cluster] of ordered.entries()) {
     const members = cluster.ids.map((i) => shown[i])
+    const letter = options.lettered && onSheet(cluster) ? clusterLetter(index) : null
     for (const m of members) out.push({ ...m, properties: { ...m.properties, clustered: true } })
     const colors = new Set(members.map((m) => m.properties.color))
     const color = colors.size === 1 ? members[0].properties.color : MIXED
@@ -140,28 +147,36 @@ export function spreadPlantNumbers(map: MapLibreMap, numbers: FeatureCollection<
     const coordinates = members.map((m) => m.geometry.coordinates as [number, number])
     const lngs = coordinates.map((c) => c[0])
     const lats = coordinates.map((c) => c[1])
+    const bounds: [number, number, number, number] = [Math.min(...lngs), Math.min(...lats), Math.max(...lngs), Math.max(...lats)]
+    placed.push({ letter, label: cluster.label, x: cluster.x, y: cluster.y, bounds, featureIds: members.map((m) => m.properties.featureId) })
     out.push({
       type: 'Feature',
       geometry: { type: 'Point', coordinates: map.unproject([cluster.x, cluster.y]).toArray() },
       properties: {
-        featureId: -1, number: cluster.label, color, planted, cluster: true, count: members.length,
+        featureId: -1, number: letter ? `${letter} · ${cluster.label}` : cluster.label, color, planted, cluster: true, count: members.length,
         ink: planted ? inkOn(color) : PLANNED_INK, pill: ensurePill(map, color, planted),
-        bounds: JSON.stringify([Math.min(...lngs), Math.min(...lats), Math.max(...lngs), Math.max(...lats)]),
+        bounds: JSON.stringify(bounds),
       },
     })
   }
   source.setData({ type: 'FeatureCollection', features: out })
   leaders?.setData(lines.length ? { type: 'FeatureCollection', features: lines } : EMPTY)
+  return placed
 }
+
+/** A cluster pill as laid out: on screen (`x`, `y`), the plants it holds and their extent, and its letter on a printed plan. */
+export type PlacedCluster = { letter: string | null; label: string; x: number; y: number; bounds: [number, number, number, number]; featureIds: number[] }
+
 
 /**
  * The pastilles of a map whose style was copied (the PDF plan): read from
  * the style, they are laid out again at the print's own zoom.
  */
-export function respreadCopiedNumbers(map: MapLibreMap, leaveOut: ReadonlySet<number> = new Set()) {
+export function respreadCopiedNumbers(map: MapLibreMap, leaveOut: ReadonlySet<number> = new Set(), options: { lettered?: boolean } = {}): PlacedCluster[] {
   const style = map.getStyle().sources[NUMBERS_SOURCE] as { data?: unknown } | undefined
   const data = style?.data as FeatureCollection<Point, NumberProps> | undefined
-  if (data && typeof data === 'object' && Array.isArray(data.features)) spreadPlantNumbers(map, data, leaveOut)
+  if (data && typeof data === 'object' && Array.isArray(data.features)) return spreadPlantNumbers(map, data, leaveOut, options)
+  return []
 }
 
 /** The plants a cluster pill holds, as [west, south, east, north], to zoom onto them. */

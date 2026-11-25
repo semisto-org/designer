@@ -102,6 +102,17 @@ export type NumberedPoint = NumberPoint & { number: number; selected?: boolean }
 export type NumberCluster = { ids: number[]; x: number; y: number; label: string }
 export type NumberLayout = { placements: NumberPlacement[]; clusters: NumberCluster[] }
 
+/** A, B… Z, then AA, AB… */
+export function clusterLetter(index: number): string {
+  let n = index
+  let out = ''
+  do {
+    out = String.fromCharCode(65 + (n % 26)) + out
+    n = Math.floor(n / 26) - 1
+  } while (n >= 0)
+  return out
+}
+
 /** Up to this many touching pastilles step aside; more become one cluster pill. */
 export const SPREAD_AT_MOST = 3
 
