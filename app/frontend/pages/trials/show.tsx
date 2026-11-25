@@ -41,8 +41,9 @@ export default function TrialShow(props: TrialShowProps) {
   const read = useCallback(async () => {
     setReading({ status: 'loading' })
     try {
-      const data = await api<{ reading: TrialReading }>(`${base}/reading`)
-      setReading({ status: 'done', reading: data.reading })
+      const data = await api<{ reading?: TrialReading }>(`${base}/reading`)
+      // An answer without a reading (a page that is not JSON) is no reading.
+      setReading(data?.reading ? { status: 'done', reading: data.reading } : { status: 'error' })
     } catch {
       setReading({ status: 'error' })
     }

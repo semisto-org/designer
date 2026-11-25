@@ -69,6 +69,16 @@ class TrialsControllerTest < ActionDispatch::IntegrationTest
     assert_response :gone
   end
 
+  test "a kept trial answers its page's JSON calls in JSON, not with the map's HTML" do
+    trial = start_trial
+    sign_in_as users(:alice)
+    post keep_trial_path(trial.token)
+    map = trial.reload.adopted_map
+    get trial_reading_path(trial.token), as: :json
+    assert_response :gone
+    assert_equal map_path(map), response.parsed_body["path"]
+  end
+
   test "kept while signed in: it becomes a map at once" do
     trial = start_trial
     sign_in_as users(:alice)
