@@ -5,8 +5,8 @@ import { isPresentRendering, isWorkingLayer } from '../presentation/renderRules.
 /** Layers the plants overlay draws from its own sources (crowns and names). */
 export const PLANT_OVERLAY_LAYERS = ['plant-crowns-shadow', 'plant-crowns-fill', 'plant-crowns-reach', 'plant-crowns-support', 'plant-crowns-reach-line', 'plant-crowns-casing', 'plant-crowns-line', 'plant-trunks', 'plant-labels-text']
 
-/** The numbered pastilles, shown instead of the names in « Numéro » mode. */
-export const PLANT_NUMBER_LAYERS = ['plant-numbers-leader', 'plant-numbers-disc', 'plant-numbers-text']
+/** The numbered pastilles and cluster pills, shown instead of the names in « Numéro » mode. */
+export const PLANT_NUMBER_LAYERS = ['plant-numbers-leader', 'plant-numbers-disc', 'plant-numbers-text', 'plant-numbers-cluster']
 
 /**
  * The « Calques » panel hides design layers by filtering the features

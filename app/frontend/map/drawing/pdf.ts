@@ -14,9 +14,10 @@ import { inTag } from '@/map/tags/tags'
 import { inVariant } from '@/map/variants/variants'
 import { applyPresentRender } from '@/map/presentation/render'
 import { PLANT_NUMBER_LAYERS } from '@/map/plants/visibility'
-import { LEADERS_SOURCE, NUMBERS_SOURCE, respreadCopiedNumbers } from '@/map/plants/numberSpread'
+import { LEADERS_SOURCE, NUMBERS_SOURCE, respreadCopiedNumbers, type PlacedCluster } from '@/map/plants/numberSpread'
 import type { PlantListRow } from '@/map/drawing/plantList'
 import { drawPlantList } from '@/map/drawing/plantListPdf'
+import { detailFrame } from '@/map/drawing/detailSheets'
 import { DESIGN_MODE_STATE, DRAWN_VIEW_STATE } from '@/map/scenario'
 import { isZoneKind } from '@/map/zones/zones'
 import type { MapFeature } from '@/types'
@@ -206,6 +207,8 @@ type RenderOptions = {
   numbered?: boolean
   /** Called with the offscreen map once drawn, before it goes (to project points on the page). */
   inspect?: (map: MapLibreMap) => void
+  /** With `numbered`: each cluster pill on the sheet gets a letter (« A · 125–133 ») naming its detail sheet, and comes back here. */
+  onClusters?: (clusters: PlacedCluster[]) => void
 }
 
 /** Hides every layer drawn from the terrain's outline. */
@@ -248,13 +251,17 @@ function hideDesignNames(map: MapLibreMap) {
   }
 }
 
-/** The plants' numbers in their dots, their names beside them hidden. */
+/** The plants' numbers in their dots, their names beside them hidden, at any print scale (the editor shows them from zoom 17). */
 function showPlantNumbers(map: MapLibreMap) {
-  for (const id of PLANT_NUMBER_LAYERS) if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'visible')
+  for (const id of PLANT_NUMBER_LAYERS) {
+    if (!map.getLayer(id)) continue
+    map.setLayoutProperty(id, 'visibility', 'visible')
+    map.setLayerZoomRange(id, 0, 24)
+  }
   if (map.getLayer('plant-labels-text')) map.setLayoutProperty('plant-labels-text', 'visibility', 'none')
 }
 
-export async function renderMap(source: MapLibreMap, { center, scale, frame, hiddenLayers, variant, tag, hiddenKinds, hiddenIds, theme, hideBoundary, planLook, paintOnly, withoutNames, numbered, inspect }: RenderOptions): Promise<string> {
+export async function renderMap(source: MapLibreMap, { center, scale, frame, hiddenLayers, variant, tag, hiddenKinds, hiddenIds, theme, hideBoundary, planLook, paintOnly, withoutNames, numbered, inspect, onClusters }: RenderOptions): Promise<string> {
   const widthCss = Math.round(mmToCss(frame.w))
   const heightCss = Math.round(mmToCss(frame.h))
   const pixelRatio = Math.min(PRINT_DPI / CSS_DPI, MAX_CANVAS_PX / Math.max(widthCss, heightCss))
@@ -283,8 +290,9 @@ export async function renderMap(source: MapLibreMap, { center, scale, frame, hid
     if (hideBoundary) hideBoundaryLayers(map)
     if (hiddenIds?.length) hidePlantOverlay(map, hiddenIds)
     if (numbered && !hiddenLayers.includes('plants')) showPlantNumbers(map)
-    // Crowded pastilles step aside again, at the print's own scale (map/plants/numberLayout).
-    respreadCopiedNumbers(map, new Set(hiddenIds ?? []))
+    // Crowded pastilles step aside or gather in a pill again, at the print's own scale (map/plants/numberLayout).
+    const clusters = respreadCopiedNumbers(map, new Set(hiddenIds ?? []), { lettered: numbered && onClusters != null })
+    onClusters?.(clusters.filter((c) => c.letter != null))
     if (planLook) {
       // The project as designed, in the designer's plan look; the working marks step aside.
       map.setGlobalStateProperty(DESIGN_MODE_STATE, 'project')
@@ -487,25 +495,45 @@ export function bookSheets(title: string, legend: LegendEntry[], features: MapFe
   ]
 }
 
+/** A page to draw: a sheet of the book, or the detail of a cluster of the plan. */
+type Page = { sheet: Sheet; scale: number; center: [number, number]; detail: PlacedCluster | null }
+
 /** Renders the map and writes the PDF, one page per sheet; resolves with the file name. */
 export async function exportPdf(source: MapLibreMap, input: PdfInput, onProgress?: (step: 'map' | 'pdf', sheet?: { page: number; pages: number }) => void): Promise<string> {
   const layout = pageLayout(input.paper, input.orientation)
   const sheets: Sheet[] = input.sheets?.length ? input.sheets : [{ theme: null, title: input.title, legend: input.legend }]
+  const numbered = input.plantList != null
+  const pages: Page[] = sheets.map((sheet) => ({ sheet, scale: input.scale, center: input.center, detail: null }))
   const { jsPDF } = await import('jspdf')
   const doc = new jsPDF({ orientation: input.orientation, unit: 'mm', format: input.paper.toLowerCase(), compress: true })
   doc.setProperties({ title: pdfText(input.title), creator: 'Semisto Terranova', author: pdfText(input.author ?? '') })
-  for (const [i, sheet] of sheets.entries()) {
-    onProgress?.('map', { page: i + 1, pages: sheets.length })
+  const letters = new Map<number, string>()
+  for (let i = 0; i < pages.length; i++) {
+    const page = pages[i]
+    onProgress?.('map', { page: i + 1, pages: pages.length })
     const image = await renderMap(source, {
-      center: input.center, scale: input.scale, frame: layout.frame, hiddenLayers: input.hiddenLayers, variant: input.variant, tag: input.tag,
-      hiddenKinds: input.hiddenKinds, hiddenIds: input.hiddenIds, theme: sheet.theme, hideBoundary: input.hideBoundary,
-      numbered: input.plantList != null,
+      center: page.center, scale: page.scale, frame: layout.frame, hiddenLayers: input.hiddenLayers, variant: input.variant, tag: input.tag,
+      hiddenKinds: input.hiddenKinds, hiddenIds: input.hiddenIds, theme: page.sheet.theme, hideBoundary: input.hideBoundary,
+      numbered,
+      // The plan's crowded beds: a detail sheet each, right after the plan, at a scale where every number reads.
+      onClusters: numbered && i === 0 && page.detail == null ? (clusters) => {
+        const plants = page.sheet.legend.filter((entry) => entry.layer == null || entry.layer === 'plants')
+        const details = clusters.map((cluster): Page => {
+          for (const id of cluster.featureIds) letters.set(id, cluster.letter!)
+          return {
+            sheet: { theme: null, title: `${input.title} · ${t('drawing.pdf.plant_list.detail_title', { letter: cluster.letter ?? '', numbers: cluster.label })}`, legend: plants },
+            ...detailFrame(cluster.bounds, layout.frame, input.scale),
+            detail: cluster,
+          }
+        })
+        pages.splice(1, 0, ...details)
+      } : undefined,
     })
-    onProgress?.('pdf', { page: i + 1, pages: sheets.length })
+    onProgress?.('pdf', { page: i + 1, pages: pages.length })
     if (i > 0) doc.addPage()
-    drawSheet(doc, layout, input, sheet, image, sheets.length > 1 ? { page: i + 1, pages: sheets.length } : null)
+    drawSheet(doc, layout, { ...input, scale: page.scale }, page.sheet, image, pages.length > 1 ? { page: i + 1, pages: pages.length } : null)
   }
-  if (input.plantList?.length) drawPlantList(doc, input.plantList, input)
+  if (input.plantList?.length) drawPlantList(doc, input.plantList, { ...input, details: letters })
   const kind = sheets.length > 1 ? `-${slug(t('drawing.pdf.book_file'))}` : ''
   const fileName = `${slug(input.title) || 'plan'}${kind}-1-${input.scale}.pdf`
   doc.save(fileName)

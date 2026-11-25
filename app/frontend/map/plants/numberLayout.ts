@@ -1,21 +1,25 @@
 /**
  * Where each plant's numbered pastille goes when plants stand close
- * together (« Numéro » mode): a pastille that would touch one already placed
- * steps aside, to the nearest free spot around its plant, and a thin leader
- * line ties it back to its point, as on a landscape architect's planting
- * plan. Isolated plants keep their pastille on their point.
+ * together (« Numéro » mode), as on a landscape architect's planting plan:
+ * - an isolated plant keeps its pastille on its point;
+ * - two or three plants that touch: the pastilles step aside by one
+ *   pastille at most, a short leader line back to each plant;
+ * - four or more (a multi-strata bed seen from afar): one pill for the
+ *   cluster, « 125–133 » or « 125 +8 », that opens as one zooms in.
+ * Spreading a whole bed sent leader lines everywhere (« un feu d'artifice »,
+ * Michael, 2026-11-25): a cluster now says what it holds and waits.
  *
  * Pure (no MapLibre), in screen pixels, tested in test/frontend/plants.
  */
 export type NumberPoint = { id: number; x: number; y: number }
-export type NumberPlacement = { id: number; x: number; y: number; moved: boolean }
+export type NumberPlacement = { id: number; x: number; y: number; moved: boolean; free?: boolean }
 
 /**
  * `radius`: the pastille's radius (px, ring included); `gap`: the white space
  * kept between two pastilles. Points are placed in the order given (by
  * number), so the first of a cluster keeps its spot.
  */
-export function spreadNumbers(points: NumberPoint[], radius: number, gap = 2): NumberPlacement[] {
+export function spreadNumbers(points: NumberPoint[], radius: number, gap = 2, maxRing = 12): NumberPlacement[] {
   const step = 2 * radius + gap
   const cell = step
   const grid = new Map<string, { x: number; y: number }[]>()
@@ -67,7 +71,7 @@ export function spreadNumbers(points: NumberPoint[], radius: number, gap = 2): N
     const mx = around.reduce((s, q) => s + q.x, 0) / Math.max(1, around.length) - p.x
     const my = around.reduce((s, q) => s + q.y, 0) / Math.max(1, around.length) - p.y
     const away = mx === 0 && my === 0 ? -Math.PI / 2 : Math.atan2(-my, -mx)
-    for (let ring = 1; ring <= 12; ring++) {
+    for (let ring = 1; ring <= maxRing; ring++) {
       const distance = step * ring
       const count = 8 * ring
       let best: { x: number; y: number; cost: number } | null = null
@@ -89,8 +93,113 @@ export function spreadNumbers(points: NumberPoint[], radius: number, gap = 2): N
     }
     // Never left without a place: on its point, as before.
     place(p.x, p.y)
-    return { id: p.id, x: p.x, y: p.y, moved: false }
+    return { id: p.id, x: p.x, y: p.y, moved: false, free: false }
   })
+}
+
+/** A plant to number: its point on screen, its number, and whether it is selected (never hidden in a cluster). */
+export type NumberedPoint = NumberPoint & { number: number; selected?: boolean }
+export type NumberCluster = { ids: number[]; x: number; y: number; label: string }
+export type NumberLayout = { placements: NumberPlacement[]; clusters: NumberCluster[] }
+
+/** A, B… Z, then AA, AB… */
+export function clusterLetter(index: number): string {
+  let n = index
+  let out = ''
+  do {
+    out = String.fromCharCode(65 + (n % 26)) + out
+    n = Math.floor(n / 26) - 1
+  } while (n >= 0)
+  return out
+}
+
+/** Up to this many touching pastilles step aside; more become one cluster pill. */
+export const SPREAD_AT_MOST = 3
+
+/** « 125–133 » when the numbers follow each other, else « 125 +8 » (the first, and how many more). */
+export function clusterLabel(numbers: number[]): string {
+  const sorted = [...numbers].sort((a, b) => a - b)
+  const first = sorted[0]
+  const last = sorted[sorted.length - 1]
+  const consecutive = sorted.every((n, i) => n === first + i)
+  return consecutive ? `${first}–${last}` : `${first} +${sorted.length - 1}`
+}
+
+/**
+ * Lays the pastilles out: plants whose pastilles would touch form a group
+ * (touching, directly or through a neighbour). Selected plants keep their
+ * pastille on their point, out of any cluster. `placements` lists the
+ * pastilles drawn (in the order given), `clusters` the pills, each with the
+ * plants it holds.
+ */
+export function layoutNumbers(points: NumberedPoint[], radius: number, gap = 2): NumberLayout {
+  const step = 2 * radius + gap
+  const parent = points.map((_, i) => i)
+  const find = (i: number): number => {
+    while (parent[i] !== i) {
+      parent[i] = parent[parent[i]]
+      i = parent[i]
+    }
+    return i
+  }
+  const grid = new Map<string, number[]>()
+  const key = (x: number, y: number) => `${Math.floor(x / step)}:${Math.floor(y / step)}`
+  points.forEach((p, i) => {
+    if (p.selected) return
+    const cx = Math.floor(p.x / step)
+    const cy = Math.floor(p.y / step)
+    for (let a = -1; a <= 1; a++) {
+      for (let b = -1; b <= 1; b++) {
+        for (const j of grid.get(`${cx + a}:${cy + b}`) ?? []) {
+          const q = points[j]
+          if ((q.x - p.x) ** 2 + (q.y - p.y) ** 2 < step * step - 1e-6) parent[find(i)] = find(j)
+        }
+      }
+    }
+    const k = key(p.x, p.y)
+    const list = grid.get(k)
+    if (list) list.push(i)
+    else grid.set(k, [i])
+  })
+
+  const groups = new Map<number, number[]>()
+  points.forEach((p, i) => {
+    if (p.selected) return
+    const root = find(i)
+    const group = groups.get(root)
+    if (group) group.push(i)
+    else groups.set(root, [i])
+  })
+
+  const placed = new Map<number, NumberPlacement>()
+  const clusters: NumberCluster[] = []
+  const cluster = (members: number[]) => {
+    const x = members.reduce((s, i) => s + points[i].x, 0) / members.length
+    const y = members.reduce((s, i) => s + points[i].y, 0) / members.length
+    clusters.push({ ids: members.map((i) => points[i].id), x, y, label: clusterLabel(members.map((i) => points[i].number)) })
+  }
+  for (const members of groups.values()) {
+    if (members.length === 1) {
+      const p = points[members[0]]
+      placed.set(members[0], { id: p.id, x: p.x, y: p.y, moved: false })
+      continue
+    }
+    if (members.length <= SPREAD_AT_MOST) {
+      // By number: the first keeps its spot, the others step aside by one pastille.
+      const ordered = [...members].sort((a, b) => points[a].number - points[b].number || a - b)
+      const spread = spreadNumbers(ordered.map((i) => ({ id: i, x: points[i].x, y: points[i].y })), radius, gap, 1)
+      if (spread.every((s) => s.free !== false)) {
+        for (const s of spread) placed.set(s.id, { id: points[s.id].id, x: s.x, y: s.y, moved: s.moved })
+        continue
+      }
+    }
+    cluster(members)
+  }
+  points.forEach((p, i) => {
+    if (p.selected) placed.set(i, { id: p.id, x: p.x, y: p.y, moved: false })
+  })
+  const placements = points.map((_, i) => placed.get(i)).filter((p): p is NumberPlacement => p != null)
+  return { placements, clusters }
 }
 
 /** The pastille's radius (px) at a zoom, ring included: the `plant-numbers-disc` circle radius plus its widest stroke. */

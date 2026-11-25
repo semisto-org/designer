@@ -10,17 +10,30 @@ const MUTED = '#6e6355'
 const RULE = '#d9d0c1'
 const ZEBRA = '#f7f3ec'
 
+type ColumnKey = 'name' | 'variety' | 'latin' | 'strata' | 'state' | 'detail'
+
 /** Column widths, as shares of the text width after the number column. */
-const COLUMNS = [
+const COLUMNS: { key: ColumnKey; share: number }[] = [
   { key: 'name', share: 0.25 },
   { key: 'variety', share: 0.2 },
   { key: 'latin', share: 0.22 },
   { key: 'strata', share: 0.15 },
   { key: 'state', share: 0.18 },
-] as const
+]
 
-function cell(row: PlantListRow, key: (typeof COLUMNS)[number]['key']): string {
+/** With detail sheets: a narrow « Détail » column says on which one each plant of a crowded bed reads. */
+const COLUMNS_WITH_DETAIL: { key: ColumnKey; share: number }[] = [
+  { key: 'name', share: 0.23 },
+  { key: 'variety', share: 0.18 },
+  { key: 'latin', share: 0.2 },
+  { key: 'strata', share: 0.14 },
+  { key: 'state', share: 0.17 },
+  { key: 'detail', share: 0.08 },
+]
+
+function cell(row: PlantListRow, key: ColumnKey, details: ReadonlyMap<number, string>): string {
   switch (key) {
+    case 'detail': return details.get(row.featureId) ?? ''
     case 'name': return row.name || t('drawing.pdf.plant_list.unknown')
     case 'variety': return row.variety ?? ''
     case 'latin': return row.latinName ?? ''
@@ -46,8 +59,10 @@ function fit(doc: JsPDF, text: string, width: number): string {
  * on the map, then name, variety, latin name, strata and whether it is in
  * the ground), so the numbers on the plan can be read in the field.
  */
-export function drawPlantList(doc: JsPDF, rows: PlantListRow[], input: { title: string; paper: Paper; orientation: Orientation }) {
+export function drawPlantList(doc: JsPDF, rows: PlantListRow[], input: { title: string; paper: Paper; orientation: Orientation; details?: ReadonlyMap<number, string> }) {
   if (rows.length === 0) return
+  const details = input.details ?? new Map<number, string>()
+  const columns = rows.some((row) => details.has(row.featureId)) ? COLUMNS_WITH_DETAIL : COLUMNS
   const [short, long] = PAPER_MM[input.paper]
   const [width, height] = input.orientation === 'portrait' ? [short, long] : [long, short]
   const big = input.paper !== 'A4'
@@ -87,7 +102,7 @@ export function drawPlantList(doc: JsPDF, rows: PlantListRow[], input: { title: 
     doc.setFontSize(base - 0.5)
     doc.setTextColor(MUTED)
     doc.text(pdfText(t('drawing.pdf.plant_list.number')), margin + numberWidth / 2 - 1, headY, { align: 'center' })
-    for (const column of COLUMNS) {
+    for (const column of columns) {
       doc.text(pdfText(t(`drawing.pdf.plant_list.columns.${column.key}`)), x, headY)
       x += restWidth * column.share
     }
@@ -115,11 +130,11 @@ export function drawPlantList(doc: JsPDF, rows: PlantListRow[], input: { title: 
       doc.text(label, margin + numberWidth / 2 - 1, baseline, { align: 'center' })
 
       let cx = margin + numberWidth
-      for (const column of COLUMNS) {
+      for (const column of columns) {
         const w = restWidth * column.share
-        doc.setFont('helvetica', column.key === 'name' ? 'bold' : 'normal')
+        doc.setFont('helvetica', column.key === 'name' || column.key === 'detail' ? 'bold' : 'normal')
         doc.setTextColor(column.key === 'latin' || column.key === 'state' ? MUTED : BODY)
-        doc.text(fit(doc, cell(row, column.key), w - 2), cx, baseline)
+        doc.text(fit(doc, cell(row, column.key, details), w - 2), cx, baseline)
         cx += w
       }
     })

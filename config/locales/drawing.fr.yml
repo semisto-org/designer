@@ -564,6 +564,7 @@ fr:
           one: "Le numéro de la plante s'écrit dans son point, et sa fiche suit le plan sur une page à part."
           other: "Le numéro de chaque plante s'écrit dans son point, et la liste des %{count} plantes du cadre suit le plan, sur des pages à part."
         title: "Liste des plantes"
+        detail_title: "Détail %{letter} · n° %{numbers}"
         plants:
           one: "1 plante numérotée"
           other: "%{plants} plantes numérotées"
@@ -577,6 +578,7 @@ fr:
           latin: "Nom latin"
           strata: "Strate"
           state: "En terre"
+          detail: "Détail"
         planted: "Plantée"
         planted_in: "Plantée en %{year}"
         to_plant: "À planter"
