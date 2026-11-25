@@ -248,9 +248,13 @@ function hideDesignNames(map: MapLibreMap) {
   }
 }
 
-/** The plants' numbers in their dots, their names beside them hidden. */
+/** The plants' numbers in their dots, their names beside them hidden, at any print scale (the editor shows them from zoom 17). */
 function showPlantNumbers(map: MapLibreMap) {
-  for (const id of PLANT_NUMBER_LAYERS) if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'visible')
+  for (const id of PLANT_NUMBER_LAYERS) {
+    if (!map.getLayer(id)) continue
+    map.setLayoutProperty(id, 'visibility', 'visible')
+    map.setLayerZoomRange(id, 0, 24)
+  }
   if (map.getLayer('plant-labels-text')) map.setLayoutProperty('plant-labels-text', 'visibility', 'none')
 }
 
@@ -283,7 +287,7 @@ export async function renderMap(source: MapLibreMap, { center, scale, frame, hid
     if (hideBoundary) hideBoundaryLayers(map)
     if (hiddenIds?.length) hidePlantOverlay(map, hiddenIds)
     if (numbered && !hiddenLayers.includes('plants')) showPlantNumbers(map)
-    // Crowded pastilles step aside again, at the print's own scale (map/plants/numberLayout).
+    // Crowded pastilles step aside or gather in a pill again, at the print's own scale (map/plants/numberLayout).
     respreadCopiedNumbers(map, new Set(hiddenIds ?? []))
     if (planLook) {
       // The project as designed, in the designer's plan look; the working marks step aside.

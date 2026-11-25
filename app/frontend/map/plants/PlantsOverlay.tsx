@@ -1,8 +1,9 @@
 import { PLANT_SHEET_SHOWN } from '@/map/tracing/sheets'
+import { clickClaimers } from '@/map/featurePick'
 import { circle } from '@turf/turf'
 import type { Feature, FeatureCollection, Point, Polygon } from 'geojson'
 import { MapPin, X } from 'lucide-react'
-import type { FilterSpecification, GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl'
+import type { FilterSpecification, GeoJSONSource, MapLayerMouseEvent, Map as MapLibreMap } from 'maplibre-gl'
 import { useEffect, useMemo, useRef } from 'react'
 import { t } from '@/lib/i18n'
 import { strataKey } from '@/map/drawing/hidden'
@@ -20,7 +21,7 @@ import { drawsCrown, plantIsSupport, plantStrata, STRATA_COLORS } from '@/map/pl
 import { ensureSupportHatch, SUPPORT_HATCH } from '@/map/plants/supportHatch'
 import { crownOrder, darken, inkOn, PLAN_COLORS, PLAN_STRATA_COLORS } from '@/map/plants/strataColors'
 import { applyPlantsVisibility } from '@/map/plants/visibility'
-import { LEADERS_SOURCE, spreadPlantNumbers } from '@/map/plants/numberSpread'
+import { CLUSTER_LAYER, clusterBounds, LEADERS_SOURCE, spreadPlantNumbers } from '@/map/plants/numberSpread'
 import { setPlantLabels } from '@/map/plants/labelIndex'
 import { DESIGN_MODE_STATE, GROUND_IN_PROJECT_OPACITY, IN_DRAWN_VIEW, IN_PLAN_LOOK, isPlannedPlant, PLANNED_OPACITY } from '@/map/scenario'
 import { inMoment } from '@/map/time/moment'
@@ -32,6 +33,8 @@ import { PRIORITY } from '@/map/layout/zones'
 const CROWNS = 'plant-crowns'
 const LABELS = 'plant-labels'
 const NUMBERS = 'plant-numbers'
+/** Numbers show from the zoom where plant names do: below it, the dots alone. */
+const NUMBERS_FROM_ZOOM = 17
 /** Each tree's trunk, a dot at the foot of its crown in the « rendu présentation ». */
 const TRUNKS = 'plant-trunks'
 
@@ -317,14 +320,17 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
     ...plantLabel,
   }, map.getLayer('features-label') ? 'features-label' : undefined)
   // « Numéro »: the number inside a pastille in the strata colour, over the
-  // plant's point, as on a hand-drawn planting plan (hidden otherwise).
-  // Where plants crowd, a pastille steps aside (map/plants/numberLayout)
-  // and a thin line in its strata colour ties it back to its plant.
+  // plant's point, as on a hand-drawn planting plan (hidden otherwise), from
+  // the zoom where plant names show. Two or three touching pastilles step
+  // aside by one pastille, a short line in the strata colour back to the
+  // plant; more become one pill, « 125–133 », that opens on a click or as
+  // one zooms in (map/plants/numberLayout).
+  const single = ['all', ['!', ['to-boolean', ['get', 'cluster']]], ['!', ['to-boolean', ['get', 'clustered']]]] as FilterSpecification
   map.addLayer({
     id: `${NUMBERS}-leader`,
     type: 'line',
     source: LEADERS_SOURCE,
-    minzoom: 15,
+    minzoom: NUMBERS_FROM_ZOOM,
     layout: { visibility: 'none', 'line-cap': 'round' },
     paint: {
       'line-color': ['get', 'color'],
@@ -336,7 +342,8 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
     id: `${NUMBERS}-disc`,
     type: 'circle',
     source: NUMBERS,
-    minzoom: 15,
+    minzoom: NUMBERS_FROM_ZOOM,
+    filter: single,
     layout: { visibility: 'none' },
     paint: {
       'circle-radius': ['interpolate', ['linear'], ['zoom'], 15, 6, 17, 9, 20, 13],
@@ -350,7 +357,8 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
     id: `${NUMBERS}-text`,
     type: 'symbol',
     source: NUMBERS,
-    minzoom: 16,
+    minzoom: NUMBERS_FROM_ZOOM,
+    filter: single,
     layout: {
       visibility: 'none',
       'text-field': ['get', 'number'],
@@ -360,6 +368,27 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
       'text-ignore-placement': true,
     },
     paint: { 'text-color': ['case', PLANTED, ['get', 'ink'], '#1b1712'] },
+  })
+  map.addLayer({
+    id: CLUSTER_LAYER,
+    type: 'symbol',
+    source: NUMBERS,
+    minzoom: NUMBERS_FROM_ZOOM,
+    filter: ['to-boolean', ['get', 'cluster']],
+    layout: {
+      visibility: 'none',
+      'text-field': ['get', 'number'],
+      'text-size': ['interpolate', ['linear'], ['zoom'], 16, 9, 17, 11, 20, 13],
+      'text-font': ['Noto Sans Regular'],
+      'icon-image': ['get', 'pill'],
+      'icon-text-fit': 'both',
+      'icon-text-fit-padding': [2, 6, 2, 6],
+      'icon-allow-overlap': true,
+      'text-allow-overlap': true,
+      'icon-ignore-placement': true,
+      'text-ignore-placement': true,
+    },
+    paint: { 'text-color': ['get', 'ink'] },
   })
   // The tracing sheets (map/tracing): a planned plant waits for the planting sheet.
   for (const id of map.getLayersOrder()) {
@@ -381,7 +410,7 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
  * the next one, keeping the map busy for as long as it is open.
  */
 function raiseNumbers(map: MapLibreMap) {
-  const ids = [`${NUMBERS}-leader`, `${NUMBERS}-disc`, `${NUMBERS}-text`]
+  const ids = [`${NUMBERS}-leader`, `${NUMBERS}-disc`, `${NUMBERS}-text`, CLUSTER_LAYER]
   if (!mustRaise(map.getLayersOrder(), ids)) return
   for (const id of ids) map.moveLayer(id)
 }
@@ -452,14 +481,33 @@ export default function PlantsOverlay() {
       view = next
       if (map.getSource(NUMBERS)) spreadPlantNumbers(map, latest.current.numbers)
     }
+    // A cluster pill opens on a click: the map zooms onto the plants it holds.
+    const onCluster = (e: MapLayerMouseEvent) => {
+      const bounds = clusterBounds(e.features?.[0]?.properties)
+      if (!bounds) return
+      e.preventDefault()
+      map.fitBounds(bounds, { padding: 80, maxZoom: Math.max(map.getZoom() + 2, 21), duration: 500 })
+    }
+    // The editor then selects nothing under the pill.
+    const claims = (point: { x: number; y: number }) => !!map.getLayer(CLUSTER_LAYER) && map.queryRenderedFeatures([point.x, point.y], { layers: [CLUSTER_LAYER] }).length > 0
+    clickClaimers.add(claims)
+    const onEnter = () => { map.getCanvas().style.cursor = 'zoom-in' }
+    const onLeave = () => { map.getCanvas().style.cursor = '' }
     safeInstall(map, latest.current)
     map.on('styledata', apply)
     map.on('sourcedata', onSource)
     map.on('moveend', onMove)
+    map.on('click', CLUSTER_LAYER, onCluster)
+    map.on('mouseenter', CLUSTER_LAYER, onEnter)
+    map.on('mouseleave', CLUSTER_LAYER, onLeave)
     return () => {
       map.off('styledata', apply)
       map.off('sourcedata', onSource)
       map.off('moveend', onMove)
+      map.off('click', CLUSTER_LAYER, onCluster)
+      map.off('mouseenter', CLUSTER_LAYER, onEnter)
+      map.off('mouseleave', CLUSTER_LAYER, onLeave)
+      clickClaimers.delete(claims)
     }
   }, [map])
   useEffect(() => safeInstall(map, layers), [map, layers])
