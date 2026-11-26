@@ -2,6 +2,7 @@ import clsx from 'clsx'
 import { Camera, Check, Images, Loader2, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '@/components/ui/Button'
+import { DeliverableBadge } from '@/deliverables/DeliverableToggle'
 import { Dialog } from '@/components/ui/Dialog'
 import { HandNote } from '@/components/ui/HandNote'
 import { IconButton } from '@/components/ui/IconButton'
@@ -34,8 +35,9 @@ export default function SamplePhotos({ sample }: { sample: SoilSampleData }) {
   const input = useRef<HTMLInputElement>(null)
 
   // A photo deleted elsewhere (lightbox, Photos page) leaves the point at once.
-  const known = useMemo(() => new Set(mapPhotos.map((p) => p.id)), [mapPhotos])
-  const photos = loaded ? sample.photos.filter((p) => known.has(p.id)) : sample.photos
+  // Read from the store: a photo deleted or checked « Dans le livrable » elsewhere shows it here at once.
+  const live = useMemo(() => new Map(mapPhotos.map((p) => [p.id, p])), [mapPhotos])
+  const photos = loaded ? sample.photos.flatMap((p) => live.get(p.id) ?? []) : sample.photos
   const sending = uploads.filter((u) => keys.includes(u.key) && u.status !== 'done')
   const position = sample.lng != null && sample.lat != null ? { lng: sample.lng, lat: sample.lat } : null
 
@@ -87,6 +89,7 @@ export default function SamplePhotos({ sample }: { sample: SoilSampleData }) {
               <button type="button" onClick={() => photoActions.open(photo.id)} className="block w-full" title={photoLabel(photo)}>
                 <span className="block aspect-square overflow-hidden rounded-lg bg-loam-100"><PhotoThumb mapId={mapId} photo={photo} /></span>
               </button>
+              {photo.inDeliverable && <DeliverableBadge className="pointer-events-none absolute bottom-1 left-1" />}
               {canEdit && (
                 <IconButton
                   size="sm" tone="neutral" label={t('soil.sample.photos.unlink')} disabled={busy} onClick={() => void unlink(photo)}

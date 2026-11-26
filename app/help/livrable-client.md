@@ -26,9 +26,11 @@ Le **plan est figé** au moment où tu publies : ton client ne voit jamais un pl
 
 - un **document** : ouvre-le dans la page Documents, la case est sous sa description ;
 - une **photo** ou une **vidéo** : ouvre-la, ou sélectionne-en plusieurs dans la page Photos et **Mettre dans le livrable** ;
-- un **point d'analyse de sol** prélevé : panneau Sol, ouvre le point. Ses photos et les rapports du laboratoire l'accompagnent.
+- un **point d'analyse de sol** prélevé : panneau Sol, ouvre le point. Partent avec lui ses résultats, leur lecture et les rapports du laboratoire ; **pas tes notes**.
 
-Un fichier coché apparaît **tout de suite** chez ton client, sans republier. Le panneau compte ce qui est coché ; une petite pastille le signale aussi sur chaque fichier.
+**Rien ne part sans être coché.** Les photos d'un point de sol ne suivent pas le point : ouvre chacune et coche-la si elle sert à ton client (le trou, la carotte), laisse les autres (un bon de commande, un tarif, une personne). Sous la case du point, une ligne dit combien de ses photos partent.
+
+Chaque case dit exactement ce qui part. Un fichier coché apparaît **tout de suite** chez ton client, sans republier. Le panneau compte ce qui est coché, photos des points de sol comprises ; une petite pastille le signale aussi sur chaque fichier.
 
 ## Au jardin
 

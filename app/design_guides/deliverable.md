@@ -20,7 +20,7 @@ Choose with the person, file by file, and say what each one is for. A good deliv
 
 - **The plan and its reasons.** The project sheet's goals, the master plan, the phasing (« Mise en œuvre »): what is done first and why. A short Markdown page written for the client (what the plan says, the first three things to do this season) is often the most useful document of all.
 - **The land as it was found.** Photos of the existing state from fixed spots, before any work: they are the « before » of every « after » the client will take. Photos placed on the map are dots on the client's plan, so the client can walk to each spot and take the same picture again years later.
-- **Soil.** The sampled points with their lab reports and the reading of the figures. The points are on the plan too: the client can find where each sample was dug.
+- **Soil.** The sampled points with their lab reports and the reading of the figures. The points are on the plan too: the client can find where each sample was dug. A point's mark sends its figures, their reading and its lab reports, never its notes; its photos go only when each one is marked itself, so mark the hole and the core, and leave an order form or a price list photographed on site with the team.
 - **Water and earthworks.** Sections, dimensions of ponds and swales, the catchment they were sized on: what a contractor needs on the day.
 - **Plants.** The planting plan, the palette, the nursery list if there is one.
 - **Permits and surveys** the client will be asked for later (architect's plans, a surveyor's report, a permit).
@@ -35,4 +35,4 @@ The deliverable is made to be opened on a phone, on the land. Its plan shows whe
 
 ## With your AI
 
-`get_map` returns `deliverable` (published or not, stale, how many files are marked) for the map's editors. `list_documents`, `list_photos` and `get_soil_samples` say `in_deliverable` for each file. `mark_for_deliverable` marks or unmarks files when the person asks, after you have listed what goes to the client. Publishing or refreshing the plan stays a gesture of the team in the panel.
+`get_map` returns `deliverable` (published or not, stale, how many files are marked) for the map's editors. `list_documents`, `list_photos` and `get_soil_samples` say `in_deliverable` for each file. `mark_for_deliverable` marks or unmarks files when the person asks, after you have listed what goes to the client. Nothing goes without its own mark: a soil point's photos are photos to mark one by one (`get_soil_samples` says `in_deliverable` for each), and the `marked` counts include them. Publishing or refreshing the plan stays a gesture of the team in the panel.

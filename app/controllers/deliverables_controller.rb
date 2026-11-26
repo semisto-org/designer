@@ -32,13 +32,13 @@ class DeliverablesController < ApplicationController
   end
 
   # /livrable/:token/photos/:id/image?size=thumb|large|video
-  # A photo marked for the deliverable, or one taken at a soil point that is.
-  # Never the original file: its EXIF block stays with the team.
+  # A photo marked for the deliverable, itself: a soil point's mark never
+  # sends its photos along. Never the original file: its EXIF block stays
+  # with the team.
   def photo
     return head :gone unless @publication.live?
-    photo = @map.photos.find(params[:id])
-    shown = photo.in_deliverable? || (photo.soil_sample_id && @map.soil_samples.in_deliverable.exists?(id: photo.soil_sample_id))
-    return head :not_found unless shown && photo.image.attached?
+    photo = @map.photos.in_deliverable.find(params[:id])
+    return head :not_found unless photo.image.attached?
     size = params[:size].presence_in(PHOTO_SIZES) || "large"
     size = "large" if size == "video" && !photo.video?
     target = size == "video" ? photo.player_blob : photo.still(size.to_sym).processed
