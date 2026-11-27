@@ -273,7 +273,7 @@ export function PhotoLightbox({ order }: { order?: MapPhotoData[] } = {}) {
         </Field>
 
         {canEdit && host.deliverable && (
-          <DeliverableToggle checked={!!photo.inDeliverable} onChange={(on) => void save({ in_deliverable: on }).then((ok) => ok && host.notify(t(on ? 'deliverables.mark.saved_on' : 'deliverables.mark.saved_off')))} />
+          <DeliverableToggle item="photo" checked={!!photo.inDeliverable} onChange={(on) => void save({ in_deliverable: on }).then((ok) => ok && host.notify(t(on ? 'deliverables.mark.saved_on' : 'deliverables.mark.saved_off')))} />
         )}
 
         <dl className="space-y-1 text-sm">

@@ -197,7 +197,7 @@ export function DocumentViewer({ docs, openId, onOpen, canEdit, tagSuggestions, 
           <p className="whitespace-pre-line text-sm text-loam-700">{doc.description}</p>
         ) : null}
         {deliverable && canEdit && onSave && (
-          <DeliverableToggle checked={!!doc.inDeliverable} onChange={(on) => save({ in_deliverable: on })} />
+          <DeliverableToggle item="document" checked={!!doc.inDeliverable} onChange={(on) => save({ in_deliverable: on })} />
         )}
         <div>
           <h3 className="mb-1 text-sm font-medium text-loam-700">{t('tags.title')}</h3>

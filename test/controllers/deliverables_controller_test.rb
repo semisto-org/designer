@@ -62,19 +62,41 @@ class DeliverablesControllerTest < ActionDispatch::IntegrationTest
     assert_response :gone
   end
 
-  test "photos: only stills of marked photos or of a marked soil point, never the original" do
+  test "photos: only stills of photos marked themselves, never the original" do
     marked = create_photo(in_deliverable: true)
     other = create_photo(salt: 2)
     sample = sampled(in_deliverable: true)
     of_sample = create_photo(salt: 3, soil_sample: sample)
+    marked_of_sample = create_photo(salt: 4, soil_sample: sample, in_deliverable: true)
 
     get deliverable_photo_path(@deliverable.token, marked, size: "original")
     assert_response :redirect
     assert_no_match(/terrain\.jpg\z/, URI(response.location).path) # the large still, not the file
-    get deliverable_photo_path(@deliverable.token, of_sample, size: "thumb")
+    get deliverable_photo_path(@deliverable.token, marked_of_sample, size: "thumb")
     assert_response :redirect
+    # A marked soil point never sends its other photos along (a price list photographed on site).
+    get deliverable_photo_path(@deliverable.token, of_sample, size: "thumb")
+    assert_response :not_found
     get deliverable_photo_path(@deliverable.token, other, size: "thumb")
     assert_response :not_found
+  end
+
+  test "a soil point shows only its photos marked themselves, its notes never, and the counts say it all" do
+    sample = sampled(in_deliverable: true, notes: "Prix équipe : 12 €/m³")
+    create_photo(salt: 5, soil_sample: sample, caption: "Bon de commande, prix équipe")
+    core = create_photo(salt: 6, soil_sample: sample, in_deliverable: true, caption: "La carotte")
+    planned = @map.soil_samples.create!(label: "S9", status: "planned", depth_from_cm: 0, depth_to_cm: 30, created_by: @owner)
+    elsewhere = create_photo(salt: 7, soil_sample: planned, in_deliverable: true)
+    loose = create_photo(salt: 8, in_deliverable: true)
+
+    get deliverable_path(@deliverable.token), headers: inertia_headers
+    contents = inertia_props["contents"]
+    assert_equal [ core.id ], contents.dig("soilSamples", 0, "photos").map { _1["id"] }
+    # Shown once: under its point, not again in the gallery.
+    assert_equal [ elsewhere.id, loose.id ].sort, contents["photos"].map { _1["id"] }.sort
+    assert_not_includes response.body, "prix équipe"
+    assert_not_includes response.body, "12 €/m³"
+    assert_equal 3, Deliverable::Contents.new(@map).counts[:photos]
   end
 
   test "lab reports of a marked point only" do

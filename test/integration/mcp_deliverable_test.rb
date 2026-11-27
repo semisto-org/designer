@@ -49,6 +49,23 @@ class McpDeliverableTest < ActionDispatch::IntegrationTest
     refute @photo.reload.in_deliverable?
   end
 
+  test "a soil point's photos never follow its mark: each one is marked itself, and counted" do
+    of_sample = create_photo(salt: 2, soil_sample: @sample, caption: "Bon de commande")
+    data, error = call_tool(@owner, "mark_for_deliverable", { map_id: @map.id, in_deliverable: true, soil_sample_ids: [ @sample.id ] })
+    refute error, data
+    assert_equal 0, data["marked"]["photos"]
+    refute of_sample.reload.in_deliverable?
+
+    samples, = call_tool(@owner, "get_soil_samples", { map_id: @map.id })
+    photo = samples["samples"].find { _1["id"] == @sample.id }["photos"].find { _1["photo_id"] == of_sample.id }
+    assert_nil photo["in_deliverable"]
+
+    data, = call_tool(@owner, "mark_for_deliverable", { map_id: @map.id, in_deliverable: true, photo_ids: [ of_sample.id ] })
+    assert_equal 1, data["marked"]["photos"]
+    samples, = call_tool(@owner, "get_soil_samples", { map_id: @map.id })
+    assert_equal true, samples["samples"].find { _1["id"] == @sample.id }["photos"].first["in_deliverable"]
+  end
+
   test "files of another map are refused, and the plan must include the deliverable" do
     text, error = call_tool(@owner, "mark_for_deliverable", { map_id: @map.id, in_deliverable: true, photo_ids: [ 999_999 ] })
     assert error

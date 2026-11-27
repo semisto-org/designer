@@ -7,6 +7,11 @@ module Deliverable
   #
   # Nothing here comes from people: no uploader names, no original photo
   # file (its EXIF block), no discussion file outside the library.
+  #
+  # Nothing goes without its own mark: a soil point carries its figures, its
+  # reading and its lab reports, never its notes, and only those of its
+  # photos that are marked themselves. A photo of a point can be an order
+  # form, a price list or a face: the team chooses it, one by one.
   class Contents
     include Rails.application.routes.url_helpers
 
@@ -16,6 +21,7 @@ module Deliverable
     end
 
     def documents = @map.all_documents.in_deliverable
+    # Every marked photo and video, those of soil points included: what the counts say.
     def photos = @map.photos.in_deliverable
     # A sampling point shows once it has been taken; a planned one has nothing to say yet.
     def soil_samples = @map.soil_samples.in_deliverable.where(status: "sampled")
@@ -44,8 +50,11 @@ module Deliverable
         end
       end
 
+      # The gallery: marked photos not already shown under a soil point of the deliverable.
       def photos_json
-        photos.chronological.includes(image_attachment: :blob).map { |photo| photo_json(photo) }
+        shown_with_soil = soil_samples.ids
+        gallery = shown_with_soil.empty? ? photos : photos.where(soil_sample_id: nil).or(photos.where.not(soil_sample_id: shown_with_soil))
+        gallery.chronological.includes(image_attachment: :blob).map { |photo| photo_json(photo) }
       end
 
       def photo_json(photo)
@@ -73,8 +82,8 @@ module Deliverable
             reports: sample.lab_reports.map do |report|
               { filename: report.filename.to_s, byteSize: report.byte_size, url: deliverable_soil_report_path(@token, sample, report_id: report.id) }
             end,
-            # The hole, the core, the profile: part of the analysis.
-            photos: sample.photos.map { |photo| photo_json(photo) }
+            # The hole, the core, the profile: only those the team marked themselves.
+            photos: sample.photos.select(&:in_deliverable?).map { |photo| photo_json(photo) }
           }
         end
       end

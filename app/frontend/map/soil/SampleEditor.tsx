@@ -11,6 +11,7 @@ import SampleReading from '@/map/soil/SampleReading'
 import SamplePhotos from '@/map/soil/SamplePhotos'
 import SampleReports from '@/map/soil/SampleReports'
 import { DeliverableToggle } from '@/deliverables/DeliverableToggle'
+import { usePhotos } from '@/map/photos/store'
 import { soilActions, useSoil, type SamplePayload } from '@/map/soil/store'
 import type { SoilOtherResult, SoilResultKey, SoilSampleData } from '@/types/soil_photos'
 
@@ -262,7 +263,9 @@ export default function SampleEditor({ sample, onClose }: { sample: SoilSampleDa
       </section>
 
       {canEdit && editor.entitlements.deliverables && sample.status === 'sampled' && (
-        <DeliverableToggle checked={!!sample.inDeliverable} onChange={(on) => void markForDeliverable(on)} />
+        <DeliverableToggle item="soil" checked={!!sample.inDeliverable} onChange={(on) => void markForDeliverable(on)}>
+          <SoilPhotosInDeliverable sample={sample} />
+        </DeliverableToggle>
       )}
 
       {error && <p role="alert" className="rounded-lg bg-clay-50 p-2.5 text-sm text-clay-700">{error}</p>}
@@ -288,5 +291,22 @@ export default function SampleEditor({ sample, onClose }: { sample: SoilSampleDa
         </div>
       </div>
     </form>
+  )
+}
+
+/**
+ * Which of the point's photos go with it: only those checked one by one
+ * (the point's mark never sends them along). Read from the photos store,
+ * so a photo checked in the lightbox counts at once.
+ */
+function SoilPhotosInDeliverable({ sample }: { sample: SoilSampleData }) {
+  const { photos, loaded } = usePhotos()
+  if (sample.photos.length === 0) return null
+  const live = new Map(photos.map((p) => [p.id, p]))
+  const marked = sample.photos.filter((p) => (loaded ? live.get(p.id)?.inDeliverable : p.inDeliverable)).length
+  return (
+    <span className="mt-1 block font-medium text-prune-800">
+      {t('deliverables.mark.soil_photos', { count: marked, total: sample.photos.length })}
+    </span>
   )
 }
