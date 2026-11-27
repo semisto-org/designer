@@ -17,7 +17,7 @@ class TimeEntry < ApplicationRecord
   # the other three are the offer's phases (Offer::Pricing::PHASES).
   PHASES = [ "commercial", *Offer::Pricing::PHASES ].freeze
   NON_BILLABLE_REASONS = %w[offered travel other].freeze
-  SOURCES = %w[web mcp app].freeze
+  SOURCES = %w[web mcp app import].freeze
   MAX_MINUTES = 24 * 60
   STEP_MINUTES = 15
   MAX_TRIP_KM = 5_000
@@ -37,6 +37,7 @@ class TimeEntry < ApplicationRecord
   validates :invoice_number, length: { maximum: 60 }
   validates :trip_km, numericality: { greater_than: 0, less_than_or_equal_to: MAX_TRIP_KM }, allow_nil: true
   validates :source, inclusion: { in: SOURCES }
+  validates :external_ref, length: { maximum: 200 }, uniqueness: { scope: :map_id }, allow_nil: true
   validate :worked_on_not_far_ahead
 
   before_validation { self.non_billable_reason = nil if billable? }

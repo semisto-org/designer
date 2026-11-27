@@ -39,6 +39,29 @@ class McpTimeEntriesTest < ActionDispatch::IntegrationTest
     refute data.to_json.include?("rate")
   end
 
+  test "import_time_entries brings a team member's hours once, and only for a team admin" do
+    admin = personal_token(users(:michael))
+    line = { person: users(:bob).display_name.upcase, external_ref: "my.semisto.org/recordings/1", worked_on: "2026-10-01", hours: 4, phase: "pre_design", note: "Analyse" }
+    visit = { person: users(:michael).display_name, external_ref: "my.semisto.org/recordings/2", worked_on: "2026-08-24", hours: 1, phase: "commercial", billable: false, non_billable_reason: "offered", trip_km: 171 }
+    data, error = call_tool(admin, "import_time_entries", { map_id: @map.id, lines: [ line, visit, line.merge(person: "Personne", external_ref: "x") ] })
+    refute error, data
+    assert_equal 2, data["created"].size
+    assert_equal 1, data["rejected"].size
+    bob = users(:bob).time_entries.sole
+    assert_equal [ "import", "my.semisto.org/recordings/1", 240, "Semisto" ], [ bob.source, bob.external_ref, bob.minutes, bob.bill_to ]
+    assert_equal [ 4.0, 4.0 ], data["totals"].find { _1["person"] == users(:bob).display_name }.values_at("hours", "billable_hours")
+    assert_equal 171.0, data["totals"].find { _1["person"] == users(:michael).display_name }["km"]
+
+    data, error = call_tool(admin, "import_time_entries", { map_id: @map.id, lines: [ line ] })
+    refute error, data
+    assert_equal [ 0, 1 ], [ data["created"].size, data["skipped"].size ]
+    assert_equal 2, TimeEntry.count
+
+    _, error = call_tool(@designer, "import_time_entries", { map_id: @map.id, lines: [ line.merge(external_ref: "y") ] })
+    assert error, "a member imports nobody's hours"
+    assert_equal 2, TimeEntry.count
+  end
+
   test "the client's AI cannot read nor note the project's time" do
     _, error = call_tool(@client, "list_time_entries", { map_id: @map.id })
     assert error

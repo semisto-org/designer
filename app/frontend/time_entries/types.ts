@@ -20,7 +20,7 @@ export type TimeEntry = {
   status: 'noted' | 'invoiced'
   invoicedAt: string | null
   invoiceNumber: string | null
-  source: 'web' | 'mcp' | 'app'
+  source: 'web' | 'mcp' | 'app' | 'import'
 }
 
 /** A project the person may note time on, with what the form fills in. */

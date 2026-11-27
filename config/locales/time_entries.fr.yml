@@ -60,6 +60,7 @@ fr:
       locked: "Facturé (n° %{number}) : verrouillé."
       by_ai: "Noté par ton IA"
       by_app: "Noté sur le téléphone"
+      imported: "Importé par l’équipe"
     mine:
       page_title: "Mes heures"
       title: "Mes heures"

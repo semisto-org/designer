@@ -112,7 +112,7 @@ class Agents::RunnerTest < ActiveSupport::TestCase
     assert_not_includes results[3][:content], "Conduite secrète"
 
     names = chat.calls.first[:tools].map { _1[:name] }
-    assert_empty names & %w[import_from_url delete_documents delete_photos record_time_entries record_project_expenses get_aerial_photo list_maps get_territory]
+    assert_empty names & %w[import_from_url delete_documents delete_photos record_time_entries import_time_entries record_project_expenses get_aerial_photo list_maps get_territory]
     assert_includes names, "propose_features"
     tasks_schema = chat.calls.first[:tools].find { _1[:name] == "update_tasks" }[:input_schema]
     assert_not tasks_schema.dig(:properties, :tasks, :items, :properties).key?(:completed)
