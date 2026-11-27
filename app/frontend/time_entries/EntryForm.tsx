@@ -23,6 +23,8 @@ type Props = {
   overHours?: Partial<Record<Phase, number | null>>
   onDone: (entry: TimeEntry) => void
   onCancel?: () => void
+  /** Offered when editing: the delete sits in the dialog, where a phone reaches it. */
+  onDelete?: () => void
   /** Put the cursor in the duration field at once (a form that opens on demand). */
   autoFocus?: boolean
 }
@@ -32,7 +34,7 @@ type Props = {
  * Everything is filled in ahead (the project's likely phase, who pays,
  * the person's usual trip there): usually only the duration needs typing.
  */
-export function EntryForm({ projects, catalog, billToSuggestions, today, entry, overHours, onDone, onCancel, autoFocus = false }: Props) {
+export function EntryForm({ projects, catalog, billToSuggestions, today, entry, overHours, onDone, onCancel, onDelete, autoFocus = false }: Props) {
   const id = useId()
   const first = projects.find((p) => p.id === entry?.mapId) ?? projects[0]
   const [mapId, setMapId] = useState(first?.id)
@@ -183,6 +185,7 @@ export function EntryForm({ projects, catalog, billToSuggestions, today, entry, 
       </Field>
 
       <div className="flex flex-wrap justify-end gap-2">
+        {onDelete && <Button variant="danger-ghost" className="mr-auto" onClick={onDelete}>{t('time_entries.entry.delete')}</Button>}
         {onCancel && <Button variant="ghost" onClick={onCancel}>{t('time_entries.form.cancel')}</Button>}
         <Button type="submit" disabled={saving || !project}>{t(entry ? 'time_entries.form.update' : 'time_entries.form.save')}</Button>
       </div>

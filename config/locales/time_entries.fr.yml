@@ -62,6 +62,11 @@ fr:
       by_app: "Noté sur le téléphone"
       imported: "Importé par l’équipe"
       all_imported: "Ces heures ont été importées par l’équipe."
+      filter_label: "Voir les heures de"
+      filter_all: "Tout le monde"
+      older_months:
+        one: "Voir le mois précédent · %{duration}"
+        other: "Voir les %{count} mois précédents · %{duration}"
       columns:
         day: "Jour"
         person: "Qui"
