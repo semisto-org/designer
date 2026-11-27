@@ -3,6 +3,7 @@ import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl'
 import { useEffect, useMemo } from 'react'
 import { useDrawingState } from '@/map/drawing/store'
 import { useEditor } from '@/map/editor/EditorContext'
+import { whenStyleReady } from '@/map/layers/styleReady'
 import { t } from '@/lib/i18n'
 import { arrowsToGeoJSON, type ArrowInput } from '@/map/earthworks/arrows'
 import { DAYLIGHT_COLORS, daylightToGeoJSON } from '@/map/earthworks/daylight'
@@ -155,22 +156,26 @@ export default function EarthworksOverlay() {
   }, [editor.features, arrival, hiddenLayers])
 
   useEffect(() => {
-    const timer = window.setTimeout(() => installDaylight(map, daylight), 0)
-    const reinstall = () => { if (!map.getSource(DAYLIGHT_SOURCE)) installDaylight(map, daylight) }
+    let cancel = () => {}
+    const timer = window.setTimeout(() => { cancel = whenStyleReady(map, () => installDaylight(map, daylight)) }, 0)
+    const reinstall = () => { cancel(); cancel = whenStyleReady(map, () => { if (!map.getSource(DAYLIGHT_SOURCE)) installDaylight(map, daylight) }) }
     map.on('styledata', reinstall)
     return () => {
       window.clearTimeout(timer)
+      cancel()
       map.off('styledata', reinstall)
     }
   }, [map, daylight])
 
   useEffect(() => {
     // After the editor's own layers, so the arrows sit on top of the shapes.
-    const timer = window.setTimeout(() => install(map, data), 0)
-    const reinstall = () => { if (!map.getSource(SOURCE)) install(map, data) }
+    let cancel = () => {}
+    const timer = window.setTimeout(() => { cancel = whenStyleReady(map, () => install(map, data)) }, 0)
+    const reinstall = () => { cancel(); cancel = whenStyleReady(map, () => { if (!map.getSource(SOURCE)) install(map, data) }) }
     map.on('styledata', reinstall)
     return () => {
       window.clearTimeout(timer)
+      cancel()
       map.off('styledata', reinstall)
     }
   }, [map, data])
