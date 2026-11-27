@@ -55,4 +55,14 @@ class Trials::ReadingTest < ActiveSupport::TestCase
     stub_request(:post, "#{MNT}/identify").to_return(status: 503)
     assert_equal({ "area_m2" => 7_900 }, Trials::Reading.new(@trial, provider: instant_provider(@region)).call)
   end
+
+  test "a self-intersecting outline is read instead of failing" do
+    plane(north: 0.1)
+    # A bow tie: two cadastre parcels whose union crosses itself.
+    @trial.update_columns(boundary: GeoJsonGeometry::FACTORY.parse_wkt(
+      "MULTIPOLYGON(((4.905 50.34, 4.906 50.341, 4.906 50.34, 4.905 50.341, 4.905 50.34)))"
+    ))
+    reading = Trials::Reading.new(@trial.reload, provider: instant_provider(@region)).call
+    assert_equal "s", reading["downhill"]
+  end
 end

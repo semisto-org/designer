@@ -76,8 +76,18 @@ module Trials
       end
 
       def covers?(lng, lat)
+        outline.nil? || outline.contains?(GeoJsonGeometry::FACTORY.point(lng, lat))
+      end
+
+      # The trial's outline, repaired when the cadastre union crosses itself
+      # (RGeo refuses to test points against an invalid polygon); nil when it
+      # cannot be repaired, and the whole grid is read.
+      def outline
+        return @outline if defined?(@outline)
         boundary = @trial.boundary
-        boundary.nil? || boundary.contains?(GeoJsonGeometry::FACTORY.point(lng, lat))
+        @outline = boundary.nil? || boundary.valid? ? boundary : boundary.make_valid
+      rescue RGeo::Error::RGeoError
+        @outline = nil
       end
 
       # Least squares plane z = a + b·x + c·y; (b, c) points uphill.
