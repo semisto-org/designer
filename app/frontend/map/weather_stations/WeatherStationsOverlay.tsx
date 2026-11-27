@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { api } from '@/lib/api'
 import { useDrawingState } from '@/map/drawing/store'
 import { useEditor } from '@/map/editor/EditorContext'
+import { whenStyleReady } from '@/map/layers/styleReady'
 import {
   installWeatherStationLayers, linkToNearest, removeWeatherStationLayers, setWeatherStationLayersVisible, STATION_LAYER,
 } from '@/map/weather_stations/layers'
@@ -41,11 +42,15 @@ export default function WeatherStationsOverlay() {
 
   useEffect(() => {
     if (!stations?.available) return
-    const timer = window.setTimeout(() => {
+    let cancel = () => {}
+    const timer = window.setTimeout(() => { cancel = whenStyleReady(map, () => {
       installWeatherStationLayers(map, stations, link)
       setWeatherStationLayersVisible(map, showOnMap, labelsHidden)
-    }, 0)
-    return () => window.clearTimeout(timer)
+    }) }, 0)
+    return () => {
+      window.clearTimeout(timer)
+      cancel()
+    }
   }, [map, stations, link, showOnMap, labelsHidden])
   useEffect(() => () => removeWeatherStationLayers(map), [map])
 
