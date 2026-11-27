@@ -7,9 +7,7 @@ order: 75
 
 Tu conçois des jardins-forêts pour d'autres ? Le **constructeur d'offre** chiffre ton travail à partir de ce que la carte mesure, sans tableur. Il est réservé à qui chiffre : l'équipe à qui la carte appartient, ou son propriétaire avec une formule Pro ou Team. Une personne invitée sur la carte, souvent ton client, ne le voit jamais.
 
-[Ouvrir le panneau Offre](action:panel/offer)
-
-Ouvre-le depuis l'éditeur, groupe « Échanger », panneau **Offre**.
+Ouvre-le depuis l'éditeur avec le menu **Carte ▾**, à côté du nom de la carte, puis **Offre**. Depuis la fiche projet ou les photos, c'est l'onglet **Offre**.
 
 ## Ce que lit la carte
 
@@ -20,7 +18,7 @@ Ouvre-le depuis l'éditeur, groupe « Échanger », panneau **Offre**.
 
 ## La précision du budget
 
-Sur une carte qui n'a que son contour, l'offre donne un ordre de grandeur. La jauge « Précision du budget » montre ce que le calcul sait déjà, un segment par information : le contour, le périmètre dessiné, le porteur du projet et son budget, le sol, l'accès et la pente, la complexité et les déplacements. Sous la jauge, l'offre te dit quoi ajouter d'abord et où, ce qui la fait le plus monter en premier. Elle passe d'« Ordre de grandeur » à « Fourchette », puis à « Budget précis ». Tu la retrouves aussi dans le panneau « Offre » de la carte, pendant que tu dessines.
+Sur une carte qui n'a que son contour, l'offre donne un ordre de grandeur. La jauge « Précision du budget » montre ce que le calcul sait déjà, un segment par information : le contour, le périmètre dessiné, le porteur du projet et son budget, le sol, l'accès et la pente, la complexité et les déplacements. Sous la jauge, l'offre te dit quoi ajouter d'abord et où, ce qui la fait le plus monter en premier. Elle passe d'« Ordre de grandeur » à « Fourchette », puis à « Budget précis ». Dessine sur la carte, puis reviens à l'onglet **Offre** : la jauge a suivi.
 
 ## Ta fiche interne
 

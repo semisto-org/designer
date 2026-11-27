@@ -56,7 +56,7 @@ type Props = {
   mapEntitlements: EntitlementsData
   /** The project variants (map/variants); one is retained. */
   variants?: MapVariant[]
-  /** The « Offre » panel: for teams and professional accounts only. */
+  /** The « Offre » view in « Carte ▾ »: for teams and professional accounts only. */
   offerBuilder?: boolean; timeEntries?: boolean
 }
 
@@ -74,11 +74,11 @@ export default function MapShow(props: Props) {
         <Link href="/maps" className="rounded-md p-1.5 text-loam-600 hover:bg-loam-100" aria-label={t('maps.show.back')}>
           <ArrowLeft className="h-[18px] w-[18px]" />
         </Link>
-        <div className="flex min-w-0 shrink items-baseline gap-2.5">
+        <div className="flex min-w-0 shrink items-baseline gap-2.5 overflow-hidden">
           <MapName map={map} setMap={setMap} />
           {map.areaM2 != null && <span className="hidden shrink-0 text-[13px] text-loam-400 sm:inline">{headerArea(map.areaM2)}</span>}
         </div>
-        <MapViewMenu mapId={map.id} teamId={map.teamId} offerBuilder={props.offerBuilder} timeEntries={props.timeEntries} />
+        <MapViewMenu mapId={map.id} teamId={map.teamId} offerBuilder={props.offerBuilder} timeEntries={props.timeEntries} role={map.role} />
         {(map.role === 'owner' || map.role === 'editor') && !map.readOnlyByPlan && !map.archived && <SaveIndicator />}
         <div className="flex-1" />
         <div id="editor-header-steps" className="hidden shrink-0 md:block" />
@@ -398,6 +398,7 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
     return {
       map, setMap, instance, regionLayers: layers, entitlements: mapEntitlements, canEdit,
       isOwner: map.role === 'owner',
+      offerBuilder,
       features, selectedId,
       selected: features.find((f) => f.properties.id === selectedId) ?? null,
       select(id: number | null) {
@@ -498,9 +499,14 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
       shade,
       setShade: setSeason,
     }
-  }, [map, setMap, instance, layers, mapEntitlements, canEdit, features, selectedId, selection, multiSelect, drawing, drawingShape, activePanel, focusStage, notify, upsertFeatures, removeFeatures, tracked, history, step, shapeStep, moment, timeline, shade, mode])
+  }, [map, setMap, instance, layers, mapEntitlements, canEdit, offerBuilder, features, selectedId, selection, multiSelect, drawing, drawingShape, activePanel, focusStage, notify, upsertFeatures, removeFeatures, tracked, history, step, shapeStep, moment, timeline, shade, mode])
 
-  const visiblePanels = PANELS.filter((p) => !p.requires || (p.requires === 'editor' ? mayEdit : p.requires === 'offers' ? mayEdit && offerBuilder : map.role === 'owner'))
+  const offerEditor = mayEdit && offerBuilder
+  const visiblePanels = PANELS.filter((p) => !p.requires || (
+    p.requires === 'editor' ? mayEdit
+      : p.requires === 'offers' ? offerEditor
+        : p.requires === 'publish' ? map.role === 'owner' || offerEditor
+          : map.role === 'owner'))
   const panel = visiblePanels.find((p) => p.id === activePanel)
   const wideScreen = useMediaQuery(MODAL_PANEL_QUERY)
   const wideRail = useMediaQuery('(min-width: 768px)')

@@ -7,8 +7,6 @@ order: 81
 
 Quand tu [connectes ton IA](/help/connecter-son-ia) avec l'accès « Lecture et brouillons », elle peut **proposer** des éléments sur ta carte : une haie, une mare, un patch de plantes. Ces propositions arrivent en **brouillon** : rien ne fait partie de la carte tant qu'un humain ne l'a pas accepté.
 
-[Ouvrir le panneau Journal IA](action:panel/ai-journal)
-
 ## Ce qu'il faut pour recevoir des brouillons
 
 - le **forfait** du propriétaire de la carte (avec la formule gratuite, ton IA lit la carte mais ne pose rien) ;
@@ -62,7 +60,7 @@ Les lecteurs voient la barre, mais seul un éditeur ou le propriétaire peut dé
 
 ## Le journal IA
 
-Le panneau **Journal IA**, réservé au propriétaire, liste chaque action d'une IA sur la carte : avec quel client, pour quel compte, ce qu'elle a lu ou proposé, et le sort de ses propositions (acceptées, refusées, en attente, retirées). Les tentatives qui ont échoué y figurent aussi. **Voir les actions plus anciennes** remonte le temps.
+Le **Journal IA**, réservé au propriétaire, s'ouvre par le menu **Carte ▾**, à côté du nom de la carte (ou l'onglet **Journal IA** des pages du projet). Il liste chaque action d'une IA sur la carte : avec quel client, pour quel compte, ce qu'elle a lu ou proposé, et le sort de ses propositions (acceptées, refusées, en attente, retirées). Les tentatives qui ont échoué y figurent aussi. **Voir les actions plus anciennes** remonte le temps.
 
 Tu sais ainsi toujours ce que l'IA a fait sur ton terrain. Pour couper son accès, révoque l'application depuis la page **Connecter ton IA** de ton compte.
 

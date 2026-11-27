@@ -1,4 +1,4 @@
-import { Bot, Camera, Waypoints, Compass, Target, Shovel, FileImage, Files, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, FolderLock, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, Receipt, MapPinned, Mountain, PiggyBank, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
+import { Camera, Waypoints, Compass, Target, Shovel, FileImage, Files, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, FolderLock, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, MapPinned, Mountain, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
 import { Apple, Archive, GitBranch, Presentation, Spline, Trees } from 'lucide-react'
 import { isAnnotationLayer } from '@/map/scenario'
 import { appliesToCatchment, appliesToEarthworks, appliesToElement, appliesToFruitStore, appliesToGpsPoint, appliesToInfiltration, appliesToKeyline, appliesToLinks, appliesToPhase, appliesToProjectState, appliesToStorm, appliesToTracing, appliesToVariant, appliesToZone } from '@/map/panels/applies'
@@ -25,6 +25,7 @@ import AiProposalsOverlay from '@/map/drafts/AiProposalsOverlay'
 import PendingUpdatesLayer from '@/map/feature_updates/PendingUpdatesLayer'
 import ReadOnlyNotice from '@/map/panels/ReadOnlyNotice'
 import HelpAction from '@/map/panels/HelpAction'
+import TakeActionButton, { TakeActionChip } from '@/map/actions/TakeAction'
 import { FeedbackButton } from '@/components/feedback/FeedbackButton'
 import ShortcutsSheet, { ShortcutsButton } from '@/map/shortcuts/ShortcutsSheet'
 import VariantPicker from '@/map/variants/VariantPicker'
@@ -93,15 +94,13 @@ export const PANELS: EditorPanel[] = [
   // 4. Planter
   { id: 'plant-list', label: 'editor.panels.plant_list', icon: ListChecks, group: 'plant', component: deferred(() => import('@/map/plants/PlantListPanel')), order: 10, essential: true },
   { id: 'harvests', label: 'plant_harvests.panel_title', icon: Apple, group: 'plant', component: deferred(() => import('@/map/harvests/HarvestsPanel')), order: 15 },
-  { id: 'finances', label: 'finances.panel_title', icon: PiggyBank, group: 'plant', component: deferred(() => import('@/map/panels/FinancesPanel')), order: 20 },
-  { id: 'actions', label: 'journey.requests.panel_title', icon: Handshake, group: 'plant', component: deferred(() => import('@/map/panels/ActionsPanel')), order: 30 },
+  // « Passer à l'action » has its own button in the header (map/actions/TakeActionButton), not a rail entry.
+  { id: 'actions', label: 'journey.requests.panel_title', icon: Handshake, group: 'plant', component: deferred(() => import('@/map/panels/ActionsPanel')), order: 30, hiddenFromRail: true },
   // Échanger (no number)
   { id: 'discussions', label: 'collab.panels.discussions', icon: DiscussionsIcon, group: 'share', component: deferred(() => import('@/collab/DiscussionsPanel')), order: 10, essential: true },
-  { id: 'offer', label: 'offers.panel.title', icon: Receipt, group: 'share', component: deferred(() => import('@/map/panels/OfferPanel')), requires: 'offers', order: 15 },
   { id: 'present', label: 'presentations.panel_title', icon: Presentation, group: 'share', component: deferred(() => import('@/map/presentation/PresentationPanel')), order: 17, essential: true },
-  { id: 'publish', label: 'collab.panels.publish', icon: Globe, group: 'share', component: deferred(() => import('@/collab/PublishPanel')), requires: 'owner', order: 20, essential: true },
-  { id: 'deliverable', label: 'deliverables.panel_label', icon: FolderLock, group: 'share', component: deferred(() => import('@/collab/DeliverablePanel')), requires: 'offers', order: 21 },
-  { id: 'ai-journal', label: 'ai_journal.title', icon: Bot, group: 'share', component: deferred(() => import('@/map/panels/AiJournalPanel')), requires: 'owner', order: 80 },
+  { id: 'publish', label: 'collab.panels.publish', icon: Globe, group: 'share', component: deferred(() => import('@/collab/PublishPanel')), requires: 'publish', order: 20, essential: true },
+  { id: 'deliverable', label: 'collab.panels.publish', icon: FolderLock, group: 'share', component: deferred(() => import('@/collab/DeliverablePanel')), requires: 'offers', order: 21, hiddenFromRail: true },
 ]
 
 // Register inspector sections for a selected feature here.
@@ -142,6 +141,7 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
 
 // Top bar actions (right side), e.g. share, export.
 export const HEADER_ACTIONS: EditorSlot[] = [
+  { id: 'take-action', component: TakeActionButton, order: 78 },
   { id: 'share', component: ShareButton, order: 80 },
   { id: 'chat', component: ChatToggle, order: 79 },
   { id: 'read-only-notice', component: ReadOnlyNotice, order: 5 },
@@ -159,6 +159,7 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'chat', component: MapChat, order: 91 },
   { id: 'welcome', component: WelcomeCard, order: 92 },
   { id: 'journey-chip', component: JourneyOverlay, order: 20 },
+  { id: 'take-action', component: TakeActionChip, order: 21 },
   { id: 'variant', component: VariantPicker, order: 25 },
   { id: 'time-strip', component: TimeStrip, order: 24 },
   { id: 'time-shade', component: ShadeOverlay, order: 19 },

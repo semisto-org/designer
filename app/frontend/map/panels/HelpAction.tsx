@@ -34,14 +34,11 @@ const ARTICLE_BY_PANEL: Record<string, string> = {
   'design-phases': 'ranger-une-phase',
   functions: 'les-fonctions-des-elements',
   'drawing-alerts': 'les-alertes-reglementaires',
-  finances: 'le-tableau-financier',
-  offer: 'chiffrer-une-offre',
   discussions: 'partager-et-commenter',
   present: 'presenter-son-design',
   publish: 'publier-sa-carte',
   deliverable: 'livrable-client',
   actions: 'la-liste-de-plants-et-la-commande',
-  'ai-journal': 'relire-les-brouillons-de-l-ia',
 }
 
 // With no panel open, the selected element says which guide fits.

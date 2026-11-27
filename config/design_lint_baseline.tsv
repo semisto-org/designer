@@ -180,10 +180,8 @@ bare-button	4	app/frontend/map/harvests/shared.tsx
 hex-color	4	app/frontend/map/harvests/shared.tsx
 hex-color	1	app/frontend/map/MapView.tsx
 small-text	6	app/frontend/map/panels/ActionsPanel.tsx
-small-text	5	app/frontend/map/panels/AiJournalPanel.tsx
 bare-button	1	app/frontend/map/panels/ElementsPanel.tsx
 small-text	2	app/frontend/map/panels/ElementsPanel.tsx
-small-text	4	app/frontend/map/panels/FinancesPanel.tsx
 bare-button	5	app/frontend/map/panels/JourneyOverlay.tsx
 hex-color	2	app/frontend/map/panels/JourneyOverlay.tsx
 small-text	1	app/frontend/map/panels/JourneyOverlay.tsx

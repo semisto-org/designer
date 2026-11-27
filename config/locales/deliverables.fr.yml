@@ -7,7 +7,6 @@ fr:
       plan: "Le livrable client fait partie des formules Pro et Team."
     meta:
       description: "Le dossier complet de ton projet de jardin-forêt : le plan, les documents, les photos et les analyses de sol."
-    panel_label: "Livrable client"
     panel:
       intro: "Le dossier complet du projet, pour ton client : le plan, et les documents, photos, vidéos et analyses de sol que tu coches « Dans le livrable ». Il s'ouvre par un lien privé, sans compte, et n'est jamais indexé."
       unpublished: "Le livrable n'est plus en ligne : son lien affiche un message d'indisponibilité. Republie-le quand tu veux."

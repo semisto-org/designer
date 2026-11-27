@@ -1,8 +1,9 @@
-import { Head, Link } from '@inertiajs/react'
+import { Head } from '@inertiajs/react'
 import clsx from 'clsx'
-import { ArrowLeft, Download, Info, Plus, Printer, RefreshCw, TriangleAlert, X } from 'lucide-react'
+import { Download, Info, Plus, Printer, RefreshCw, TriangleAlert, X } from 'lucide-react'
 import { useState } from 'react'
 import { HelpButton } from '@/components/help/HelpButton'
+import { MapViewHeader } from '@/components/map_views/MapViews'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Field, Input } from '@/components/ui/Field'
@@ -23,7 +24,7 @@ import {
 import type { MapData } from '@/types'
 
 type Props = {
-  map: Pick<MapData, 'id' | 'name' | 'areaM2' | 'role' | 'region'>
+  map: Pick<MapData, 'id' | 'name' | 'areaM2' | 'role' | 'region'> & { teamId: number | null; offerBuilder: boolean; timeEntries: boolean }
   plan: FinancePlanData
   result: FinanceResult
   mapPlants: { key: string; name: string; latinName: string | null; quantity: number }[]
@@ -80,14 +81,12 @@ export default function FinancesShow({ map, plan, result: initialResult, mapPlan
   return (
     <div className="space-y-6">
       <Head title={`${t('finances.page.title')} · ${map.name}`} />
+      <div className="print:hidden"><MapViewHeader map={map} current="finances" /></div>
 
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <Link href={`/maps/${map.id}`} className="inline-flex items-center gap-1 text-sm text-loam-500 hover:text-loam-900 print:hidden">
-            <ArrowLeft className="h-4 w-4" />{t('finances.page.back')}
-          </Link>
-          <h1 className="mt-1 text-2xl">{t('finances.page.title')}</h1>
-          <p className="truncate text-loam-500">{map.name}</p>
+          <h1 className="text-2xl">{t('finances.page.title')}</h1>
+          <p className="truncate text-loam-500 print:block">{map.name}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2 print:hidden">
           {canEdit && <SaveIndicator status={status} />}

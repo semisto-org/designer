@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
-import { useEditor } from '@/map/editor/EditorContext'
 import type { AiActionData } from '@/types/mcp'
 
 type Page = { actions: AiActionData[]; nextBeforeId: number | null }
@@ -94,23 +93,25 @@ function describe(action: AiActionData): string {
   }
 }
 
-/** « Journal IA »: every MCP call made on this map, for its owner. */
-export default function AiJournalPanel() {
-  const editor = useEditor()
+/**
+ * « Journal IA »: every MCP call made on this map, for its owner. A view of
+ * the project (« Carte ▾ › Journal IA », pages/maps/ai_journals/show).
+ */
+export function AiJournal({ mapId }: { mapId: number }) {
   const [actions, setActions] = useState<AiActionData[]>([])
   const [next, setNext] = useState<number | null>(null)
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading')
 
   const load = useCallback(async (before?: number) => {
     try {
-      const page = await api<Page>(`/maps/${editor.map.id}/ai_actions${before ? `?before_id=${before}` : ''}`)
+      const page = await api<Page>(`/maps/${mapId}/ai_actions${before ? `?before_id=${before}` : ''}`)
       setActions((current) => (before ? [...current, ...page.actions] : page.actions))
       setNext(page.nextBeforeId)
       setState('ready')
     } catch {
       setState('error')
     }
-  }, [editor.map.id])
+  }, [mapId])
 
   useEffect(() => { void load() }, [load])
 
@@ -142,11 +143,11 @@ export default function AiJournalPanel() {
                       : describe(action)}
                   </p>
                   {action.status === 'error' && action.errorMessage && action.errorMessage !== 'internal_error' && (
-                    <p className="mt-0.5 text-xs text-clay-500">{action.errorMessage}</p>
+                    <p className="mt-0.5 text-sm text-clay-500">{action.errorMessage}</p>
                   )}
-                  {summary && <p className="mt-1 line-clamp-3 border-l-2 border-humus-200 pl-2 text-xs text-loam-600">{summary}</p>}
+                  {summary && <p className="mt-1 line-clamp-3 border-l-2 border-humus-200 pl-2 text-sm text-loam-600">{summary}</p>}
                   {action.outcome && <Outcome outcome={action.outcome} />}
-                  <p className="mt-0.5 text-xs text-loam-400">
+                  <p className="mt-0.5 text-sm text-loam-400">
                     {t('ai_journal.by', { name: action.userName })} · {timeAgo(action.createdAt)}
                   </p>
                 </div>
@@ -160,7 +161,7 @@ export default function AiJournalPanel() {
           {t('ai_journal.more')}
         </Button>
       )}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-loam-100 pt-3 text-xs text-loam-500">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-loam-100 pt-3 text-sm text-loam-500">
         <Link href="/account/ai" className="inline-flex items-center gap-1 font-medium text-prune-600 hover:text-prune-800">
           <Bot className="h-3.5 w-3.5" />
           {t('ai_journal.connect')}
@@ -179,7 +180,7 @@ function Outcome({ outcome }: { outcome: NonNullable<AiActionData['outcome']> })
     ['withdrawn', Undo2, 'text-loam-400'],
   ]
   return (
-    <p className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs">
+    <p className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-sm">
       {items.filter(([key]) => (outcome[key] ?? 0) > 0).map(([key, Icon, color]) => (
         <span key={key} className={'inline-flex items-center gap-1 ' + color}>
           <Icon className="h-3 w-3" />

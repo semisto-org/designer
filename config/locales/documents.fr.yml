@@ -11,9 +11,11 @@ fr:
       implementation: "Mise en œuvre"
       photos: "Photos"
       documents: "Documents"
+      finances: "Finances"
       offer: "Offre"
       time: "Temps et dépenses"
       forms: "Formulaires"
+      ai_journal: "Journal IA"
   documents:
     page_title: "Documents · %{map}"
     title: "Documents"

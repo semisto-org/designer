@@ -20,7 +20,7 @@ Seul le propriétaire de la carte peut publier.
 
 ## Préparer la vue
 
-Ouvre le panneau **Publier**, puis règle :
+Ouvre le panneau **Publier** (avec une formule Pro ou Team, reste sur l'onglet **Plan public** ; l'autre onglet est le [livrable client](/help/livrable-client)), puis règle :
 
 1. le **Titre de la vue** (obligatoire) et une **Présentation**, facultative, affichée aux visiteurs ;
 2. les **Couches visibles** : coche les couches de dessin à montrer (Existant, Eau, Plantes…), avec le nombre d'éléments de chacune ;
