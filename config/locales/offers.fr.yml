@@ -224,15 +224,6 @@ fr:
         trips:
           label: "Déplacements"
           hint: "Indique la distance de chaque déplacement."
-    panel:
-      title: "Offre"
-      intro: "Chiffre l’offre de ce projet depuis ce que la carte mesure : heures, plantes, frais, puis des versions à envoyer."
-      not_started: "Pas encore d’offre pour cette carte."
-      unavailable: "Le constructeur d’offre est réservé à qui chiffre le projet : l’équipe de la carte, ou son propriétaire avec une formule pro."
-      estimate: "Estimation, pas encore enregistrée"
-      total: "Total TVAC"
-      latest: "Dernière version"
-      open: "Ouvrir l’offre"
     page:
       title: "Offre"
       intro: "Le budget part de ce que la carte mesure. Dessine le périmètre, coche ce que le projet demande, puis ajuste les lignes : chaque heure garde son calcul."

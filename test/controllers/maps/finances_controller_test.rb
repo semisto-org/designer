@@ -27,6 +27,10 @@ class Maps::FinancesControllerTest < ActionDispatch::IntegrationTest
     assert_equal 3.7, props["plan"]["inputs"]["settings"]["areaHa"]
     assert_equal 20, props["result"]["years"].size
     assert props["canEdit"]
+    # A view of the project in « Carte ▾ »: the page gets what its tabs need.
+    assert props["map"].key?("teamId")
+    assert props["map"].key?("offerBuilder")
+    assert props["map"].key?("timeEntries")
   end
 
   test "owner saves the plan and gets the computed result" do

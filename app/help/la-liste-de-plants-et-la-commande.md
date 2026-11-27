@@ -5,7 +5,7 @@ category: Planter
 order: 60
 ---
 
-Une fois tes plants placés et tes patches composés, Terranova fait les comptes à ta place. Le panneau **Liste de plants** dit ce qu'il faut commander et planter ; le panneau **Passer à l'action** te permet de le demander à Semisto.
+Une fois tes plants placés et tes patches composés, Terranova fait les comptes à ta place. Le panneau **Liste de plants** dit ce qu'il faut commander et planter ; le bouton vert **Passer à l'action**, en haut de l'éditeur (au pied de la carte sur un téléphone), te permet de le demander à Semisto.
 
 [Ouvrir le panneau Liste de plants](action:panel/plant-list)
 

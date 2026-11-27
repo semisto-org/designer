@@ -56,7 +56,7 @@ type Props = {
   mapEntitlements: EntitlementsData
   /** The project variants (map/variants); one is retained. */
   variants?: MapVariant[]
-  /** The « Offre » panel: for teams and professional accounts only. */
+  /** The « Offre » view in « Carte ▾ »: for teams and professional accounts only. */
   offerBuilder?: boolean; timeEntries?: boolean
 }
 
@@ -74,7 +74,7 @@ export default function MapShow(props: Props) {
         <Link href="/maps" className="rounded-md p-1.5 text-loam-600 hover:bg-loam-100" aria-label={t('maps.show.back')}>
           <ArrowLeft className="h-[18px] w-[18px]" />
         </Link>
-        <div className="flex min-w-0 shrink items-baseline gap-2.5">
+        <div className="flex min-w-0 shrink items-baseline gap-2.5 overflow-hidden">
           <MapName map={map} setMap={setMap} />
           {map.areaM2 != null && <span className="hidden shrink-0 text-[13px] text-loam-400 sm:inline">{headerArea(map.areaM2)}</span>}
         </div>

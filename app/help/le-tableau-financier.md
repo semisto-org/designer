@@ -7,11 +7,9 @@ order: 58
 
 Ton jardin-forêt doit-il nourrir la famille, compléter un revenu, accueillir des ateliers ? Le **tableau financier** t'aide à poser les chiffres sur 20 ans : combien investir, quand le projet s'équilibre, de quelle trésorerie il a besoin au départ.
 
-[Ouvrir le panneau Finances](action:panel/finances)
-
 ## Ouvrir le tableau
 
-Le panneau **Finances** montre les chiffres clés du plan (**Investissement total**, **Année d'équilibre**, **Besoin de financement**, **Trésorerie après 20 ans**) et le nombre de points à compléter. Touche **Ouvrir le tableau financier** pour la page complète.
+Dans l'éditeur, ouvre le menu **Carte ▾**, à côté du nom de la carte, puis **Finances**. Depuis la fiche projet, la palette ou les photos, c'est l'onglet **Finances**. La page montre les chiffres clés du plan (**Investissement total**, **Année d'équilibre**, **Besoin de financement**, **Trésorerie après 20 ans**) et les points à compléter.
 
 Le premier plan est **pré-rempli** avec la surface de ta carte et une ligne par plante de la carte, avec sa quantité. Il est enregistré dès ta première modification ; ensuite, tout s'enregistre au fil de l'eau.
 

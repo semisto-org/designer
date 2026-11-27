@@ -1,5 +1,5 @@
-# The financial dashboard of a map: full page (Inertia), summary for the
-# editor panel (JSON), exports (CSV, XLSX), and saving the assumptions.
+# The financial dashboard of a map: full page (Inertia, one of the map's views
+# in « Carte ▾ »), a summary (JSON), exports (CSV, XLSX), and saving the assumptions.
 # Viewers read; owner and editors edit. A map without a saved plan shows a
 # plan prefilled from the map, saved on the first change.
 module Maps
@@ -14,7 +14,8 @@ module Maps
       respond_to do |format|
         format.html do
           render inertia: "maps/finances/show", props: {
-            map: @map.as_inertia(Current.user).slice(:id, :name, :areaM2, :role, :region),
+            map: @map.as_inertia(Current.user).slice(:id, :name, :areaM2, :role, :region)
+              .merge(teamId: @map.organization_id, offerBuilder: Offer.shown_to?(@map, Current.user), timeEntries: TimeEntry.tab_for?(@map, Current.user)),
             plan: plan_json,
             result: @plan.result.as_json,
             mapPlants: inventory.lines.map { { key: _1.key, name: _1.display_name, latinName: _1.latin_name, quantity: _1.quantity } },

@@ -137,20 +137,10 @@ fr:
         winter_precip_pct: "Pluie en hiver"
 
   finances:
-    panel_title: "Finances"
     errors:
       stale: "Quelqu'un a modifié ce plan entre-temps. Voici sa dernière version."
-    panel:
-      intro: "Estime sur 20 ans les investissements, les coûts et les revenus de ton projet, à partir de ta palette et de tes propres chiffres."
-      open: "Ouvrir le tableau financier"
-      not_started: "Pas encore de plan financier pour cette carte."
-      species: "Espèces"
-      warnings:
-        one: "%{count} point à compléter"
-        other: "%{count} points à compléter"
     page:
       title: "Tableau financier"
-      back: "Retour à la carte"
       disclaimer_title: "Estimation indicative"
       disclaimer: "Ce tableau calcule à partir de tes propres hypothèses, en euros constants, hors TVA et avant impôts. Il aide à réfléchir et à présenter un projet ; il ne remplace ni un plan d'affaires validé ni l'avis d'un conseiller."
       read_only: "Tu consultes ce plan en lecture seule."
