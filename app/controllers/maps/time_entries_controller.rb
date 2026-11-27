@@ -2,6 +2,8 @@
 # accepted offer (TimeEntry::Envelopes), the hours and trips of everyone on
 # it, the expenses and who paid them (ProjectExpense::Summary), and forms
 # to note one's own. For the team that runs the project (TimeEntry.shown_to?).
+# Above them, « Budget du projet »: the four items of the budget (budgeted,
+# done, invoiced) and the invoices sent to the client (ProjectBudget).
 # Without a Pro or Team plan, the page says what it would bring (PlanGate).
 #
 # The client (a viewer) reads another page, once the team turned on
@@ -25,6 +27,7 @@ module Maps
       return render(inertia: "maps/time_entries/index", props:) unless usable
       entries = @map.time_entries.includes(:user).order(worked_on: :desc, id: :desc).to_a
       expenses = load_expenses
+      invoices = @map.project_invoices.includes(:user, document_attachment: :blob).chronological.to_a
       render inertia: "maps/time_entries/index", props: props.merge(
         canWrite: writable?,
         envelopes: TimeEntry::Envelopes.new(@map, entries:).as_json,
@@ -36,6 +39,8 @@ module Maps
         expenses: expenses.map { expense_json(_1, client: false) },
         expenseSummary: ProjectExpense::Summary.new(@map, expenses:).as_json,
         expenseCatalog: expense_catalog,
+        budget: ProjectBudget.new(@map, invoices:, expenses:, entries:).as_json,
+        invoices: invoices.reverse.map { invoice_json(_1) },
         sharedWithClient: @map.time_shared_with_client,
         hasViewers: @map.memberships.where(role: "viewer").exists? || @map.invitations.where(role: "viewer", accepted_at: nil).exists?
       )
@@ -60,6 +65,10 @@ module Maps
       def expense_json(expense, client:)
         url = expense.receipt.attached? ? receipt_map_project_expense_path(@map, expense) : nil
         expense.as_json(client:, viewer: Current.user, receipt_url: url)
+      end
+
+      def invoice_json(invoice)
+        invoice.as_json(document_url: invoice.document.attached? ? document_map_project_invoice_path(@map, invoice) : nil)
       end
 
       def expense_catalog

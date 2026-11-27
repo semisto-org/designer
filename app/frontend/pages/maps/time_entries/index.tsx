@@ -14,8 +14,9 @@ import { formatNumber, t } from '@/lib/i18n'
 import { EntryForm } from '@/time_entries/EntryForm'
 import { EntryList } from '@/time_entries/EntryList'
 import { formatDuration, formatHours, formatShortDate, readableName } from '@/time_entries/format'
+import { BudgetSection } from '@/time_entries/BudgetSection'
 import { ExpensesSection, SharingCard } from '@/time_entries/ExpensesSection'
-import type { Catalog, Envelopes, Expense, ExpenseCatalog, ExpenseSummary, PhaseEnvelope, ProjectChoice, TimeEntry } from '@/time_entries/types'
+import type { Catalog, Envelopes, Expense, ExpenseCatalog, ExpenseSummary, PhaseEnvelope, ProjectBudget, ProjectChoice, ProjectInvoice, TimeEntry } from '@/time_entries/types'
 import type { CurrentUser } from '@/types'
 import type { SketchGeometry } from '@/types/myMaps'
 
@@ -34,6 +35,8 @@ type Props = {
   expenses?: Expense[]
   expenseSummary?: ExpenseSummary
   expenseCatalog?: ExpenseCatalog
+  budget?: ProjectBudget
+  invoices?: ProjectInvoice[]
   sharedWithClient?: boolean
   hasViewers?: boolean
 }
@@ -60,8 +63,9 @@ export default function ProjectTime(props: Props) {
   }
 
   const { envelopes, entries, me, catalog, today } = props
-  const reload = () => router.reload({ only: ['envelopes', 'entries', 'me', 'billToSuggestions'] })
-  const reloadExpenses = () => router.reload({ only: ['expenses', 'expenseSummary', 'sharedWithClient'] })
+  const reload = () => router.reload({ only: ['envelopes', 'entries', 'me', 'billToSuggestions', 'budget'] })
+  const reloadExpenses = () => router.reload({ only: ['expenses', 'expenseSummary', 'sharedWithClient', 'budget'] })
+  const reloadBudget = () => router.reload({ only: ['budget', 'invoices'] })
   const overHours = Object.fromEntries(envelopes.phases.map((p) => [p.key, p.overHours]))
   const shown = envelopes.phases.filter((p) => p.envelopeHours != null || p.hours > 0)
 
@@ -132,6 +136,10 @@ export default function ProjectTime(props: Props) {
         )}
         {shown.length > 0 && <ul className="mt-4 divide-y divide-loam-900/5">{shown.map((phase) => <PhaseBar key={phase.key} phase={phase} />)}</ul>}
       </section>
+
+      {props.budget && props.invoices && (
+        <BudgetSection mapId={map.id} budget={props.budget} invoices={props.invoices} today={today} canWrite={!!props.canWrite} onChanged={reloadBudget} />
+      )}
 
       {!props.canWrite && (
         <p className="mt-6 rounded-xl bg-loam-50 px-4 py-3 text-sm text-loam-700 ring-1 ring-loam-900/10">{t('time_entries.project.read_only')}</p>

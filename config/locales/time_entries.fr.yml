@@ -219,6 +219,96 @@ fr:
         save: "Noter la dépense"
         update: "Enregistrer"
         cancel: "Annuler"
+    budget:
+      title: "Budget du projet"
+      intro: "Les quatre postes du budget : ce qui était prévu, ce qui est fait et ce qui est déjà facturé au client. Montants hors TVA."
+      from_version: "D’après %{version}"
+      no_offer: "Pas encore d’offre acceptée : fixe le budget de chaque poste à la main, ou accepte une version de l’offre."
+      items:
+        services: "Prestations"
+        expenses: "Frais"
+        plants: "Plantes"
+        implementation: "Mise en œuvre"
+      item_hints:
+        services: "Pré-design et design"
+        expenses: "Déplacements, analyses, impressions…"
+        plants: "Les plants de l’offre"
+        implementation: "Plantation, fournitures, co-gestion"
+      statuses:
+        not_invoiced: "Pas encore facturé"
+        partly: "En partie facturé"
+        invoiced: "Facturé"
+        over: "Facturé au-delà du budget"
+      budgeted: "sur %{amount}"
+      no_budget: "Pas de budget"
+      manual: "fixé à la main"
+      invoiced: "%{amount} facturés"
+      left: "Reste %{amount} à facturer"
+      done_hours: "%{done} faites sur %{envelope}"
+      done_hours_free: "%{done} notées"
+      spent: "%{amount} dépensés"
+      km: "%{km} km parcourus"
+      over_hours: "Plus d’heures que prévu"
+      over_spent: "Dépenses au-delà du budget"
+      plants_left: "Il reste %{amount} pour les plantes : de quoi en planter environ %{count} cet hiver."
+      plants_left_plain: "Il reste %{amount} pour les plantes."
+      plants_go: "Préparer la plantation"
+      total_budget: "Budget %{amount}"
+      total_none: "Pas encore de budget"
+      total_invoiced: "%{amount} facturés"
+      total_left: "reste %{amount} à facturer"
+      total_unpaid: "%{amount} facturés pas encore payés"
+      edit: "Modifier les budgets"
+      edit_title: "Le budget de chaque poste"
+      edit_intro: "Hors TVA. Laisse un poste vide pour reprendre le montant de l’offre acceptée."
+      offer_amount: "Offre : %{amount}"
+      no_offer_amount: "Pas dans l’offre"
+      save: "Enregistrer"
+      cancel: "Annuler"
+      saved: "Budgets enregistrés."
+      errors:
+        amount: "Montant illisible : écris par exemple 1 250,50."
+    invoices:
+      title: "Factures envoyées au client"
+      intro: "Les factures faites dans ton outil de facturation, notées ici pour suivre chaque poste. Terranova ne les émet pas."
+      add: "Enregistrer une facture"
+      empty_title: "Aucune facture enregistrée"
+      empty: "Quand tu envoies une facture au client, note-la ici avec son PDF : chaque poste dira ce qu’il reste à facturer."
+      paid: "Payée le %{date}"
+      unpaid: "Pas encore payée"
+      by_ai: "Notée par ton IA"
+      document: "PDF"
+      vat_line: "TVA %{vat} · %{total} TVAC"
+      edit: "Modifier"
+      delete: "Supprimer"
+      delete_title: "Supprimer cette facture ?"
+      delete_body: "La facture %{number} du %{date} (%{amount} HTVA) ne comptera plus dans le budget. La facture elle-même n’est pas touchée."
+      deleted: "Facture supprimée."
+      saved: "Facture %{number} enregistrée."
+      updated: "Facture mise à jour."
+      form:
+        new_title: "Enregistrer une facture"
+        edit_title: "Modifier la facture"
+        number: "Numéro"
+        number_placeholder: "2026-042"
+        issued_on: "Date de la facture"
+        paid_on: "Payée le"
+        paid_on_hint: "Laisse vide tant qu’elle n’est pas payée."
+        items: "Montant hors TVA, poste par poste"
+        items_hint: "Prérempli avec ce qui reste à facturer. Mets 0 pour un poste que la facture ne couvre pas."
+        vat: "TVA"
+        vat_hint: "Calculée à 21 % (6 % pour les plantes) : corrige-la d’après ta facture."
+        total: "%{amount} HTVA · %{total} TVAC"
+        note: "Note"
+        note_hint: "Acompte, solde, ce que couvre la facture…"
+        document: "La facture (PDF)"
+        document_keep: "%{name} est jointe."
+        document_remove: "Retirer"
+        document_take: "Joindre le PDF de la facture"
+        amount_hint: "Indique au moins un montant."
+        save: "Enregistrer"
+        update: "Mettre à jour"
+        cancel: "Annuler"
     sharing:
       title: "Montrer au client"
       off: "Le client ne voit rien de cette page."
@@ -292,6 +382,7 @@ fr:
     models:
       time_entry: "Heures"
       project_expense: "Dépense"
+      project_invoice: "Facture"
     attributes:
       time_entry:
         worked_on: "Le jour"
@@ -308,6 +399,16 @@ fr:
         vat_rate: "Le taux de TVA"
         paid_by: "Qui paie"
         receipt: "Le justificatif"
+      project_invoice:
+        number: "Le numéro"
+        issued_on: "La date"
+        paid_on: "La date de paiement"
+        services_cents: "Le montant des prestations"
+        expenses_cents: "Le montant des frais"
+        plants_cents: "Le montant des plantes"
+        implementation_cents: "Le montant de la mise en œuvre"
+        vat_cents: "La TVA"
+        document: "La facture"
     errors:
       models:
         time_entry:
@@ -323,3 +424,16 @@ fr:
             receipt:
               content_type: "doit être une photo (JPEG, PNG, WebP, HEIC) ou un PDF"
               too_big: "est trop lourd (15 Mo au plus)"
+        project_invoice:
+          attributes:
+            base:
+              nothing_invoiced: "Indique le montant d’au moins un poste."
+            number:
+              taken: "est déjà enregistré pour ce projet"
+            issued_on:
+              future: "ne peut pas être plus d’un mois dans le futur"
+            paid_on:
+              before_issue: "ne peut pas précéder la date de la facture"
+            document:
+              content_type: "doit être un PDF ou une photo (JPEG, PNG, WebP)"
+              too_big: "est trop lourde (15 Mo au plus)"

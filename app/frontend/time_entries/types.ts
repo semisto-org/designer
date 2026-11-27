@@ -89,3 +89,44 @@ export type ExpenseSummary = {
   byGroup: { group: 'plants' | 'supplies' | 'other'; amountCents: number; plannedCents: number | null; overCents: number | null }[]
   totals: { amountCents: number; vatCents: number; totalCents: number; plannedCents: number | null }
 }
+
+export type BudgetItemKey = 'services' | 'expenses' | 'plants' | 'implementation'
+export type BudgetStatus = 'not_invoiced' | 'partly' | 'invoiced' | 'over'
+
+export type BudgetItem = {
+  key: BudgetItemKey
+  budgetCents: number | null
+  budgetSource: 'offer' | 'manual' | null
+  offerCents: number | null
+  invoicedCents: number
+  leftToInvoiceCents: number | null
+  status: BudgetStatus
+  spentCents: number | null
+  hours: { done: number; envelope: number | null } | null
+  km: number | null
+  overBudget: boolean
+  plantsLeft: { cents: number; count: number | null } | null
+}
+
+export type ProjectBudget = {
+  version: { number: number; label: string } | null
+  items: BudgetItem[]
+  totals: { budgetCents: number | null; invoicedCents: number; vatCents: number; leftToInvoiceCents: number | null; paidCents: number; unpaidCents: number; invoices: number }
+}
+
+export type ProjectInvoice = {
+  id: number
+  mapId: number
+  number: string
+  issuedOn: string
+  paidOn: string | null
+  paid: boolean
+  items: Record<BudgetItemKey, number>
+  amountCents: number
+  vatCents: number
+  totalCents: number
+  note: string | null
+  source: 'web' | 'mcp' | 'app' | 'import'
+  userName: string | null
+  document: { name: string; contentType: string; url: string | null } | null
+}

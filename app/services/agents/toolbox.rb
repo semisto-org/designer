@@ -14,7 +14,7 @@ module Agents
       get_map list_features get_feature get_region_layers identify_at_point get_site_data trace_contour get_catchment
       find_keypoints trace_parallels get_storm_observations get_season_signs get_element_functions
       search_plants get_plant get_design_guide get_help get_project_sheet get_implementation_plan
-      get_soil_samples get_soil_report get_offer list_tasks list_time_entries list_discussion list_harvests
+      get_soil_samples get_soil_report get_offer list_tasks list_time_entries get_project_budget list_discussion list_harvests
       list_plant_observations list_storage_readings list_documents get_document list_site_visits list_photos
     ].freeze
     PROPOSE = %w[

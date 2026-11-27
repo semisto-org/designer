@@ -101,4 +101,36 @@ class McpTimeEntriesTest < ActionDispatch::IntegrationTest
     refute error, data
     assert_equal 760.0, data["expense_summary"]["total_eur"]
   end
+
+  test "record_client_invoices records the team's invoices item by item, and get_project_budget reads them back" do
+    @map.update!(budget_overrides: { "services" => 300_000 })
+    data, error = call_tool(@designer, "record_client_invoices", { invoices: [
+      { map_id: @map.id, number: "2026-042", issued_on: Date.current.iso8601, items_eur: { services: 1_800, plants: 100 } },
+      { map_id: @map.id, number: "2026-042", issued_on: Date.current.iso8601, items_eur: { services: 1 } }
+    ] })
+    refute error, data
+    assert_equal 1, data["created"].size
+    assert_equal 1, data["rejected"].size, "a number is recorded once"
+    invoice = @map.project_invoices.sole
+    assert_equal [ 180_000, 10_000, 37_800 + 600, "mcp" ], [ invoice.services_cents, invoice.plants_cents, invoice.vat_cents, invoice.source ]
+
+    data, error = call_tool(@designer, "get_project_budget", { map_id: @map.id })
+    refute error, data
+    services = data["items"].find { _1["item"] == "services" }
+    assert_equal [ 3_000.0, "manual", 1_800.0, 1_200.0, "partly" ], services.values_at("budget_eur", "budget_source", "invoiced_eur", "left_to_invoice_eur", "status")
+    assert_equal "2026-042", data["invoices"].sole["number"]
+
+    data, error = call_tool(@designer, "get_map", { map_id: @map.id })
+    refute error, data
+    assert_equal 1_800.0, data.dig("time_entries", "budget", "items").find { _1["item"] == "services" }["invoiced_eur"]
+  end
+
+  test "the client's AI neither reads the budget nor records an invoice" do
+    @map.update!(time_shared_with_client: true)
+    _, error = call_tool(@client, "get_project_budget", { map_id: @map.id })
+    assert error
+    _, error = call_tool(@client, "record_client_invoices", { invoices: [ { map_id: @map.id, number: "X", issued_on: Date.current.iso8601, items_eur: { services: 10 } } ] })
+    assert error
+    assert_empty @map.project_invoices
+  end
 end

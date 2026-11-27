@@ -63,6 +63,7 @@ class Map < ApplicationRecord
   has_many :tasks, dependent: :delete_all, inverse_of: :map
   has_many :time_entries, dependent: :delete_all
   has_many :project_expenses, dependent: :destroy
+  has_many :project_invoices, dependent: :destroy
   has_many :site_visits, -> { chronological }, dependent: :delete_all, inverse_of: :map
 
   # Ownership transfer proposals (« Transférer la carte »), kept as history.
