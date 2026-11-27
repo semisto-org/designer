@@ -9,7 +9,7 @@ module Mcp
         ListTasks, ListTimeEntries, ListDiscussion, GetNotifications, ListFeedback, ListHarvests, ListPlantObservations, ListStorageReadings, ListDocuments, GetDocument, ListSiteVisits, ListPhotos, GetPhoto, ListDronePilots, ListDroneMissions, ListPropagationRequests,
         ProposeFeatures, ProposeSectors, ProposeZones, ProposeBubbles, ProposeFeatureUpdates, ProposeDeletions, ProposePalette, ProposeProjectSheet, ProposePhases, ProposePresentationSlides, ProposeBioindicators, ProposeSoilResults, ProposeOfferLetter, ProposeDocumentTheme, WithdrawDraft,
         ProposeTerritoryItems, ProposeTerritoryUpdates, ProposeTerritoryDeletions, WithdrawTerritoryDrafts,
-        CreateTasks, UpdateTasks, RecordTimeEntries, RecordProjectExpenses, RecordHarvests, RecordPlantObservations, RecordPlantLooks, RecordStorageReadings, AddDocument, UpdateDocument, ConvertDocumentToPdf, AddPhoto, UpdatePhotos, DeletePhotos, UpdatePaletteBudget,
+        CreateTasks, UpdateTasks, RecordTimeEntries, ImportTimeEntries, RecordProjectExpenses, RecordHarvests, RecordPlantObservations, RecordPlantLooks, RecordStorageReadings, AddDocument, UpdateDocument, ConvertDocumentToPdf, AddPhoto, UpdatePhotos, DeletePhotos, UpdatePaletteBudget,
         CreateUpload, AttachPhotos, AttachDocuments, ImportFromUrl, DeleteDocuments, RenameDocumentTag, MarkForDeliverable, PrepareOfflineSite
       ]
     end

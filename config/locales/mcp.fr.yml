@@ -326,6 +326,22 @@ fr:
           time_trip_km: "Kilomètres du trajet, aller-retour."
           time_trip_from: "Départ du trajet."
           time_trip_to: "Arrivée du trajet."
+      import_time_entries:
+        title: "Importer les heures d'une équipe"
+        description: "Importe sur un projet les heures déjà notées ailleurs par les membres de l'équipe (l'app interne de Semisto, un tableur), quand l'équipe y déménage ses timesheets. Réservé à un admin de l'équipe de la carte (ou à son propriétaire si la carte n'a pas d'équipe), et seulement pour les personnes qui mènent le projet, nommées comme list_teams les nomme (person). Chaque ligne porte sa référence d'origine (external_ref, par exemple « my.semisto.org/recordings/10639 ») : une ligne déjà importée est sautée (skipped), si bien qu'on peut relancer l'import sans doublon. Les lignes sont notées tout de suite, marquées « Importé par l'équipe », jamais comme facturées ; leur auteur les retrouve dans « Mes heures ». Choisis la phase d'après la note quand la source n'en a pas, et montre d'abord le relevé à la personne (lignes, heures par personne, carte). totals donne, par personne, les lignes, heures, heures facturables et km importés : compare-les à la source avant d'y supprimer quoi que ce soit. 100 lignes au plus par appel ; demande l'accès « brouillons »."
+        params:
+          import_lines: "Les heures à importer, de 1 à 100."
+          import_person: "Le membre de l'équipe dont ce sont les heures, tel que list_teams le nomme."
+          import_ref: "La référence de la ligne dans l'outil d'origine, unique sur la carte (évite les doublons)."
+          map_id: "Identifiant de la carte, donné par list_maps."
+          worked_on: "Le jour travaillé (AAAA-MM-JJ)."
+          time_hours: "La durée en heures, par quart d'heure (2.5 pour 2 h 30)."
+          time_phase: "commercial (avant l'offre acceptée : visite, offre), pre_design, design ou implementation (mise en œuvre)."
+          time_billable: "false pour des heures qui ne seront pas facturées."
+          time_reason: "Pourquoi elles ne sont pas facturées : offered (offert), travel (déplacement), other (autre)."
+          time_note: "Ce qui a été fait, en quelques mots (repris sur le relevé de prestations)."
+          time_bill_to: "Qui paie ces heures (Semisto, une autre structure). Sans lui : le dernier destinataire de la personne sur ce projet, sinon l'équipe de la carte."
+          time_trip_km: "Kilomètres du trajet, aller-retour."
       record_project_expenses:
         title: "Noter des dépenses"
         description: "Note des dépenses d'un projet, directement (ce ne sont pas des brouillons), quand la personne te dit ce qu'elle a acheté : « 40 m³ de broyat chez Dupont, 480 € HTVA, à refacturer ». Elles apparaissent « Notées par ton IA » dans « Temps et dépenses » du projet, où l'équipe les modifie ou les supprime. Montant toujours hors TVA (amount_eur) ; sans vat_rate, 6 % pour les plants et 21 % pour le reste. Qui paie (paid_by) : rebilled (achetée par l'équipe, refacturée au client), team (à charge de l'équipe), client (achetée par le client lui-même), designer (avancée par un designer, à lui rembourser). N'invente rien : demande le montant et qui paie s'ils manquent. Réservé à l'équipe du projet (formules Pro et Team) ; un lecteur de la carte (le client) ne note que ses propres achats (paid_by client), et seulement si l'équipe a activé « Montrer au client ». Le justificatif s'ajoute dans Terranova. 50 lignes au plus par appel ; demande l'accès « brouillons »."
@@ -774,6 +790,7 @@ fr:
       plant_looks_written: "Les valeurs sont sur la fiche de chaque plante (url), « à vérifier » avec la page citée ; la vue 3D les peint déjà. Les valeurs déjà là (kept) n'ont pas bougé : montre-les à la personne."
       observations_written: "Les entrées sont dans le « Journal du plant », sur la fiche de chaque plant (cliquer le plant sur la carte, url)."
       time_written: "Les heures sont dans « Mes heures » (url), marquées « Noté par ton IA » : la personne peut les relire, les modifier ou les supprimer."
+      time_imported: "Les heures sont dans « Temps et dépenses » du projet (url), marquées « Importé par l'équipe » ; chaque auteur les retrouve dans « Mes heures ». Compare totals à la source avant d'y supprimer quoi que ce soit."
       expenses_written: "Les dépenses sont dans « Temps et dépenses » du projet (url), marquées « Notée par ton IA » : rappelle à la personne d'y joindre le ticket."
       harvests_written: "Les lignes sont dans le panneau « Récoltes » de la carte (url) et sur la fiche de chaque plant."
       storage_written: "Les relevés sont sur la fiche de chaque lieu de stockage, dans l'éditeur de la carte (url)."
@@ -790,6 +807,8 @@ fr:
       time_not_allowed: "Le temps de ce projet est réservé à l'équipe qui le mène : l'équipe de la carte, ou ses éditeurs quand c'est la carte d'un compte Pro."
       time_plan: "Le suivi du temps de ce projet demande la formule Pro ou Team de son propriétaire."
       time_date: "« %{value} » n'est pas une date (AAAA-MM-JJ)."
+      import_not_allowed: "Seul un admin de l'équipe de la carte (ou son propriétaire, sans équipe) importe les heures des autres. Chacun peut noter les siennes avec record_time_entries."
+      import_person: "« %{name} » ne mène pas ce projet, ou deux personnes portent ce nom : nomme-la comme list_teams, et vérifie qu'elle est de l'équipe de la carte."
       expense_not_allowed: "Les dépenses de ce projet sont notées par l'équipe qui le mène. Le client n'y note que ses propres achats (paid_by client), quand l'équipe lui montre le projet."
       offer_not_allowed: "L'offre de cette carte est réservée à qui la chiffre : l'équipe de la carte, ou son propriétaire avec une formule pro."
       unauthorized: "Connexion requise : autorise ce client depuis Semisto Terranova (OAuth) ou utilise un jeton personnel."
@@ -1154,6 +1173,9 @@ fr:
       record_time_entries:
         one: "a noté 1 ligne d'heures"
         other: "a noté %{count} lignes d'heures"
+      import_time_entries:
+        one: "a importé 1 ligne d'heures"
+        other: "a importé %{count} lignes d'heures"
       record_project_expenses:
         one: "a noté 1 dépense"
         other: "a noté %{count} dépenses"

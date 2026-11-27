@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react'
-import { Car, Lock, Pencil, Smartphone, Sparkles, Trash2 } from 'lucide-react'
+import { ArrowDownToLine, Car, Lock, Pencil, Smartphone, Sparkles, Trash2 } from 'lucide-react'
 import { Fragment, useMemo, useState } from 'react'
 import { Dialog } from '@/components/ui/Dialog'
 import { IconButton } from '@/components/ui/IconButton'
@@ -100,6 +100,7 @@ export function EntryList({ entries, userId, show, projects, catalog, billToSugg
                   {entry.billTo && show === 'project' && <span className="text-sm text-loam-500">{entry.billTo}</span>}
                   {entry.source === 'mcp' && <span className="inline-flex items-center gap-1 text-sm text-loam-500"><Sparkles className="h-3.5 w-3.5" aria-hidden />{t('time_entries.entry.by_ai')}</span>}
                   {entry.source === 'app' && <span className="inline-flex items-center gap-1 text-sm text-loam-500"><Smartphone className="h-3.5 w-3.5" aria-hidden />{t('time_entries.entry.by_app')}</span>}
+                  {entry.source === 'import' && <span className="inline-flex items-center gap-1 text-sm text-loam-500"><ArrowDownToLine className="h-3.5 w-3.5" aria-hidden />{t('time_entries.entry.imported')}</span>}
                 </div>
               </div>
               </div>

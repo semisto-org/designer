@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_24_100000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_27_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -2052,6 +2052,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_100000) do
     t.string "source", default: "web", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "external_ref"
+    t.index ["map_id", "external_ref"], name: "index_time_entries_on_map_id_and_external_ref", unique: true, where: "(external_ref IS NOT NULL)"
     t.index ["map_id", "worked_on"], name: "index_time_entries_on_map_id_and_worked_on"
     t.index ["map_id"], name: "index_time_entries_on_map_id"
     t.index ["user_id", "worked_on"], name: "index_time_entries_on_user_id_and_worked_on"
