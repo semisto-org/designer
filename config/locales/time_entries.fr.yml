@@ -61,6 +61,14 @@ fr:
       by_ai: "Noté par ton IA"
       by_app: "Noté sur le téléphone"
       imported: "Importé par l’équipe"
+      all_imported: "Ces heures ont été importées par l’équipe."
+      columns:
+        day: "Jour"
+        person: "Qui"
+        project: "Projet"
+        note: "Ce qui a été fait"
+        km: "Km"
+        hours: "Heures"
     mine:
       page_title: "Mes heures"
       title: "Mes heures"

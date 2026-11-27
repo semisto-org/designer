@@ -1,15 +1,17 @@
 import { Link } from '@inertiajs/react'
-import { ArrowDownToLine, Car, Lock, Pencil, Smartphone, Sparkles, Trash2 } from 'lucide-react'
+import clsx from 'clsx'
+import { ArrowDownToLine, Lock, Pencil, Smartphone, Sparkles, Trash2 } from 'lucide-react'
 import { Fragment, useMemo, useState } from 'react'
 import { Dialog } from '@/components/ui/Dialog'
 import { IconButton } from '@/components/ui/IconButton'
 import { Pill } from '@/components/ui/Pill'
+import { Tooltip } from '@/components/ui/Tooltip'
 import { confirmAction } from '@/components/ui/confirm'
 import { toast } from '@/components/ui/toast'
 import { api, ApiError } from '@/lib/api'
-import { formatNumber, t } from '@/lib/i18n'
+import { t } from '@/lib/i18n'
 import { EntryForm } from './EntryForm'
-import { formatDate, formatDay, formatDuration, formatMonth } from './format'
+import { formatDate, formatDay, formatDuration, formatKm, formatMonth, readableName } from './format'
 import type { Catalog, ProjectChoice, TimeEntry } from './types'
 
 type Props = {
@@ -26,6 +28,22 @@ type Props = {
   /** Break the list by month, with each month's total (a project's page). */
   byMonth?: boolean
 }
+
+// A ledger: day, who (or which project), what was done, km, hours. The
+// columns line up from one line to the next so a month reads at a glance;
+// on a phone each line folds to two rows.
+const COLS = 'sm:grid-cols-[6.5rem_9rem_minmax(0,1fr)_4rem_4.5rem]'
+const COLS_WITH_ACTIONS = 'sm:grid-cols-[6.5rem_9rem_minmax(0,1fr)_4rem_4.5rem_4rem]'
+
+const AREAS = 'sm:[grid-template-areas:"day_who_note_km_hours"]'
+const AREAS_WITH_ACTIONS = 'sm:[grid-template-areas:"day_who_note_km_hours_acts"]'
+
+const SOURCE_ICONS = {
+  mcp: { Icon: Sparkles, label: 'by_ai' },
+  app: { Icon: Smartphone, label: 'by_app' },
+  import: { Icon: ArrowDownToLine, label: 'imported' },
+  web: null,
+} as const
 
 /** The noted hours, newest first: one line each, with its trip and its state. */
 export function EntryList({ entries, userId, show, projects, catalog, billToSuggestions, today, onChanged, byMonth = false }: Props) {
@@ -61,61 +79,100 @@ export function EntryList({ entries, userId, show, projects, catalog, billToSugg
     }
   }
 
+  const hasActions = entries.some((entry) => isEditable(entry))
+  // Imported in bulk (My Semisto…): said once above the list, not on every line.
+  const allImported = entries.length > 0 && entries.every((entry) => entry.source === 'import')
+  const cols = hasActions ? COLS_WITH_ACTIONS : COLS
+
+  function isEditable(entry: TimeEntry) {
+    return entry.userId === userId && entry.status === 'noted' && projects.some((p) => p.id === entry.mapId)
+  }
+
   return (
     <>
-      {months.map((group) => (
-      <Fragment key={group.month || 'all'}>
-      {group.month && (
-        <div className="mt-4 flex items-baseline justify-between gap-3 border-b border-loam-900/10 pb-1 first:mt-0">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-loam-500 first-letter:uppercase">{formatMonth(group.month)}</h3>
-          <p className="text-sm tabular-nums text-loam-500">
-            {formatDuration(group.minutes)}{group.km > 0 && <> · {t('time_entries.entry.trip', { km: formatNumber(Math.round(group.km * 10) / 10) })}</>}
-          </p>
-        </div>
+      {allImported && (
+        <p className="mb-2 inline-flex items-center gap-1.5 text-sm text-loam-500">
+          <ArrowDownToLine className="h-3.5 w-3.5" aria-hidden />{t('time_entries.entry.all_imported')}
+        </p>
       )}
-      <ul className="divide-y divide-loam-900/5">
-        {group.entries.map((entry) => {
-          const mine = entry.userId === userId
-          const editable = mine && entry.status === 'noted' && projects.some((p) => p.id === entry.mapId)
-          return (
-            <li key={entry.id} className="group flex items-start gap-3 py-3">
-              <div className="min-w-0 flex-1 sm:flex sm:gap-3">
-              <div className="shrink-0 text-sm text-loam-500 first-letter:uppercase sm:w-24 sm:pt-0.5">{formatDay(entry.workedOn)}</div>
-              <div className="min-w-0 flex-1">
-                <p className="text-[15px] leading-snug text-loam-900">
-                  <span className="font-semibold tabular-nums">{formatDuration(entry.minutes)}</span>
-                  <span className="text-loam-500"> · </span>
-                  {show === 'project'
-                    ? <Link href={`/maps/${entry.mapId}/time_entries`} className="hover:text-prune-800 hover:underline">{entry.mapName}</Link>
-                    : <span>{entry.userName}</span>}
-                  <span className="text-loam-500"> · {t(`time_entries.phases.${entry.phase}`)}</span>
+      <div aria-hidden className={clsx('hidden gap-x-3 border-b border-loam-900/10 pb-1.5 text-sm text-loam-500 sm:grid', cols)}>
+        <span>{t('time_entries.entry.columns.day')}</span>
+        <span>{show === 'project' ? t('time_entries.entry.columns.project') : t('time_entries.entry.columns.person')}</span>
+        <span>{t('time_entries.entry.columns.note')}</span>
+        <span className="text-right">{t('time_entries.entry.columns.km')}</span>
+        <span className="text-right">{t('time_entries.entry.columns.hours')}</span>
+      </div>
+      {months.map((group) => {
+        const phases = new Set(group.entries.map((entry) => entry.phase))
+        // One phase for the whole month: named once, in the month's line.
+        const monthPhase = group.month && phases.size === 1 ? group.entries[0].phase : null
+        return (
+          <Fragment key={group.month || 'all'}>
+            {group.month && (
+              <div className={clsx('mt-5 flex items-baseline justify-between gap-3 border-b border-loam-900/10 pb-1 sm:grid sm:gap-y-0', cols)}>
+                <h3 className="text-sm font-semibold text-loam-700 sm:col-span-3">
+                  <span className="uppercase tracking-wide">{formatMonth(group.month)}</span>
+                  {monthPhase && <span className="font-normal text-loam-500"> · {t(`time_entries.phases.${monthPhase}`)}</span>}
+                </h3>
+                <p className="shrink-0 whitespace-nowrap text-sm tabular-nums text-loam-500 sm:contents">
+                  <span className="sm:text-right">{group.km > 0 ? formatKm(Math.round(group.km * 10) / 10) : ''}<span className="sm:hidden">{group.km > 0 ? ' km · ' : ''}</span></span>
+                  <span className="font-semibold text-loam-700 sm:text-right">{formatDuration(group.minutes)}</span>
                 </p>
-                {entry.note && <p className="mt-0.5 text-sm text-loam-600">{entry.note}</p>}
-                <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                  {!entry.billable && <Pill tone="humus">{t(`time_entries.reasons.${entry.nonBillableReason ?? 'other'}`)}</Pill>}
-                  {entry.tripKm != null && <Pill icon={<Car aria-hidden />}>{t('time_entries.entry.trip', { km: formatNumber(entry.tripKm) })}</Pill>}
-                  {entry.status === 'invoiced'
-                    ? <Pill tone="leaf" icon={<Lock aria-hidden />}>{t('time_entries.statuses.invoiced')}{entry.invoiceNumber ? ` · ${entry.invoiceNumber}` : ''}</Pill>
-                    : null}
-                  {entry.billTo && show === 'project' && <span className="text-sm text-loam-500">{entry.billTo}</span>}
-                  {entry.source === 'mcp' && <span className="inline-flex items-center gap-1 text-sm text-loam-500"><Sparkles className="h-3.5 w-3.5" aria-hidden />{t('time_entries.entry.by_ai')}</span>}
-                  {entry.source === 'app' && <span className="inline-flex items-center gap-1 text-sm text-loam-500"><Smartphone className="h-3.5 w-3.5" aria-hidden />{t('time_entries.entry.by_app')}</span>}
-                  {entry.source === 'import' && <span className="inline-flex items-center gap-1 text-sm text-loam-500"><ArrowDownToLine className="h-3.5 w-3.5" aria-hidden />{t('time_entries.entry.imported')}</span>}
-                </div>
               </div>
-              </div>
-              {editable && (
-                <div className="flex shrink-0 gap-0.5 transition-opacity sm:opacity-40 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
-                  <IconButton size="sm" label={t('time_entries.entry.edit')} onClick={() => setEditing(entry)}><Pencil /></IconButton>
-                  <IconButton size="sm" tone="danger" label={t('time_entries.entry.delete')} onClick={() => void remove(entry)}><Trash2 /></IconButton>
-                </div>
-              )}
-            </li>
-          )
-        })}
-      </ul>
-      </Fragment>
-      ))}
+            )}
+            <ul className="divide-y divide-loam-900/5">
+              {group.entries.map((entry) => {
+                const editable = isEditable(entry)
+                const who = show === 'project'
+                  ? <Link href={`/maps/${entry.mapId}/time_entries`} className="hover:text-prune-800 hover:underline">{entry.mapName}</Link>
+                  : readableName(entry.userName)
+                const source = !allImported && SOURCE_ICONS[entry.source]
+                return (
+                  <li
+                    key={entry.id}
+                    className={clsx(
+                      'group grid grid-cols-[auto_minmax(0,1fr)_auto] items-baseline gap-x-2 py-2',
+                      '[grid-template-areas:"day_who_hours"_"note_note_km"_"acts_acts_acts"] sm:gap-x-3',
+                      cols, hasActions ? AREAS_WITH_ACTIONS : AREAS,
+                    )}
+                  >
+                    <span className="text-sm text-loam-500 first-letter:uppercase [grid-area:day]">{formatDay(entry.workedOn)}</span>
+                    <span className="truncate text-sm text-loam-900 [grid-area:who]" title={show === 'person' ? entry.userName : entry.mapName}>{who}</span>
+                    <div className="min-w-0 text-sm text-loam-600 [grid-area:note]">
+                      {!monthPhase && <span className="text-loam-500">{t(`time_entries.phases.${entry.phase}`)}{entry.note ? ' · ' : ''}</span>}
+                      {entry.note}
+                      {!entry.billable && <Pill tone="humus" className="ml-1.5 align-baseline">{t(`time_entries.reasons.${entry.nonBillableReason ?? 'other'}`)}</Pill>}
+                      {entry.billTo && show === 'project' && <span className="text-loam-500"> · {entry.billTo}</span>}
+                      {source && (
+                        <Tooltip content={t(`time_entries.entry.${source.label}`)} className="ml-1.5 align-middle">
+                          <span tabIndex={0} aria-label={t(`time_entries.entry.${source.label}`)} className="text-loam-400"><source.Icon className="h-3.5 w-3.5" aria-hidden /></span>
+                        </Tooltip>
+                      )}
+                    </div>
+                    <span className="text-right text-sm tabular-nums text-loam-500 [grid-area:km]">
+                      {entry.tripKm != null && <>{formatKm(entry.tripKm)}<span className="sm:hidden"> km</span></>}
+                    </span>
+                    <span className={clsx('inline-flex items-baseline justify-end gap-1 text-right tabular-nums [grid-area:hours]', entry.billable ? 'font-semibold text-loam-900' : 'text-loam-500')}>
+                      {entry.status === 'invoiced' && (
+                        <Tooltip content={`${t('time_entries.statuses.invoiced')}${entry.invoiceNumber ? ` · ${entry.invoiceNumber}` : ''}`}>
+                          <span tabIndex={0} aria-label={t('time_entries.statuses.invoiced')} className="text-leaf-600"><Lock className="h-3.5 w-3.5" aria-hidden /></span>
+                        </Tooltip>
+                      )}
+                      {formatDuration(entry.minutes)}
+                    </span>
+                    {editable && (
+                      <div className="flex justify-end gap-0.5 self-center transition-opacity [grid-area:acts] sm:opacity-40 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+                        <IconButton size="sm" label={t('time_entries.entry.edit')} onClick={() => setEditing(entry)}><Pencil /></IconButton>
+                        <IconButton size="sm" tone="danger" label={t('time_entries.entry.delete')} onClick={() => void remove(entry)}><Trash2 /></IconButton>
+                      </div>
+                    )}
+                  </li>
+                )
+              })}
+            </ul>
+          </Fragment>
+        )
+      })}
       <Dialog open={editing != null} onClose={() => setEditing(null)} title={t('time_entries.form.edit_title')} dismissOnBackdrop={false}>
         {editing && (
           <EntryForm

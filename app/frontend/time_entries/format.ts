@@ -1,5 +1,7 @@
 import { formatNumber, t } from '@/lib/i18n'
 
+export { readableName } from './names'
+
 /** 150 → « 2 h 30 », 45 → « 45 min », 120 → « 2 h ». */
 export function formatDuration(minutes: number): string {
   const whole = Math.round(minutes)
