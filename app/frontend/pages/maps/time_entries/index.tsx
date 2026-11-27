@@ -13,7 +13,7 @@ import { tf } from '@/lib/content'
 import { formatNumber, t } from '@/lib/i18n'
 import { EntryForm } from '@/time_entries/EntryForm'
 import { EntryList } from '@/time_entries/EntryList'
-import { formatDuration, formatHours, formatShortDate } from '@/time_entries/format'
+import { formatDuration, formatHours, formatShortDate, readableName } from '@/time_entries/format'
 import { BudgetSection } from '@/time_entries/BudgetSection'
 import { ExpensesSection, SharingCard } from '@/time_entries/ExpensesSection'
 import type { Catalog, Envelopes, Expense, ExpenseCatalog, ExpenseSummary, PhaseEnvelope, ProjectBudget, ProjectChoice, ProjectInvoice, TimeEntry } from '@/time_entries/types'
@@ -152,7 +152,7 @@ export default function ProjectTime(props: Props) {
             {envelopes.people.map((person) => (
               <li key={person.userId} className="py-2.5">
                 <p className="flex items-baseline justify-between gap-3">
-                  <span className="font-medium text-loam-900">{person.name}</span>
+                  <span className="font-medium text-loam-900">{readableName(person.name)}</span>
                   <span className="font-semibold tabular-nums">{formatHours(person.hours)}</span>
                 </p>
                 <p className="mt-0.5 text-sm text-loam-600">
@@ -175,7 +175,7 @@ export default function ProjectTime(props: Props) {
               <tbody className="divide-y divide-loam-900/5">
                 {envelopes.people.map((person) => (
                   <tr key={person.userId}>
-                    <th scope="row" className="py-2 pr-3 text-left font-medium text-loam-900">{person.name}</th>
+                    <th scope="row" className="py-2 pr-3 text-left font-medium text-loam-900">{readableName(person.name)}</th>
                     {catalog.phases.map((p) => <td key={p} className="px-2 py-2 text-right tabular-nums text-loam-700">{person.byPhase[p] ? formatHours(person.byPhase[p]) : <span className="text-loam-300">—</span>}</td>)}
                     <td className="px-2 py-2 text-right font-semibold tabular-nums">{formatHours(person.hours)}</td>
                     <td className="whitespace-nowrap py-2 pl-2 text-right tabular-nums text-loam-700">
