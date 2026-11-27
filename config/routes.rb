@@ -301,6 +301,7 @@ Rails.application.routes.draw do
   post "webhooks/tally/:token", to: "webhooks/tally#create", as: :tally_webhook, constraints: { token: /[A-Za-z0-9]{20,64}/ }
   # A team map's « Formulaires » view: the links to send, the answers received.
   get "maps/:map_id/forms", to: "maps/forms#index", as: :map_forms
+  get "maps/:map_id/ai_journal", to: "maps/ai_journals#show", as: :map_ai_journal
   # --- end billing-site ---
   # --- plants ---
   # Before /plants/:id. The species people propose, for catalogue reviewers.

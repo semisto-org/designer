@@ -39,7 +39,6 @@ const ARTICLE_BY_PANEL: Record<string, string> = {
   publish: 'publier-sa-carte',
   deliverable: 'livrable-client',
   actions: 'la-liste-de-plants-et-la-commande',
-  'ai-journal': 'relire-les-brouillons-de-l-ia',
 }
 
 // With no panel open, the selected element says which guide fits.

@@ -1,4 +1,4 @@
-import { Bot, Camera, Waypoints, Compass, Target, Shovel, FileImage, Files, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, FolderLock, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, MapPinned, Mountain, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
+import { Camera, Waypoints, Compass, Target, Shovel, FileImage, Files, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, FolderLock, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, MapPinned, Mountain, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
 import { Apple, Archive, GitBranch, Presentation, Spline, Trees } from 'lucide-react'
 import { isAnnotationLayer } from '@/map/scenario'
 import { appliesToCatchment, appliesToEarthworks, appliesToElement, appliesToFruitStore, appliesToGpsPoint, appliesToInfiltration, appliesToKeyline, appliesToLinks, appliesToPhase, appliesToProjectState, appliesToStorm, appliesToTracing, appliesToVariant, appliesToZone } from '@/map/panels/applies'
@@ -101,7 +101,6 @@ export const PANELS: EditorPanel[] = [
   { id: 'present', label: 'presentations.panel_title', icon: Presentation, group: 'share', component: deferred(() => import('@/map/presentation/PresentationPanel')), order: 17, essential: true },
   { id: 'publish', label: 'collab.panels.publish', icon: Globe, group: 'share', component: deferred(() => import('@/collab/PublishPanel')), requires: 'publish', order: 20, essential: true },
   { id: 'deliverable', label: 'collab.panels.publish', icon: FolderLock, group: 'share', component: deferred(() => import('@/collab/DeliverablePanel')), requires: 'offers', order: 21, hiddenFromRail: true },
-  { id: 'ai-journal', label: 'ai_journal.title', icon: Bot, group: 'share', component: deferred(() => import('@/map/panels/AiJournalPanel')), requires: 'owner', order: 80 },
 ]
 
 // Register inspector sections for a selected feature here.

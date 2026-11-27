@@ -1,6 +1,6 @@
 import { Link } from '@inertiajs/react'
 import clsx from 'clsx'
-import { CalendarRange, Camera, ChevronDown, ClipboardList, Clock, Files, Leaf, ListChecks, Map as MapIcon, MessageSquareText, PiggyBank, Receipt } from 'lucide-react'
+import { Bot, CalendarRange, Camera, ChevronDown, ClipboardList, Clock, Files, Leaf, ListChecks, Map as MapIcon, MessageSquareText, PiggyBank, Receipt } from 'lucide-react'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { TabButton } from '@/components/ui/TabButton'
 import { tabsOnLine } from '@/lib/tabOverflow'
@@ -13,7 +13,7 @@ import { t } from '@/lib/i18n'
  * show them as tabs, those that do not fit under « Plus ▾ »; the editor's header as a
  * small menu next to the map's name.
  */
-export type MapViewKey = 'map' | 'project' | 'palette' | 'implementation' | 'tasks' | 'photos' | 'documents' | 'finances' | 'offer' | 'time' | 'forms'
+export type MapViewKey = 'map' | 'project' | 'palette' | 'implementation' | 'tasks' | 'photos' | 'documents' | 'finances' | 'offer' | 'time' | 'forms' | 'ai_journal'
 
 const VIEWS: { key: MapViewKey; icon: typeof MapIcon; path: string }[] = [
   { key: 'map', icon: MapIcon, path: '' },
@@ -27,17 +27,20 @@ const VIEWS: { key: MapViewKey; icon: typeof MapIcon; path: string }[] = [
   { key: 'offer', icon: Receipt, path: '/offer' },
   { key: 'time', icon: Clock, path: '/time_entries' },
   { key: 'forms', icon: MessageSquareText, path: '/forms' },
+  { key: 'ai_journal', icon: Bot, path: '/ai_journal' },
 ]
 
-type ViewMap = { teamId?: number | null; offerBuilder?: boolean; timeEntries?: boolean }
+type ViewMap = { teamId?: number | null; offerBuilder?: boolean; timeEntries?: boolean; role?: string | null }
 
 // « Formulaires » belongs to the team's maps (the forms are the team's);
 // « Offre » to whoever prices the project (the team, or a pro owner);
-// « Temps et dépenses » to the same people, and to an editor who notes
+// « Journal IA » to the map's owner (what an AI did on it);
+// « Temps et dépenses » to the same people as « Offre », and to an editor who notes
 // time there (`timeEntries`, given by that page).
-const viewsFor = ({ teamId, offerBuilder, timeEntries }: ViewMap) =>
+const viewsFor = ({ teamId, offerBuilder, timeEntries, role }: ViewMap) =>
   VIEWS.filter((v) => (v.key !== 'forms' || teamId != null) && (v.key !== 'offer' || offerBuilder === true)
-    && (v.key !== 'time' || offerBuilder === true || timeEntries === true))
+    && (v.key !== 'time' || offerBuilder === true || timeEntries === true)
+    && (v.key !== 'ai_journal' || role === 'owner'))
 
 export const mapViewHref = (mapId: number, key: MapViewKey) => `/maps/${mapId}${VIEWS.find((v) => v.key === key)!.path}`
 
@@ -143,7 +146,7 @@ export function MapViewHeader({ map, current }: { map: ViewMap & { id: number; n
 }
 
 /** In the editor's header: « Carte ▾ », to reach the other views of the project. */
-export function MapViewMenu({ mapId, teamId, offerBuilder, timeEntries }: ViewMap & { mapId: number }) {
+export function MapViewMenu({ mapId, teamId, offerBuilder, timeEntries, role }: ViewMap & { mapId: number }) {
   const [open, setOpen] = useState(false)
   const box = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -171,7 +174,7 @@ export function MapViewMenu({ mapId, teamId, offerBuilder, timeEntries }: ViewMa
       </button>
       {open && (
         <ul role="menu" className="absolute left-0 top-full z-50 mt-1.5 w-56 rounded-xl bg-white p-1 shadow-lg ring-1 ring-loam-900/10">
-          {viewsFor({ teamId, offerBuilder, timeEntries }).map(({ key, icon: Icon }) => (
+          {viewsFor({ teamId, offerBuilder, timeEntries, role }).map(({ key, icon: Icon }) => (
             <li key={key} role="none">
               {key === 'map' ? (
                 <span role="menuitem" aria-current="page" className="flex items-center gap-2.5 rounded-lg bg-prune-50 px-3 py-2 text-sm font-medium text-prune-700">
