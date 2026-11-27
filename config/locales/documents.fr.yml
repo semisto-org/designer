@@ -1,6 +1,7 @@
 fr:
   map_views:
     label: "Vues du projet"
+    more: "Plus"
     my_maps: "Mes cartes"
     views:
       map: "Carte"
