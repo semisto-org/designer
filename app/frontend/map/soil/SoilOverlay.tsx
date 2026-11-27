@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { t } from '@/lib/i18n'
 import { drawingStore, setHiddenSoil, useDrawingState } from '@/map/drawing/store'
 import { useEditor } from '@/map/editor/EditorContext'
+import { whenStyleReady } from '@/map/layers/styleReady'
 import {
   highlightSample, installSoilLayers, OBSERVATION_LAYER, observationsToGeoJSON, removeSoilLayers, SAMPLE_LAYER,
   samplesToGeoJSON, setSoilLayersVisible, suggestionsToGeoJSON,
@@ -39,11 +40,15 @@ export default function SoilOverlay() {
 
   // Markers. Installed after the editor's own layers so they sit on top.
   useEffect(() => {
-    const timer = window.setTimeout(() => {
+    let cancel = () => {}
+    const timer = window.setTimeout(() => { cancel = whenStyleReady(map, () => {
       installSoilLayers(map, { samples: sampleData, observations: observationData, suggestions: suggestionData })
       setSoilLayersVisible(map, soilVisibility({ showOnMap, suggesting: suggestions != null, hiddenLayers, hiddenSoil }), labelsHidden)
-    }, 0)
-    return () => window.clearTimeout(timer)
+    }) }, 0)
+    return () => {
+      window.clearTimeout(timer)
+      cancel()
+    }
   }, [map, sampleData, observationData, suggestionData, showOnMap, suggestions, hiddenLayers, hiddenSoil, labelsHidden])
   useEffect(() => () => removeSoilLayers(map), [map])
   useEffect(() => { highlightSample(map, openId) }, [map, openId, sampleData])

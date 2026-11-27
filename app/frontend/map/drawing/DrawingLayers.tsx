@@ -7,6 +7,7 @@ import { drawingStore, initDrawingState, useDrawingState } from '@/map/drawing/s
 import { applyLayerVisibility, installDrawingLayers } from '@/map/drawing/style'
 import { FEATURES_SOURCE } from '@/map/layers/features'
 import { applyFeatureLabelsVisibility } from '@/map/layers/labels'
+import { whenStyleReady } from '@/map/layers/styleReady'
 import { usePhotos } from '@/map/photos/store'
 import { usePlanting } from '@/map/plants/store'
 import { plantStrata } from '@/map/plants/strata'
@@ -60,14 +61,16 @@ export default function DrawingLayers() {
   useEffect(() => {
     // The generic feature layers are installed by the editor after its
     // children mount: wait for them, then follow any later style change.
-    const ensure = () => {
+    let cancel = () => {}
+    const ensure = () => { cancel(); cancel = whenStyleReady(map, () => {
       if (map.getGlobalState?.()[DESIGN_MODE_STATE] !== mode.current) map.setGlobalStateProperty(DESIGN_MODE_STATE, mode.current)
       if (installDrawingLayers(map)) applyLayerVisibility(map, renderHiddenLayers(drawingStore.get().hiddenLayers, renderRef.current), latest.current)
       applyFeatureLabelsVisibility(map, drawingStore.get().labelsHidden)
-    }
+    }) }
     ensure()
     map.on('styledata', ensure)
     return () => {
+      cancel()
       map.off('styledata', ensure)
     }
   }, [map])
