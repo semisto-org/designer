@@ -398,6 +398,7 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
     return {
       map, setMap, instance, regionLayers: layers, entitlements: mapEntitlements, canEdit,
       isOwner: map.role === 'owner',
+      offerBuilder,
       features, selectedId,
       selected: features.find((f) => f.properties.id === selectedId) ?? null,
       select(id: number | null) {
@@ -498,9 +499,14 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
       shade,
       setShade: setSeason,
     }
-  }, [map, setMap, instance, layers, mapEntitlements, canEdit, features, selectedId, selection, multiSelect, drawing, drawingShape, activePanel, focusStage, notify, upsertFeatures, removeFeatures, tracked, history, step, shapeStep, moment, timeline, shade, mode])
+  }, [map, setMap, instance, layers, mapEntitlements, canEdit, offerBuilder, features, selectedId, selection, multiSelect, drawing, drawingShape, activePanel, focusStage, notify, upsertFeatures, removeFeatures, tracked, history, step, shapeStep, moment, timeline, shade, mode])
 
-  const visiblePanels = PANELS.filter((p) => !p.requires || (p.requires === 'editor' ? mayEdit : p.requires === 'offers' ? mayEdit && offerBuilder : map.role === 'owner'))
+  const offerEditor = mayEdit && offerBuilder
+  const visiblePanels = PANELS.filter((p) => !p.requires || (
+    p.requires === 'editor' ? mayEdit
+      : p.requires === 'offers' ? offerEditor
+        : p.requires === 'publish' ? map.role === 'owner' || offerEditor
+          : map.role === 'owner'))
   const panel = visiblePanels.find((p) => p.id === activePanel)
   const wideScreen = useMediaQuery(MODAL_PANEL_QUERY)
   const wideRail = useMediaQuery('(min-width: 768px)')

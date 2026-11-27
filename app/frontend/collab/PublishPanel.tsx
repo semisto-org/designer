@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Button, buttonClass } from '@/components/ui/Button'
 import { confirmAction } from '@/components/ui/confirm'
 import { Field, Input, Textarea } from '@/components/ui/Field'
+import { Segmented } from '@/components/ui/Segmented'
 import { aerialViewLabel } from '@/drone/format'
 import { ApiError, api } from '@/lib/api'
 import { track } from '@/lib/analytics'
@@ -13,13 +14,38 @@ import type { DeliverableCounts, PublicMapProps, PublicationData, PublicationOpt
 import { formatDateTime } from './time'
 
 /**
- * "Publier" (owner only): put a read-only view of the map at a shareable
- * address, readable without an account. The view is a snapshot taken when
- * publishing; networks and the exact address stay hidden unless the owner
- * decides otherwise.
+ * "Publier": the two publications of a map, side by side. « Plan public »
+ * (owner only) puts a read-only view of the map at a shareable address,
+ * readable without an account; « Livrable client » (Pro and Team, see
+ * collab/DeliverablePanel) the client's project file at a private link.
+ * Each is a snapshot taken when publishing; networks and the exact address
+ * stay hidden unless the owner decides otherwise.
  */
 export default function PublishPanel() {
-  return <PublicationPanel kind="public" />
+  return <PublicationTabs initial="public" />
+}
+
+/** The tabs this person may use; one tab alone shows no switch. */
+export function PublicationTabs({ initial }: { initial: PublicationKind }) {
+  const editor = useEditor()
+  const kinds: PublicationKind[] = []
+  if (editor.isOwner) kinds.push('public')
+  if (editor.offerBuilder && editor.canEdit) kinds.push('deliverable')
+  const [kind, setKind] = useState<PublicationKind>(kinds.includes(initial) ? initial : (kinds[0] ?? initial))
+  return (
+    <div className="space-y-4">
+      {kinds.length > 1 && (
+        <Segmented
+          className="w-full"
+          label={t('collab.publish.tabs_label')}
+          value={kind}
+          onChange={setKind}
+          options={kinds.map((k) => ({ value: k, label: t(`collab.publish.tabs.${k}`) }))}
+        />
+      )}
+      <PublicationPanel key={kind} kind={kind} />
+    </div>
+  )
 }
 
 export type PublicationKind = 'public' | 'deliverable'

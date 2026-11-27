@@ -44,6 +44,8 @@ export type Editor = {
   entitlements: EntitlementsData
   canEdit: boolean
   isOwner: boolean
+  /** The offer builder is shown to this person (a team's map, a pro owner): « Livrable client » too. */
+  offerBuilder?: boolean
 
   features: MapFeature[]
   selectedId: number | null

@@ -181,6 +181,10 @@ fr:
       emails: "Recevoir les discussions par e-mail"
       emails_hint: "Mentions et nouveaux commentaires des discussions que tu suis."
     publish:
+      tabs_label: "Que publier ?"
+      tabs:
+        public: "Plan public"
+        deliverable: "Livrable client"
       intro: "Publie une vue de la carte à une adresse que tu partages : elle se lit sans compte, sans modification possible. Idéal pour présenter le design à un client."
       unpublished: "Cette vue n'est plus publiée : son adresse affiche un message d'indisponibilité. Republie-la quand tu veux."
       live: "Vue publiée"

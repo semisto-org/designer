@@ -13,7 +13,7 @@ C'est autre chose que la [vue publique](/help/publier-sa-carte) : la vue publiqu
 
 [Ouvrir le panneau Livrable client](action:panel/deliverable)
 
-1. Dans l'éditeur, groupe « Échanger », ouvre **Livrable client**.
+1. Dans l'éditeur, groupe « Échanger », ouvre **Publier**, puis l'onglet **Livrable client**.
 2. Donne-lui un titre et un **mot pour ton client** : ce que contient le dossier, ce qu'il peut aller voir en premier au jardin.
 3. Choisis ce que montre le plan (le projet, les noms des zones, l'analyse des secteurs…). Les réseaux restent masqués par défaut.
 4. **Publier le livrable**, puis copie le lien et envoie-le à ton client.
