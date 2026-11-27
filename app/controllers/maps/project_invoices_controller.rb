@@ -9,7 +9,8 @@ module Maps
     include ProjectInvoiceParams
 
     before_action :set_map
-    before_action :require_team!
+    before_action :require_team!, except: :document
+    before_action :require_reader!, only: :document
     before_action :set_invoice, only: %i[update destroy document]
 
     def create
@@ -45,8 +46,16 @@ module Maps
 
     private
       def require_team!
-        writable = request.get? ? TimeEntry.usable_by?(@map, Current.user) : ProjectInvoice.writable_by?(@map, Current.user)
-        render json: { message: t("time_entries.errors.no_access") }, status: :forbidden unless writable
+        forbid! unless ProjectInvoice.writable_by?(@map, Current.user)
+      end
+
+      # Reading the PDF stays open on a read-only or archived map.
+      def require_reader!
+        forbid! unless TimeEntry.usable_by?(@map, Current.user)
+      end
+
+      def forbid!
+        render json: { message: t("time_entries.errors.no_access") }, status: :forbidden
       end
 
       def set_invoice
