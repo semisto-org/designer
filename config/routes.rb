@@ -774,6 +774,12 @@ Rails.application.routes.draw do
       get :receipt, on: :member
     end
     resource :time_sharing, only: :update, controller: "maps/time_sharings"
+    # « Budget du projet »: the invoices sent to the client, recorded, and
+    # the budget of the four items set by hand.
+    resources :project_invoices, only: %i[create update destroy], path: "invoices", controller: "maps/project_invoices" do
+      get :document, on: :member
+    end
+    resource :project_budget, only: :update, path: "budget", controller: "maps/project_budgets"
   end
   resource :time_statement, only: %i[show create destroy], path: "time_entries/statement", controller: "time_entries/statements"
   resources :time_entries, only: %i[index create update destroy]

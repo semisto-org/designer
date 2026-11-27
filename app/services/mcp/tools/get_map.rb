@@ -303,7 +303,18 @@ module Mcp
             url: "#{map_url(map)}/time_entries", offer_version: envelopes.version_json&.dig(:label),
             hours: envelopes.totals[:hours], km: envelopes.totals[:km],
             expenses_eur: map.project_expenses.sum(:amount_cents) / 100.0, shown_to_client: map.time_shared_with_client,
-            phases: envelopes.phases.filter_map { |p| { phase: p[:key], hours: p[:hours], envelope_hours: p[:envelopeHours], over_hours: p[:overHours] }.compact if p[:hours].positive? || p[:envelopeHours] }
+            phases: envelopes.phases.filter_map { |p| { phase: p[:key], hours: p[:hours], envelope_hours: p[:envelopeHours], over_hours: p[:overHours] }.compact if p[:hours].positive? || p[:envelopeHours] },
+            budget: project_budget(map)
+          }
+        end
+
+        # « Budget du projet » in one line per item: budgeted, invoiced, left
+        # to invoice and its state; get_project_budget has the invoices.
+        def project_budget(map)
+          budget = ProjectBudget.new(map)
+          {
+            totals: GetProjectBudget.totals_json(budget.totals),
+            items: budget.items.map { GetProjectBudget.item_json(_1).slice(:item, :budget_eur, :invoiced_eur, :left_to_invoice_eur, :status, :over_budget) }
           }
         end
 

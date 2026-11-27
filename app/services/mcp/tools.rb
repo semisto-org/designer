@@ -6,10 +6,10 @@ module Mcp
         ListMaps, GetMap, ListFeatures, GetFeature, GetRegionLayers, GetAerialPhoto, IdentifyAtPoint, GetSiteData, TraceContour, GetCatchment, GetViewFromPoint, GetFlowAxes, FindKeypoints, TraceParallels, GetStormObservations, GetSeasonSigns, GetElementFunctions, GetDesignPhases, GetMasterPlan, GetSection,
         ListTerritories, GetTerritory, GetHydrography, Geocode,
         SearchPlants, GetPlant, SuggestPlantCorrections, GetDesignGuide, GetHelp, GetMyPlan, ListTeams, GetProjectSheet, GetImplementationPlan, GetBioindicatorPhoto, GetSoilSamples, GetSoilReport, GetOffer, GetDocumentTheme,
-        ListTasks, ListTimeEntries, ListDiscussion, GetNotifications, ListFeedback, ListHarvests, ListPlantObservations, ListStorageReadings, ListDocuments, GetDocument, ListSiteVisits, ListPhotos, GetPhoto, ListDronePilots, ListDroneMissions, ListPropagationRequests,
+        ListTasks, ListTimeEntries, GetProjectBudget, ListDiscussion, GetNotifications, ListFeedback, ListHarvests, ListPlantObservations, ListStorageReadings, ListDocuments, GetDocument, ListSiteVisits, ListPhotos, GetPhoto, ListDronePilots, ListDroneMissions, ListPropagationRequests,
         ProposeFeatures, ProposeSectors, ProposeZones, ProposeBubbles, ProposeFeatureUpdates, ProposeDeletions, ProposePalette, ProposeProjectSheet, ProposePhases, ProposePresentationSlides, ProposeBioindicators, ProposeSoilResults, ProposeOfferLetter, ProposeDocumentTheme, WithdrawDraft,
         ProposeTerritoryItems, ProposeTerritoryUpdates, ProposeTerritoryDeletions, WithdrawTerritoryDrafts,
-        CreateTasks, UpdateTasks, RecordTimeEntries, ImportTimeEntries, RecordProjectExpenses, RecordHarvests, RecordPlantObservations, RecordPlantLooks, RecordStorageReadings, AddDocument, UpdateDocument, ConvertDocumentToPdf, AddPhoto, UpdatePhotos, DeletePhotos, UpdatePaletteBudget,
+        CreateTasks, UpdateTasks, RecordTimeEntries, ImportTimeEntries, RecordProjectExpenses, RecordClientInvoices, RecordHarvests, RecordPlantObservations, RecordPlantLooks, RecordStorageReadings, AddDocument, UpdateDocument, ConvertDocumentToPdf, AddPhoto, UpdatePhotos, DeletePhotos, UpdatePaletteBudget,
         CreateUpload, AttachPhotos, AttachDocuments, ImportFromUrl, DeleteDocuments, RenameDocumentTag, MarkForDeliverable, PrepareOfflineSite
       ]
     end

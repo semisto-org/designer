@@ -731,7 +731,7 @@ fr:
         cta: "Ouvrir une discussion"
         url: "https://github.com/semisto-org/designer/issues"
     legal:
-      updated_on: "16 novembre 2026"
+      updated_on: "27 novembre 2026"
       privacy:
         title: "Politique de confidentialité"
         lead: "Ce que Semisto Terranova collecte, pourquoi, qui l'héberge, combien de temps nous le gardons, et comment exercer vos droits."
@@ -747,7 +747,7 @@ fr:
             items:
               - "Votre compte : votre adresse e-mail, votre nom, et votre photo de profil si vous vous connectez avec Google ou en choisissez une. Si vous vous connectez avec Apple, nous recevons votre nom (une seule fois) et votre adresse e-mail, ou l'adresse relais qu'Apple crée pour vous si vous choisissez de masquer la vôtre. Si vous choisissez un mot de passe, nous n'en gardons qu'une empreinte chiffrée."
               - "Votre profil : si vous concevez pour d'autres, le type de compte (particulier ou professionnel), votre numéro d'entreprise ou de TVA et votre logo, pour des factures et des documents corrects."
-              - "Vos contenus : les cartes, contours, parcelles, dessins, plantations, notes, fiches projet, tâches, journaux de récolte, commentaires, documents, photos et vidéos que vous créez ou ajoutez. Une photo garde la position et la date où elle a été prise, qui servent à la placer sur la carte ; le fichier d'origine, avec toutes ses métadonnées, n'est montré qu'aux éditeurs de la carte, les autres personnes n'en voient que des versions sans métadonnées."
+              - "Vos contenus : les cartes, contours, parcelles, dessins, plantations, notes, fiches projet, tâches, journaux de récolte, commentaires, documents, photos et vidéos que vous créez ou ajoutez. Pour les formules Pro et Team, aussi le temps, les trajets et les dépenses notés sur un projet, et les factures envoyées au client que l'équipe y enregistre (numéro, date, montants, PDF). Une photo garde la position et la date où elle a été prise, qui servent à la placer sur la carte ; le fichier d'origine, avec toutes ses métadonnées, n'est montré qu'aux éditeurs de la carte, les autres personnes n'en voient que des versions sans métadonnées."
               - "Les personnes que vous invitez : l'adresse e-mail des personnes à qui vous partagez une carte, que vous invitez dans une équipe ou à qui vous confiez une tâche."
               - "Vos paiements : la formule achetée, le montant, la TVA, la date, le code promotionnel éventuel et l'adresse de facturation. Le paiement lui-même est traité par Stripe : nous ne voyons ni ne conservons votre numéro de carte. Si vous demandez à payer sur facture, nous recevons aussi le nom et l'adresse de l'organisation, son numéro d'entreprise, l'adresse e-mail de facturation et le numéro de bon de commande."
               - "Vos demandes : ce que vous nous écrivez (assistance, suppression de compte, commande de plants, mission drone, demande de réalisation ou de cogestion) et nos réponses."

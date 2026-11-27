@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_27_130000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_27_160000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -995,6 +995,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_27_130000) do
     t.datetime "agent_enabled_at"
     t.bigint "agent_enabled_by_id"
     t.string "design_phase_name"
+    t.jsonb "budget_overrides", default: {}, null: false
     t.index ["board_section_id"], name: "index_maps_on_board_section_id"
     t.index ["boundary"], name: "index_maps_on_boundary", using: :gist
     t.index ["lead_id"], name: "index_maps_on_lead_id"
@@ -1600,6 +1601,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_27_130000) do
     t.index ["map_id", "spent_on"], name: "index_project_expenses_on_map_id_and_spent_on"
     t.index ["map_id"], name: "index_project_expenses_on_map_id"
     t.index ["user_id"], name: "index_project_expenses_on_user_id"
+  end
+
+  create_table "project_invoices", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.bigint "user_id"
+    t.string "number", null: false
+    t.date "issued_on", null: false
+    t.date "paid_on"
+    t.integer "services_cents", default: 0, null: false
+    t.integer "expenses_cents", default: 0, null: false
+    t.integer "plants_cents", default: 0, null: false
+    t.integer "implementation_cents", default: 0, null: false
+    t.integer "vat_cents", default: 0, null: false
+    t.text "note"
+    t.string "source", default: "web", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["map_id", "issued_on"], name: "index_project_invoices_on_map_id_and_issued_on"
+    t.index ["map_id", "number"], name: "index_project_invoices_on_map_id_and_number", unique: true
+    t.index ["map_id"], name: "index_project_invoices_on_map_id"
+    t.index ["user_id"], name: "index_project_invoices_on_user_id"
   end
 
   create_table "project_requests", force: :cascade do |t|
@@ -2292,6 +2314,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_27_130000) do
   add_foreign_key "plant_varieties", "plant_species", column: "species_id", on_delete: :cascade
   add_foreign_key "project_expenses", "maps", on_delete: :cascade
   add_foreign_key "project_expenses", "users", on_delete: :nullify
+  add_foreign_key "project_invoices", "maps", on_delete: :cascade
+  add_foreign_key "project_invoices", "users", on_delete: :nullify
   add_foreign_key "project_requests", "maps", on_delete: :nullify
   add_foreign_key "project_requests", "regions"
   add_foreign_key "project_requests", "request_forms", on_delete: :cascade

@@ -1,6 +1,6 @@
 ---
 title: "Suivre son temps, ses kilomètres et ses dépenses"
-summary: "Pour les pros et les équipes : noter ses heures, ses trajets et les achats de chaque projet, voir chaque phase face à l'offre acceptée, montrer l'avancement au client, puis préparer son relevé de prestations."
+summary: "Pour les pros et les équipes : noter ses heures, ses trajets et les achats de chaque projet, voir chaque phase face à l'offre acceptée, suivre les quatre postes du budget et les factures du client, montrer l'avancement au client, puis préparer son relevé de prestations."
 category: Partager et collaborer
 order: 76
 ---
@@ -35,6 +35,18 @@ Les plants, le paillage, les protections, une analyse de sol : dans l'onglet **T
 
 Joins le ticket en photo ou en PDF : il reste avec la dépense. En haut de la section, les plants et les fournitures se comparent à ce que l'offre acceptée prévoyait, et un encadré dit ce que porte chaque payeur.
 
+## Le budget du projet et les factures du client
+
+Chaque projet a le même budget en **quatre postes** : les **prestations** (pré-design et design), les **frais** (déplacements, analyses, impressions), les **plantes** et la **mise en œuvre** (la plantation, les fournitures, la co-gestion). Dans l'onglet **Temps et dépenses**, la section **Budget du projet** les montre côte à côte, hors TVA :
+
+- **le budget**, repris de la version acceptée de l'offre. Une offre faite ailleurs, un avenant ? **Modifier les budgets** fixe un poste à la main ; laisse-le vide pour revenir à l'offre ;
+- **ce qui est fait** : les heures notées face à l'enveloppe, les dépenses (sans les achats du client lui-même), les kilomètres ;
+- **ce qui est facturé** au client, et ce qu'il reste à facturer. L'état de chaque poste se calcule seul : pas encore facturé, en partie, facturé, ou facturé au-delà du budget.
+
+Tu as envoyé une facture à ton client ? **Enregistrer une facture** : son numéro, sa date, le montant hors TVA de chaque poste qu'elle couvre (prérempli avec ce qu'il reste à facturer), la TVA telle qu'elle est écrite dessus, et son PDF. Note le jour où elle est payée : le haut de la section dit ce qui attend encore un paiement. Terranova n'émet pas la facture et ne tient pas de comptabilité : la facture se fait dans ton outil de facturation, et part par Peppol en Belgique.
+
+Le poste **Plantes** dit aussi ce qu'il reste à planter : « il reste 1 200 € pour les plantes : de quoi en planter environ 80 cet hiver ». De là, **Préparer la plantation** ouvre la mise en œuvre du projet.
+
 ## Montrer au client
 
 En bas de l'onglet, **Montrer au client** ouvre une page « Avancement du projet » aux lecteurs de la carte : l'avancement de chaque phase en %, les dépenses et qui les paie. Ton client peut y ajouter ses propres achats, avec leur ticket. Il ne voit jamais les noms, les heures, les tarifs ni les tickets de l'équipe, ni le prix d'achat, le fournisseur et la note de ce que l'équipe a acheté : il lit ce qui a été acheté et qui le paie, et le montant de ses propres achats. Ta note reste donc pour l'équipe. Tu le désactives d'un geste.
@@ -49,4 +61,4 @@ Ta facture est faite ? Note son numéro et **Marque comme facturé** : ces heure
 
 ## Avec ton IA
 
-Dis-lui simplement ce que tu as fait : « 3 h hier chez Dupont, visite du terrain, 64 km ». Elle le note dans **Mes heures**, marqué « Noté par ton IA », et tu peux le corriger. Elle note aussi tes achats : « 40 m³ de broyat chez Dupont, 480 € HTVA, à refacturer ». Elle sait où en est chaque phase d'un projet et ce qu'il a coûté, sans jamais voir de tarif.
+Dis-lui simplement ce que tu as fait : « 3 h hier chez Dupont, visite du terrain, 64 km ». Elle le note dans **Mes heures**, marqué « Noté par ton IA », et tu peux le corriger. Elle note aussi tes achats : « 40 m³ de broyat chez Dupont, 480 € HTVA, à refacturer ». Elle sait où en est chaque phase d'un projet et ce qu'il a coûté, sans jamais voir de tarif. Donne-lui une facture envoyée au client (ou son PDF) : elle l'enregistre, montant par poste, et te dit ce qu'il reste à facturer.
