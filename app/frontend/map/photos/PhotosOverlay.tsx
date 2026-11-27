@@ -16,6 +16,7 @@ import {
 import { PhotoHostContext, type PhotoHost } from '@/map/photos/host'
 import { PhotoCompare } from '@/map/photos/PhotoCompare'
 import { photoMarkersVisible } from '@/map/photos/shown'
+import { whenStyleReady } from '@/map/layers/styleReady'
 import { getPhotosState, photoActions, usePhotos } from '@/map/photos/store'
 import { deferred } from '@/map/panels/deferred'
 import type { MapPhotoData } from '@/types/soil_photos'
@@ -45,11 +46,15 @@ export default function PhotosOverlay() {
 
   // Markers. Installed after the editor's own layers so they sit on top.
   useEffect(() => {
-    const timer = window.setTimeout(() => {
+    let cancel = () => {}
+    const timer = window.setTimeout(() => { cancel = whenStyleReady(map, () => {
       installPhotoLayers(map, data)
       setPhotoLayersVisible(map, visible)
-    }, 0)
-    return () => window.clearTimeout(timer)
+    }) }, 0)
+    return () => {
+      window.clearTimeout(timer)
+      cancel()
+    }
   }, [map, data, visible])
 
   // « Photos sur la carte »: a button in the column of map controls, as soon as one photo is placed.
